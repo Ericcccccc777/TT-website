@@ -1,0 +1,407 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   DESIGN TOKENS — Tailwind v4 @theme
+   All --color-*, --font-*, --text-*, --shadow-*, --radius-*
+   values here are picked up as Tailwind utility class suffixes.
+   E.g. --color-leaf-deep → bg-leaf-deep / text-leaf-deep.
+───────────────────────────────────────────────────────────── */
+@theme {
+  /* ── Sky ── */
+  --color-sky-day-top: #8fb8d0;
+  --color-sky-day-mid: #c4dce8;
+  --color-sky-day-horizon: #e8d5a8;
+  --color-sky-night-top: #080f0c;
+  --color-sky-night-mid: #112018;
+  --color-sky-night-horizon: #1e3828;
+
+  /* ── Brand Greens ── */
+  --color-leaf-deep: #3a7d44;
+  --color-leaf-light: #7bd88f;
+
+  /* ── Soil / Earth ── */
+  --color-soil: #7a5a3a;
+  --color-soil-light: #a07850;
+
+  /* ── Surfaces (light) ── */
+  --color-surface-parchment: #faf5ea;
+  --color-surface-card: #f3ede0;
+
+  /* ── Surfaces (dark) ── */
+  --color-surface-forest: #1b2a22;
+  --color-surface-panel: #243320;
+  --color-surface-ui: #1e2521;
+  --color-surface-deepest: #080f0c;
+
+  /* ── Text (on light bg) ── */
+  --color-text-forest: #1e2521; /* 7.9:1 on parchment — AAA */
+  --color-text-muted-light: #5a6b5e;
+
+  /* ── Text (on dark bg) ── */
+  --color-text-cream: #ede8da; /* 12.6:1 on forest — AAA */
+  --color-text-muted-dark: #8aad91;
+
+  /* ── Accent ── */
+  --color-accent-gold: #c8943c;
+  --color-accent-gold-light: #e8ba60;
+
+  /* ── Bubbles (brand-locked) ── */
+  --color-bubble-claude: #d97757;
+  --color-bubble-codex: #10a37f;
+
+  /* ── Shadows (hard-offset, zero-blur — pixel game feel) ── */
+  --shadow-pixel-sm: 2px 2px 0 rgb(0 0 0 / 30%);
+  --shadow-pixel: 3px 3px 0 rgb(0 0 0 / 30%);
+  --shadow-pixel-lg: 4px 4px 0 rgb(0 0 0 / 30%);
+  --shadow-pixel-leaf: 3px 3px 0 #3a7d44;
+  --shadow-pixel-gold: 3px 3px 0 #c8943c;
+  /* Soft shadows for elevated cards */
+  --shadow-card: 0 2px 8px 0 rgb(30 37 33 / 12%), 0 1px 2px 0 rgb(30 37 33 / 8%);
+  --shadow-float: 0 8px 24px 0 rgb(30 37 33 / 18%);
+
+  /* ── Fonts ── */
+  --font-brand: "Press Start 2P", monospace; /* brand wordmark + counters ONLY */
+  --font-pixel: "Silkscreen", monospace; /* UI labels, headings, captions  */
+  --font-body: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+
+  /* ── Text sizes (8px grid), format: size / line-height ── */
+  --text-brand: 2.5rem / 1.2; /* 40px — Press Start 2P brand wordmark */
+  --text-display: 2rem / 1.25; /* 32px — Silkscreen section titles      */
+  --text-h1: 1.5rem / 1.3; /* 24px — Silkscreen subheadings         */
+  --text-h2: 1.125rem / 1.4; /* 18px — Noto Sans SC 700               */
+  --text-body: 0.9375rem / 1.7; /* 15px — Noto Sans SC 400               */
+  --text-small: 0.8125rem / 1.6; /* 13px — Noto Sans SC 400               */
+  --text-caption: 0.6875rem / 1.4; /* 11px — Silkscreen                     */
+  --text-counter: 1.25rem / 1.2; /* 20px — Press Start 2P numeric         */
+
+  /* ── Radius ── */
+  --radius-pixel: 2px; /* maximum for game-UI elements */
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EXTRA CSS CUSTOM PROPERTIES
+   Values that are not valid @theme tokens (shorthands, rgba
+   glows, the --border-pixel shorthand, parallax factor, etc.)
+───────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Border shorthand — use as: border: var(--border-pixel) */
+  --border-pixel: 2px solid #1e2521;
+
+  /* Glow variants (rgba) — used in box-shadow / filter */
+  --color-accent-gold-glow: rgb(200 148 60 / 40%);
+  --color-bubble-claude-glow: rgb(217 119 87 / 35%);
+  --color-bubble-codex-glow: rgb(16 163 127 / 35%);
+
+  /* Scroll position updated by JS for parallax */
+  --scroll-y: 0px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BASE STYLES
+───────────────────────────────────────────────────────────── */
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-text-forest);
+  background-color: var(--color-surface-parchment);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GRADIENT BACKGROUNDS
+───────────────────────────────────────────────────────────── */
+.bg-day-sky {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-sky-day-top) 0%,
+    var(--color-sky-day-mid) 50%,
+    var(--color-sky-day-horizon) 100%
+  );
+}
+
+.bg-night-sky {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-sky-night-top) 0%,
+    var(--color-sky-night-mid) 50%,
+    var(--color-sky-night-horizon) 100%
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PIXEL RENDERING HELPER
+   Apply to all sprite <img> elements.
+───────────────────────────────────────────────────────────── */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FILM GRAIN OVERLAY  (static — never animated)
+   Usage: <div class="grain-overlay" aria-hidden="true" />
+───────────────────────────────────────────────────────────── */
+.grain-overlay {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ANIMATIONS — all keyframes referenced by utility classes
+   and individual components.
+───────────────────────────────────────────────────────────── */
+
+/* Tree breathe (idle): scale from base, very subtle */
+@keyframes tree-breathe {
+  from {
+    transform: scaleX(1) scaleY(1);
+  }
+  to {
+    transform: scaleX(1.006) scaleY(1.014);
+  }
+}
+
+.animate-tree-breathe {
+  animation: tree-breathe 4.5s ease-in-out infinite alternate;
+  transform-origin: bottom center;
+}
+
+/* Bubble float — VERTICAL component */
+@keyframes bubble-float-y {
+  0% {
+    transform: translateY(0);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translateY(-105px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-140px);
+    opacity: 0;
+  }
+}
+
+/* Bubble float — LATERAL drift (apply one of these per bubble) */
+@keyframes bubble-drift-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(14px);
+  }
+}
+
+@keyframes bubble-drift-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-14px);
+  }
+}
+
+/* Bubble collect — phase 1: expand overshoot */
+@keyframes bubble-collect-expand {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.35);
+  }
+}
+
+/* Bubble collect — phase 2: shrink to nothing */
+@keyframes bubble-collect-shrink {
+  from {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Bubble collect — combined pop + shrink (0–220ms, single animation) */
+@keyframes bubble-collect-full {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  55% {
+    transform: scale(1.35);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Confetti pixel squares (4 cardinal directions) */
+@keyframes confetti-up {
+  to {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+}
+@keyframes confetti-down {
+  to {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+@keyframes confetti-left {
+  to {
+    transform: translateX(-16px);
+    opacity: 0;
+  }
+}
+@keyframes confetti-right {
+  to {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+}
+
+/* +NNN float label after collect */
+@keyframes float-label {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-28px);
+    opacity: 0;
+  }
+}
+
+/* Sparkle (6-point star spans near tree canopy) */
+@keyframes sparkle-pulse {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.8) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(15deg);
+  }
+}
+
+.sparkle {
+  animation: sparkle-pulse 2s ease-in-out infinite;
+}
+
+/* Tree grow-shake (precedes stage crossfade) */
+@keyframes grow-shake {
+  0% {
+    transform: rotate(0deg);
+  }
+  33% {
+    transform: rotate(-2deg);
+  }
+  66% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-grow-shake {
+  animation: grow-shake 150ms ease-in-out;
+}
+
+/* SVG timeline spine draw-on */
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Leaderboard row slide-in from right */
+@keyframes row-slide-in {
+  from {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Decoration sprite enter (bounce overshoot) */
+@keyframes decoration-enter {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Decoration sprite exit */
+@keyframes decoration-exit {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Terminal blinking cursor ▌ */
+@keyframes cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s steps(1) infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PREFERS-REDUCED-MOTION
+   Broad kill-switch first; specific visibility overrides second.
+───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Sparkle elements: hide entirely per spec */
+  .sparkle {
+    display: none !important;
+  }
+
+  /* Zero out parallax factors so calc() resolves to 0 */
+  :root {
+    --scroll-y: 0px !important;
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "import-notation": null,
+    "font-family-name-quotes": null,
+    "at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "tailwind",
+          "apply",
+          "layer",
+          "config",
+          "theme",
+          "variant",
+          "custom-variant",
+          "utility",
+          "source",
+          "plugin",
+          "reference"
+        ]
+      }
+    ]
+  },
+  "ignoreFiles": ["**/node_modules/**", ".next/**", "out/**"]
+}

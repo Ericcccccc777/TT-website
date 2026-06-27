@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Env / secrets — never commit real values, only *.example
+.env
+.env.*
+*.env
+!.env.example
+!.env.local.example
+
+# Deploy
+.vercel
+.netlify
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Local dev tooling — not part of the published site
+.harness/
+.claude/
+.claude-plugin/
+.codex/
+docs-harness/
+constitution.md
+CLAUDE.md
+AGENTS.md
+CCC_MAGI_README.md
+CCC_MAGI_LICENSE
