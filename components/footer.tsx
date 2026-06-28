@@ -101,7 +101,7 @@ export async function Footer() {
         </div>
 
         {/* ── Bottom row: copyright ── */}
-        <div className="mt-8 border-t pt-6" style={{ borderTopColor: "var(--color-soil)/40" }}>
+        <div className="mt-8 border-t border-soil/40 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
             <p className="font-body text-small text-[var(--color-text-muted-dark)]">
               {t("copyright", { year: CURRENT_YEAR })}

@@ -93,12 +93,15 @@
     "treeAlt": "성장 단계 {stage} / 8",
     "skinStripAriaLabel": "스킨 선택",
     "decorationGroupAriaLabel": "장식 토글",
-    "caption": "단계 점을 클릭해 성장 전환 · 버튼으로 장식 토글",
+    "caption": "단계 버튼으로 성장 전환 · 장식 토글 · 보물 상자 클릭해서 열기",
     "comingSoon": "출시 예정",
     "skinApple": "사과나무",
     "decoFence": "울타리",
     "decoBasket": "바구니",
-    "decoChest": "보물 상자"
+    "decoChest": "보물 상자",
+    "chestTeaserShop": "출시 예정：과일 상점",
+    "openChest": "보물 상자 열기",
+    "closeChest": "보물 상자 닫기"
   },
   "Roadmap": {
     "heading": "로드맵",

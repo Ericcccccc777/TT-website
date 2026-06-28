@@ -67,8 +67,13 @@ function LocaleSwitcher() {
         value={locale}
         onChange={handleChange}
         aria-label={t("ariaLabel")}
-        className="cursor-pointer appearance-none rounded-[2px] border border-[var(--color-soil)] bg-surface-ui py-1 pl-2 pr-6 text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:border-leaf-light hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
-        style={{ fontFamily: "var(--font-pixel)", fontSize: "0.6rem" }}
+        className="cursor-pointer appearance-none rounded-[2px] border border-[var(--color-soil)] bg-surface-ui py-1.5 pl-2 pr-7 text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:border-leaf-light hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
+        style={{
+          fontFamily: "var(--font-pixel)",
+          fontSize: "0.6875rem" /* --text-caption */,
+          minHeight: "2rem" /* ≥ 32px; in the 56px header this is fine */,
+          lineHeight: 1.4,
+        }}
       >
         {routing.locales.map((loc) => (
           <option key={loc} value={loc}>
@@ -78,8 +83,8 @@ function LocaleSwitcher() {
       </select>
       {/* Custom caret */}
       <span
-        className="pointer-events-none absolute right-1.5 text-[var(--color-text-muted-dark)]"
-        style={{ fontSize: "0.5rem" }}
+        className="pointer-events-none absolute right-2 text-[var(--color-text-muted-dark)]"
+        style={{ fontSize: "0.55rem", pointerEvents: "none" }}
         aria-hidden
       >
         ▾
@@ -178,7 +183,7 @@ export function TopBar() {
           {/* Mobile: compact download */}
           <Link
             href="/download"
-            className="rounded-pixel bg-leaf-deep px-2.5 py-1.5 font-pixel text-caption text-[var(--color-text-cream)] shadow-pixel transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none md:hidden"
+            className="inline-flex min-h-[36px] items-center rounded-pixel bg-leaf-deep px-3 py-1.5 font-pixel text-caption text-[var(--color-text-cream)] shadow-pixel transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none md:hidden"
             aria-label={t("downloadLabel")}
           >
             {t("downloadLabel")}
@@ -190,7 +195,7 @@ export function TopBar() {
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
-            className="rounded-pixel p-1.5 text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light md:hidden"
+            className="flex h-11 w-11 items-center justify-center rounded-pixel text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light md:hidden"
           >
             <HamburgerIcon open={menuOpen} />
           </button>
@@ -203,14 +208,14 @@ export function TopBar() {
           id="mobile-menu"
           className="border-t border-[var(--color-soil)]/40 bg-surface-ui px-4 pb-4 pt-2 md:hidden"
         >
-          <nav className="flex flex-col gap-1" aria-label={t("mobileNavAriaLabel")}>
+          <nav className="flex flex-col gap-0.5" aria-label={t("mobileNavAriaLabel")}>
             {NAV_LINKS.map(({ label, href }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMenuOpen(false)}
                 className={[
-                  "rounded-pixel px-3 py-2 font-body text-small transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light",
+                  "flex min-h-[44px] items-center rounded-pixel px-3 font-body text-small transition-colors duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light",
                   isActive(href)
                     ? "bg-leaf-deep/20 text-leaf-light"
                     : "text-[var(--color-text-muted-dark)] hover:text-leaf-light",
@@ -224,7 +229,7 @@ export function TopBar() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-2 rounded-pixel px-3 py-2 font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
+              className="flex min-h-[44px] items-center gap-2 rounded-pixel px-3 font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
             >
               <GitHubIcon className="h-4 w-4" />
               GitHub

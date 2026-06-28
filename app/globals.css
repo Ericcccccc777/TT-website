@@ -381,6 +381,48 @@ body {
   animation: cursor-blink 1s steps(1) infinite;
 }
 
+/* Chest speech-bubble pop-in */
+@keyframes chest-bubble-in {
+  0% {
+    transform: scale(0.6) translateY(6px);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.06) translateY(-1px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE RESPONSIVE — prevent horizontal overflow at 360-430 px
+   Pixel headings use Silkscreen which is Latin-only; CJK falls
+   back to system monospace. Both wrap naturally with break-word.
+───────────────────────────────────────────────────────────── */
+
+/* Prevent any section from causing horizontal scrollbars */
+section,
+header,
+footer {
+  overflow-x: clip;
+}
+
+/* Pixel-font headings: wrap gracefully on narrow viewports */
+[style*="--font-pixel"],
+[style*="font-pixel"] {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Ensure the overall page never scroll-x */
+html,
+body {
+  overflow-x: hidden;
+}
+
 /* ─────────────────────────────────────────────────────────────
    PREFERS-REDUCED-MOTION
    Broad kill-switch first; specific visibility overrides second.

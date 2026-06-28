@@ -27,7 +27,12 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
               fontFamily: "var(--font-pixel)",
               fontSize: "var(--text-display)",
               lineHeight: 1.25,
-              textShadow: "var(--shadow-pixel-leaf)",
+              /* shadow-pixel-leaf is the same green as the text, causing a
+                 doubled / garbled look on the sky background. Use a dark
+                 drop shadow instead for a clean pixel pop. */
+              textShadow: "2px 2px 0 rgba(0,0,0,0.22)",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
             {t("heroHeading")}

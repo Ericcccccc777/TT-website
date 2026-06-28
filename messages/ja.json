@@ -93,12 +93,15 @@
     "treeAlt": "成長ステージ {stage} / 8",
     "skinStripAriaLabel": "スキン選択",
     "decorationGroupAriaLabel": "デコレーション切替",
-    "caption": "ステージドットで成長を切替 · ボタンでデコレーションを切替",
+    "caption": "ステージボタンで成長を切替 · デコレーションを切替 · 宝箱をクリックして開く",
     "comingSoon": "近日公開",
     "skinApple": "アップルツリー",
     "decoFence": "フェンス",
     "decoBasket": "バスケット",
-    "decoChest": "宝箱"
+    "decoChest": "宝箱",
+    "chestTeaserShop": "近日公開：フルーツショップ",
+    "openChest": "宝箱を開ける",
+    "closeChest": "宝箱を閉じる"
   },
   "Roadmap": {
     "heading": "ロードマップ",

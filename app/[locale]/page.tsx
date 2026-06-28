@@ -254,7 +254,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           >
             {tf("heading")}
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             {FEATURES.map((f) => (
               <FeatureCard
                 key={f.title}
@@ -289,6 +289,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               fontFamily: "var(--font-pixel)",
               fontSize: "var(--text-display)",
               lineHeight: 1.25,
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
             }}
           >
             {tlt("heading")}
@@ -646,8 +648,22 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 color: "var(--color-text-forest)",
               }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <rect
+                  x="2"
+                  y="3"
+                  width="20"
+                  height="15"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M7 8l3 3-3 3M13 14h4"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="square"
+                />
               </svg>
               macOS / Linux
             </Link>

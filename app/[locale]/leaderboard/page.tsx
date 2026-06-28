@@ -119,141 +119,155 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
 
         {/* Leaderboard table */}
         {entries.length > 0 && (
-          <div className="overflow-hidden rounded-[2px]" style={{ border: "var(--border-pixel)" }}>
-            <table className="w-full border-collapse">
-              <colgroup>
-                <col style={{ width: "3rem" }} />
-                <col />
-                <col />
-                <col />
-              </colgroup>
-              <thead>
-                <tr
-                  className="bg-leaf-deep"
-                  style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                >
-                  <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                    {t("rankHeader")}
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                    {t("usernameHeader")}
-                  </th>
-                  <th
-                    scope="col"
-                    className="hidden px-4 py-2 text-right text-text-cream sm:table-cell"
+          <div className="overflow-x-auto">
+            <div
+              className="overflow-hidden rounded-[2px]"
+              style={{ border: "var(--border-pixel)" }}
+            >
+              <table className="w-full border-collapse">
+                <colgroup>
+                  <col style={{ width: "3rem" }} />
+                  <col />
+                  <col />
+                  <col />
+                </colgroup>
+                <thead>
+                  <tr
+                    className="bg-leaf-deep"
+                    style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
                   >
-                    {t("tokensHeader")}
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-right text-text-cream">
-                    {t("updatedHeader")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry, i) => {
-                  const rank = i + 1;
-                  const medalColor = MEDAL[rank];
-                  const stage = spriteStage(entry.stage_index);
-                  const animDelay = `${i * 60}ms`;
-                  return (
-                    <tr
-                      key={entry.id}
-                      className="border-t border-leaf-deep/20 bg-surface-card/60 backdrop-blur-sm"
-                      style={{
-                        animation: `row-slide-in 320ms ease both`,
-                        animationDelay: animDelay,
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-body)",
-                      }}
+                    <th scope="col" className="px-4 py-2 text-left text-text-cream">
+                      {t("rankHeader")}
+                    </th>
+                    <th scope="col" className="px-4 py-2 text-left text-text-cream">
+                      {t("usernameHeader")}
+                    </th>
+                    <th
+                      scope="col"
+                      className="hidden px-4 py-2 text-right text-text-cream sm:table-cell"
                     >
-                      <td
-                        className="px-4 py-3 font-bold leading-none"
+                      {t("tokensHeader")}
+                    </th>
+                    <th scope="col" className="px-4 py-2 text-right text-text-cream">
+                      {t("updatedHeader")}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map((entry, i) => {
+                    const rank = i + 1;
+                    const medalColor = MEDAL[rank];
+                    const stage = spriteStage(entry.stage_index);
+                    const animDelay = `${i * 60}ms`;
+                    return (
+                      <tr
+                        key={entry.id}
+                        className="border-t border-leaf-deep/20 bg-surface-card/60 backdrop-blur-sm"
                         style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: medalColor ?? "var(--color-text-muted-light)",
+                          animation: `row-slide-in 320ms ease both`,
+                          animationDelay: animDelay,
+                          fontFamily: "var(--font-body)",
+                          fontSize: "var(--text-body)",
                         }}
                       >
-                        {rank <= 3 ? `0${rank}` : rank}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <Image
-                            src={`/sprites/AppleTree_${stage}.png`}
-                            alt={`stage ${stage}`}
-                            width={24}
-                            height={24}
-                            className="pixelated shrink-0"
-                          />
-                          <span className="truncate text-text-forest">{entry.username}</span>
-                        </div>
-                      </td>
-                      <td
-                        className="hidden px-4 py-3 text-right text-accent-gold sm:table-cell"
-                        style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                      >
-                        {formatTokens(entry.score, locale)}
-                      </td>
-                      <td
-                        className="whitespace-nowrap px-4 py-3 text-right text-text-muted-light"
-                        style={{ fontSize: "var(--text-small)" }}
-                      >
-                        {relativeTime(entry.updated_at, t)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        <td
+                          className="px-4 py-3 font-bold leading-none"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                            color: medalColor ?? "var(--color-text-muted-light)",
+                          }}
+                        >
+                          {rank <= 3 ? `0${rank}` : rank}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <Image
+                              src={`/sprites/AppleTree_${stage}.png`}
+                              alt={`stage ${stage}`}
+                              width={24}
+                              height={24}
+                              className="pixelated shrink-0"
+                            />
+                            <span className="truncate text-text-forest">{entry.username}</span>
+                          </div>
+                        </td>
+                        <td
+                          className="hidden px-4 py-3 text-right text-accent-gold sm:table-cell"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                          }}
+                        >
+                          {formatTokens(entry.score, locale)}
+                        </td>
+                        <td
+                          className="whitespace-nowrap px-4 py-3 text-right text-text-muted-light"
+                          style={{ fontSize: "var(--text-small)" }}
+                        >
+                          {relativeTime(entry.updated_at, t)}
+                        </td>
+                      </tr>
+                    );
+                  })}
 
-                {/* Blurred YOUR TREE placeholder row */}
-                <tr className="border-t border-leaf-deep/20 bg-surface-card/60">
-                  <td colSpan={4} className="relative overflow-hidden p-0">
-                    <div
-                      className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-x-4 px-4 py-3"
-                      style={{
-                        filter: "blur(4px)",
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-body)",
-                      }}
-                    >
-                      <span
-                        className="text-text-muted-light"
-                        style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                      >
-                        {entries.length + 1}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-[2px] bg-leaf-deep/15" />
-                        <span className="text-text-forest">YOUR TREE</span>
-                      </div>
-                      <span
-                        className="hidden text-right text-accent-gold sm:block"
-                        style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                      >
-                        0
-                      </span>
-                      <span
-                        className="text-right text-text-muted-light"
-                        style={{ fontSize: "var(--text-small)" }}
-                      >
-                        —
-                      </span>
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span
-                        className="rounded-[2px] bg-surface-forest px-3 py-1 text-accent-gold"
+                  {/* Blurred YOUR TREE placeholder row */}
+                  <tr className="border-t border-leaf-deep/20 bg-surface-card/60">
+                    <td colSpan={4} className="relative overflow-hidden p-0">
+                      <div
+                        className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-x-4 px-4 py-3"
                         style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          border: "2px solid var(--color-accent-gold)",
+                          filter: "blur(4px)",
+                          fontFamily: "var(--font-body)",
+                          fontSize: "var(--text-body)",
                         }}
                       >
-                        {t("comingSoon")}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                        <span
+                          className="text-text-muted-light"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                          }}
+                        >
+                          {entries.length + 1}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-[2px] bg-leaf-deep/15" />
+                          <span className="text-text-forest">YOUR TREE</span>
+                        </div>
+                        <span
+                          className="hidden text-right text-accent-gold sm:block"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                          }}
+                        >
+                          0
+                        </span>
+                        <span
+                          className="text-right text-text-muted-light"
+                          style={{ fontSize: "var(--text-small)" }}
+                        >
+                          —
+                        </span>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span
+                          className="rounded-[2px] bg-surface-forest px-3 py-1 text-accent-gold"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                            border: "2px solid var(--color-accent-gold)",
+                          }}
+                        >
+                          {t("comingSoon")}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

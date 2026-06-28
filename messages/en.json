@@ -93,12 +93,15 @@
     "treeAlt": "Growth stage {stage} / 8",
     "skinStripAriaLabel": "Skin selection",
     "decorationGroupAriaLabel": "Decoration toggles",
-    "caption": "Click stage dots to switch growth · Toggle buttons for decorations",
+    "caption": "Click stage buttons to change growth · Toggle decorations · Click chest to open",
     "comingSoon": "Coming Soon",
     "skinApple": "Apple Tree",
     "decoFence": "Fence",
     "decoBasket": "Basket",
-    "decoChest": "Chest"
+    "decoChest": "Chest",
+    "chestTeaserShop": "Coming soon: Fruit Shop",
+    "openChest": "Open chest",
+    "closeChest": "Close chest"
   },
   "Roadmap": {
     "heading": "Roadmap",

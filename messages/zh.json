@@ -93,12 +93,15 @@
     "treeAlt": "成长阶段 {stage} / 8",
     "skinStripAriaLabel": "皮肤选择",
     "decorationGroupAriaLabel": "装饰开关",
-    "caption": "点击阶段点切换成长状态 · 按钮切换装饰",
+    "caption": "点击阶段按钮切换成长状态 · 按钮切换装饰 · 点击宝箱开合",
     "comingSoon": "即将推出",
     "skinApple": "苹果树",
     "decoFence": "围栏",
     "decoBasket": "篮筐",
-    "decoChest": "宝箱"
+    "decoChest": "宝箱",
+    "chestTeaserShop": "即将推出：果子商店",
+    "openChest": "打开宝箱",
+    "closeChest": "关闭宝箱"
   },
   "Roadmap": {
     "heading": "路线图",
