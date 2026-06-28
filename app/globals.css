@@ -446,4 +446,74 @@ body {
   :root {
     --scroll-y: 0px !important;
   }
+
+  /* Kill scroll-driven reveal — keep content visible */
+  .reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Kill ambient star drift */
+  .star-ambient {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLL-DRIVEN REVEAL ANIMATIONS
+   Uses animation-timeline: view() — progressively enhanced.
+   Unsupported browsers: opacity: 1 base ensures content is
+   always visible. Only enhanced in browsers that support
+   scroll-driven animations.
+───────────────────────────────────────────────────────────── */
+@keyframes reveal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Base: always visible (unsupported-browser fallback) */
+.reveal {
+  opacity: 1;
+}
+
+/* Enhanced: scroll-driven reveal when supported */
+@supports (animation-timeline: view()) {
+  .reveal {
+    opacity: 0;
+    animation: reveal-rise both linear;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LIGHT AMBIENT PARALLAX — star layer in roadmap night-sky
+   Subtle translateY drift tied to page scroll position.
+   Guarded by @supports; killed by reduced-motion above.
+───────────────────────────────────────────────────────────── */
+@keyframes star-drift {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-18px);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .star-ambient {
+    animation: star-drift both linear;
+    animation-timeline: scroll();
+    animation-range: 0% 100%;
+    will-change: transform;
+  }
 }

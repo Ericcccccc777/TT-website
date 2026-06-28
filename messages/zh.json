@@ -83,8 +83,8 @@
     "seasonsBody": "按系统时间自动切换白天 / 黄昏 / 夜晚配色，按月份切换春夏秋冬——落叶、积雪、开花。",
     "seasonsBadge": "规划中",
     "lbTitle": "全球排行榜",
-    "lbBody": "可选参与：仅上传 token 总量与用户名，跟全球用户比比谁的树长得最茂盛。",
-    "lbBadge": "即将推出"
+    "lbBody": "现在就能参与:在桌面 App 设置里一键开启,仅上传 token 总量与昵称,和全球玩家比谁的树最茂盛。",
+    "lbBadge": "现已上线"
   },
   "TreeShowcase": {
     "heading": "试试你的树",
@@ -104,24 +104,18 @@
     "closeChest": "关闭宝箱"
   },
   "Roadmap": {
-    "heading": "路线图",
-    "statusDone": "完成 ✦",
-    "statusSoon": "即将推出",
-    "statusPlanned": "规划中",
-    "m0Label": "M0 — 读取器",
-    "m0Desc": "增量实时读取 Claude Code 与 Codex 的 token 用量，uuid 去重，精确累加。",
-    "m1Label": "M1 — 成长垂直切片",
-    "m1Desc": "像素树随 token 自动成长，8 阶段，状态持久化，气泡点击动画全套开发工具。",
-    "m2Label": "M2 — 果子与收集",
-    "m2Desc": "树成熟后按 token + 时间产出果子，点击收获，果子计数器，持久化。",
-    "m3Label": "M3 — 商店与装扮",
-    "m3Desc": "用果子购买装扮（花盆、灯串、帽子、背景、围栏…），已拥有 / 已装备状态持久化。",
-    "m4Label": "M4 — 季节与昼夜",
-    "m4Desc": "按系统时间切换白天 / 黄昏 / 夜晚，按月份切换春夏秋冬主题。",
-    "m5Label": "M5 — 真美术与打磨",
-    "m5Desc": "帧动画（摇摆、结果、收获），可选音效，完整像素美术替换占位图。",
-    "m6Label": "M6 — 分发",
-    "m6Desc": "PyInstaller 单文件 exe 打包，可选开机自启，跨平台验证（Mac / Linux）。"
+    "heading": "树的未来",
+    "intro": "你的树现在就随 token 自动生长 —— 接下来还会陆续解锁:",
+    "soon": "即将推出",
+    "f1Label": "结果子 & 收获",
+    "f1Desc": "树长大后会结出果实,点一下就能收下来。",
+    "f2Label": "果子商店 & 装扮",
+    "f2Desc": "用收获的果子给你的树买花盆、灯串、帽子、围栏……",
+    "f3Label": "昼夜 & 季节",
+    "f3Desc": "树会随真实时间和季节变换:白天 / 黄昏 / 夜晚,春夏秋冬。",
+    "f4Label": "更多美术 & 惊喜",
+    "f4Desc": "帧动画、音效、更多皮肤,持续打磨中。",
+    "fullRoadmap": "查看完整开发路线图 →"
   },
   "LeaderboardTeaser": {
     "heading": "比比谁的 token 树最大",
@@ -133,7 +127,7 @@
     "rankHeader": "#",
     "usernameHeader": "用户名",
     "tokensHeader": "Tokens",
-    "comingSoon": "即将推出",
+    "comingSoon": "现已上线",
     "viewAll": "查看完整排行榜"
   },
   "DownloadCta": {

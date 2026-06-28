@@ -1,3 +1,4 @@
+import React from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -90,6 +91,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     bullets?: string[];
     accentColor: "leaf" | "soil";
     badge?: string;
+    badgeTone?: "soon" | "live";
   }> = [
     {
       title: tf("realtimeTitle"),
@@ -112,28 +114,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       accentColor: "soil",
     },
     {
-      title: tf("fruitsTitle"),
-      body: tf("fruitsBody"),
-      accentColor: "leaf",
-      badge: tf("fruitsBadge"),
-    },
-    {
-      title: tf("shopTitle"),
-      body: tf("shopBody"),
-      accentColor: "soil",
-      badge: tf("shopBadge"),
-    },
-    {
-      title: tf("seasonsTitle"),
-      body: tf("seasonsBody"),
-      accentColor: "leaf",
-      badge: tf("seasonsBadge"),
-    },
-    {
       title: tf("lbTitle"),
       body: tf("lbBody"),
       accentColor: "soil",
       badge: tf("lbBadge"),
+      badgeTone: "live",
     },
   ];
 
@@ -163,7 +148,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="mx-auto max-w-5xl px-6">
           <h2
             id="how-heading"
-            className="mb-12 text-center text-leaf-deep"
+            className="reveal mb-12 text-center text-leaf-deep"
             style={{
               fontFamily: "var(--font-pixel)",
               fontSize: "var(--text-display)",
@@ -177,7 +162,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {HOW_STEPS.map((step, i) => (
               <div
                 key={step.num}
-                className="flex flex-col items-center text-center sm:items-start sm:text-left"
+                className="reveal flex flex-col items-center text-center sm:items-start sm:text-left"
+                style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
               >
                 <div className="mb-4 flex items-center gap-3">
                   <span
@@ -224,7 +210,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
 
           {/* Privacy note */}
-          <div className="mx-auto mt-14 max-w-2xl rounded-[2px] border-2 border-leaf-deep/30 bg-surface-card px-6 py-4 text-center">
+          <div className="reveal mx-auto mt-14 max-w-2xl rounded-[2px] border-2 border-leaf-deep/30 bg-surface-card px-6 py-4 text-center">
             <p
               style={{
                 fontFamily: "var(--font-body)",
@@ -245,7 +231,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="mx-auto max-w-5xl px-6">
           <h2
             id="features-heading"
-            className="mb-10 text-center text-leaf-light"
+            className="reveal mb-10 text-center text-leaf-light"
             style={{
               fontFamily: "var(--font-pixel)",
               fontSize: "var(--text-display)",
@@ -255,15 +241,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {tf("heading")}
           </h2>
           <div className="grid gap-5 sm:grid-cols-2">
-            {FEATURES.map((f) => (
-              <FeatureCard
+            {FEATURES.map((f, i) => (
+              <div
                 key={f.title}
-                title={f.title}
-                body={f.body}
-                bullets={f.bullets}
-                accentColor={f.accentColor}
-                badge={f.badge}
-              />
+                style={{ "--reveal-delay": `${(i % 2) * 80}ms` } as React.CSSProperties}
+              >
+                <FeatureCard
+                  title={f.title}
+                  body={f.body}
+                  bullets={f.bullets}
+                  accentColor={f.accentColor}
+                  badge={f.badge}
+                  badgeTone={f.badgeTone}
+                  className="reveal"
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -284,7 +276,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="mx-auto max-w-3xl px-6">
           <h2
             id="lb-heading"
-            className="mb-3 text-center text-leaf-light"
+            className="reveal mb-3 text-center text-leaf-light"
             style={{
               fontFamily: "var(--font-pixel)",
               fontSize: "var(--text-display)",
@@ -296,18 +288,24 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {tlt("heading")}
           </h2>
           <p
-            className="mb-10 text-center"
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-body)",
-              color: "var(--color-text-muted-dark)",
-            }}
+            className="reveal mb-10 text-center"
+            style={
+              {
+                "--reveal-delay": "80ms",
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-body)",
+                color: "var(--color-text-muted-dark)",
+              } as React.CSSProperties
+            }
           >
             {tlt("body")}
           </p>
 
           {/* Global stats chips */}
-          <div className="mb-8 flex flex-wrap justify-center gap-8">
+          <div
+            className="reveal mb-8 flex flex-wrap justify-center gap-8"
+            style={{ "--reveal-delay": "160ms" } as React.CSSProperties}
+          >
             <div className="flex flex-col items-center gap-1">
               <span
                 style={{
@@ -374,7 +372,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
 
           {/* Mock leaderboard table */}
-          <div className="overflow-hidden rounded-[2px]" style={{ border: "var(--border-pixel)" }}>
+          <div
+            className="reveal overflow-hidden rounded-[2px]"
+            style={
+              { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
+            }
+          >
             <table className="w-full border-collapse">
               <colgroup>
                 <col style={{ width: "2.5rem" }} />
@@ -509,9 +512,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                         style={{
                           fontFamily: "var(--font-pixel)",
                           fontSize: "var(--text-caption)",
-                          color: "var(--color-accent-gold)",
+                          color: "var(--color-leaf-light)",
                           background: "var(--color-surface-panel)",
-                          border: "2px solid var(--color-accent-gold)",
+                          border: "2px solid var(--color-leaf-light)",
                           borderRadius: "var(--radius-pixel)",
                         }}
                       >
@@ -525,7 +528,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
 
           {/* CTA */}
-          <div className="mt-8 flex justify-center">
+          <div className="reveal mt-8 flex justify-center">
             <Link
               href="/leaderboard"
               className="inline-flex items-center gap-2 rounded-[2px] px-6 py-3 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
@@ -556,7 +559,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           />
           <h2
             id="dl-heading"
-            className="mb-4 text-leaf-deep"
+            className="reveal mb-4 text-leaf-deep"
             style={{
               fontFamily: "var(--font-pixel)",
               fontSize: "var(--text-display)",
@@ -566,24 +569,30 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {tdl("heading")}
           </h2>
           <p
-            className="mx-auto mb-8 max-w-md"
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "var(--text-body)",
-              color: "var(--color-text-muted-light)",
-              lineHeight: 1.7,
-            }}
+            className="reveal mx-auto mb-8 max-w-md"
+            style={
+              {
+                "--reveal-delay": "80ms",
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-body)",
+                color: "var(--color-text-muted-light)",
+                lineHeight: 1.7,
+              } as React.CSSProperties
+            }
           >
             {tdl("body")}
           </p>
 
           {/* Terminal block */}
           <div
-            className="mx-auto mb-8 flex max-w-sm items-center gap-3 rounded-[2px] px-4 py-3"
-            style={{
-              background: "var(--color-surface-deepest)",
-              border: "2px solid var(--color-leaf-deep)",
-            }}
+            className="reveal mx-auto mb-8 flex max-w-sm items-center gap-3 rounded-[2px] px-4 py-3"
+            style={
+              {
+                "--reveal-delay": "160ms",
+                background: "var(--color-surface-deepest)",
+                border: "2px solid var(--color-leaf-deep)",
+              } as React.CSSProperties
+            }
           >
             <span
               style={{
@@ -619,7 +628,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
 
           {/* OS buttons */}
-          <div className="flex flex-wrap justify-center gap-4">
+          <div
+            className="reveal flex flex-wrap justify-center gap-4"
+            style={{ "--reveal-delay": "240ms" } as React.CSSProperties}
+          >
             <Link
               href="/download"
               className="inline-flex items-center gap-2.5 rounded-[2px] px-6 py-3 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"

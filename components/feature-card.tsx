@@ -7,6 +7,8 @@ interface FeatureCardProps {
   bullets?: string[];
   accentColor?: "leaf" | "soil";
   badge?: string; // e.g. "规划中" or "即将推出"
+  badgeTone?: "soon" | "live"; // "live" = green (shipped); default gold (coming)
+  className?: string;
 }
 
 function LeafCheckIcon() {
@@ -36,12 +38,14 @@ export function FeatureCard({
   bullets,
   accentColor = "leaf",
   badge,
+  badgeTone = "soon",
+  className,
 }: FeatureCardProps) {
   const accent = accentColor === "soil" ? "var(--color-soil)" : "var(--color-leaf-deep)";
 
   return (
     <div
-      className="group relative flex flex-col gap-2 overflow-hidden p-5 transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg"
+      className={`group relative flex flex-col gap-2 overflow-hidden p-5 transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg${className ? ` ${className}` : ""}`}
       style={{
         background: "var(--color-surface-panel)",
         border: "2px solid var(--color-leaf-deep)",
@@ -70,8 +74,10 @@ export function FeatureCard({
             style={{
               fontFamily: "var(--font-pixel)",
               fontSize: "0.55rem",
-              color: "var(--color-accent-gold)",
-              border: "1px solid var(--color-accent-gold)",
+              color: badgeTone === "live" ? "var(--color-leaf-light)" : "var(--color-accent-gold)",
+              border: `1px solid ${
+                badgeTone === "live" ? "var(--color-leaf-light)" : "var(--color-accent-gold)"
+              }`,
               borderRadius: "var(--radius-pixel)",
               opacity: 0.85,
             }}

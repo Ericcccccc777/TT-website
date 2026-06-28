@@ -83,8 +83,8 @@
     "seasonsBody": "Auto-switches morning / dusk / night by system time, and spring / summer / autumn / winter by month — falling leaves, snow, blossoms.",
     "seasonsBadge": "Planned",
     "lbTitle": "Global Leaderboard",
-    "lbBody": "Opt-in: uploads only total token count and username — see how your tree ranks among growers worldwide.",
-    "lbBadge": "Coming Soon"
+    "lbBody": "Available now — turn it on in the desktop app settings. It only uploads your token total and a nickname, then you compare trees with players worldwide.",
+    "lbBadge": "Live now"
   },
   "TreeShowcase": {
     "heading": "Try Your Tree",
@@ -104,24 +104,18 @@
     "closeChest": "Close chest"
   },
   "Roadmap": {
-    "heading": "Roadmap",
-    "statusDone": "Done ✦",
-    "statusSoon": "Coming Soon",
-    "statusPlanned": "Planned",
-    "m0Label": "M0 — Reader",
-    "m0Desc": "Incremental real-time reading of Claude Code & Codex token usage; UUID dedup for precise accumulation.",
-    "m1Label": "M1 — Growth Vertical Slice",
-    "m1Desc": "Pixel tree auto-grows with token count, 8 stages, persisted state, bubble click animations, full dev tooling.",
-    "m2Label": "M2 — Fruits & Collection",
-    "m2Desc": "Tree produces fruit after maturity — ripened by token + time; click to harvest, fruit counter, persistence.",
-    "m3Label": "M3 — Shop & Cosmetics",
-    "m3Desc": "Spend fruit on cosmetics (pots, lights, hats, backgrounds, fences…); owned / equipped state persisted.",
-    "m4Label": "M4 — Seasons & Day/Night",
-    "m4Desc": "Switch day / dusk / night by system time; spring / summer / autumn / winter themes by month.",
-    "m5Label": "M5 — Real Art & Polish",
-    "m5Desc": "Frame animations (sway, fruit, harvest), optional SFX, full pixel art replaces placeholder sprites.",
-    "m6Label": "M6 — Distribution",
-    "m6Desc": "PyInstaller single-file exe packaging, optional startup launch, cross-platform validation (Mac / Linux)."
+    "heading": "Coming Next",
+    "intro": "Your tree already grows with every token you spend — these unlock next:",
+    "soon": "Coming soon",
+    "f1Label": "Fruit & Harvest",
+    "f1Desc": "Once your tree matures it bears fruit — click to harvest it.",
+    "f2Label": "Fruit Shop & Decor",
+    "f2Desc": "Spend harvested fruit on planters, string lights, hats, fences and more.",
+    "f3Label": "Day-Night & Seasons",
+    "f3Desc": "Your tree shifts with real time and season: day, dusk, night, spring to winter.",
+    "f4Label": "More Art & Surprises",
+    "f4Desc": "Frame animations, sound, more skins — polish is ongoing.",
+    "fullRoadmap": "See the full dev roadmap →"
   },
   "LeaderboardTeaser": {
     "heading": "Whose Token Tree Is Tallest?",
@@ -133,7 +127,7 @@
     "rankHeader": "#",
     "usernameHeader": "Username",
     "tokensHeader": "Tokens",
-    "comingSoon": "Coming Soon",
+    "comingSoon": "Live now",
     "viewAll": "View Full Leaderboard"
   },
   "DownloadCta": {
