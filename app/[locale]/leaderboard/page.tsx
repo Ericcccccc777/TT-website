@@ -1,8 +1,20 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  const title = t("leaderboardTitle");
+  return { title, openGraph: { title }, twitter: { title } };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -97,10 +109,11 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
           <div className="py-20 text-center">
             <Image
               src="/sprites/AppleTree_1.png"
-              alt="seedling"
+              alt=""
               width={64}
               height={64}
               className="pixelated mx-auto mb-4 opacity-60"
+              aria-hidden
             />
             <p
               className="text-text-muted-light"
@@ -184,10 +197,11 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                           <div className="flex min-w-0 items-center gap-2">
                             <Image
                               src={`/sprites/AppleTree_${stage}.png`}
-                              alt={`stage ${stage}`}
+                              alt=""
                               width={24}
                               height={24}
                               className="pixelated shrink-0"
+                              aria-hidden
                             />
                             <span className="truncate text-text-forest">{entry.username}</span>
                           </div>

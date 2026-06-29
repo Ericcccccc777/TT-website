@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 const GITHUB_RELEASES = "https://github.com/YimingRen111/Token-Forest/releases";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Metadata" });
+  const title = t("downloadTitle");
+  return { title, openGraph: { title }, twitter: { title } };
+}
 
 export default async function DownloadPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -243,10 +255,11 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-6 py-10 text-center">
           <Image
             src="/sprites/AppleTree_1.png"
-            alt="seedling"
+            alt=""
             width={32}
             height={32}
             className="pixelated opacity-70"
+            aria-hidden
           />
           <p
             className="text-text-muted-light"

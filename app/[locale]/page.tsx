@@ -323,7 +323,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   color: "var(--color-leaf-light)",
                 }}
               >
-                {stats.totalTrees > 0 ? stats.totalTrees.toLocaleString() : "—"}
+                {stats.totalTrees > 0 ? stats.totalTrees.toLocaleString(locale) : "—"}
               </span>
               <span
                 style={{
@@ -357,7 +357,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   color: "var(--color-leaf-light)",
                 }}
               >
-                {stats.totalTokens > 0 ? stats.totalTokens.toLocaleString() : "—"}
+                {stats.totalTokens > 0 ? stats.totalTokens.toLocaleString(locale) : "—"}
               </span>
               <span
                 style={{
@@ -373,7 +373,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
           {/* Mock leaderboard table */}
           <div
-            className="reveal overflow-hidden rounded-[2px]"
+            className="reveal overflow-x-auto rounded-[2px]"
             style={
               { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
             }

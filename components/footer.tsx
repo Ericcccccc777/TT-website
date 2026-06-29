@@ -3,10 +3,10 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
 const GITHUB_URL = "https://github.com/YimingRen111/Token-Forest";
-const CURRENT_YEAR = new Date().getFullYear();
 
 export async function Footer() {
   const t = await getTranslations("Footer");
+  const currentYear = new Date().getFullYear();
 
   const PRODUCT_LINKS = [
     { label: t("download"), href: "/download" },
@@ -104,7 +104,7 @@ export async function Footer() {
         <div className="mt-8 border-t border-soil/40 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
             <p className="font-body text-small text-[var(--color-text-muted-dark)]">
-              {t("copyright", { year: CURRENT_YEAR })}
+              {t("copyright", { year: currentYear })}
             </p>
             <a
               href={GITHUB_URL}
