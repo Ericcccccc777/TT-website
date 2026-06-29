@@ -261,7 +261,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
             className="text-leaf-deep underline underline-offset-2 hover:text-accent-gold"
             style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
           >
-            github.com/YimingRen111/Token-Forest
+            GitHub
           </a>
         </div>
       </section>

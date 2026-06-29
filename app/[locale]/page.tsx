@@ -695,7 +695,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-leaf-deep"
             >
-              github.com/YimingRen111/Token-Forest
+              GitHub
             </a>{" "}
             {tdl("openSource")}
           </p>
