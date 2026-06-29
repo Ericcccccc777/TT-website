@@ -24,7 +24,7 @@ const pressStart2P = Press_Start_2P({
 
 // Silkscreen: pixel UI labels, section headings, buttons, captions.
 const silkscreen = Silkscreen({
-  weight: "400",
+  weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-pixel",
   display: "swap",

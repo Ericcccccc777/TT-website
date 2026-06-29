@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 // ── Icon components ────────────────────────────────────────────────────────
 
@@ -42,7 +44,44 @@ function HamburgerIcon({ open }: { open: boolean }) {
   );
 }
 
+// ── Language switcher icons ────────────────────────────────────────────────
+
+function GlobeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.25"
+      aria-hidden
+      className={className}
+    >
+      <circle cx="8" cy="8" r="6.25" />
+      <path d="M1.75 8h12.5M8 1.75v12.5" />
+      <path d="M8 1.75c2.2 2.4 2.2 9.85 0 12.5M8 1.75c-2.2 2.4-2.2 9.85 0 12.5" />
+    </svg>
+  );
+}
+
+function LocaleCheckIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden>
+      <path
+        d="M2.5 7.5 6 11l5.5-7"
+        stroke="var(--color-leaf-light)"
+        strokeWidth="2"
+        strokeLinecap="square"
+        strokeLinejoin="miter"
+      />
+    </svg>
+  );
+}
+
 // ── Language Switcher ──────────────────────────────────────────────────────
+// Custom themed dropdown (replaces the OS-rendered native <select>).
+// Menu-button pattern: aria-haspopup + roving-tabindex menuitemradio items,
+// full keyboard support, click-outside-to-close. Locale switch still goes
+// through next-intl's router.replace(pathname, { locale }) — path preserved.
 
 function LocaleSwitcher() {
   const t = useTranslations("LocaleSwitcher");
@@ -50,6 +89,7 @@ function LocaleSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const locales = routing.locales;
   const localeNames: Record<string, string> = {
     zh: t("zh"),
     en: t("en"),
@@ -57,17 +97,130 @@ function LocaleSwitcher() {
     ko: t("ko"),
   };
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    router.replace(pathname, { locale: e.target.value as (typeof routing.locales)[number] });
+  const activeIndex = Math.max(0, locales.indexOf(locale as (typeof locales)[number]));
+
+  const [open, setOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(activeIndex);
+  const [mounted, setMounted] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popupRef = useRef<HTMLUListElement>(null);
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // The popup is rendered through a portal (client-only).
+  useEffect(() => setMounted(true), []);
+
+  // Position the portal popup just under the trigger, right-aligned to it.
+  const updateCoords = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setCoords({ top: r.bottom + 6, right: Math.max(8, window.innerWidth - r.right) });
+  }, []);
+
+  // Keep the popup aligned to the trigger while open (scroll / resize).
+  useEffect(() => {
+    if (!open) return;
+    updateCoords();
+    window.addEventListener("scroll", updateCoords, true);
+    window.addEventListener("resize", updateCoords);
+    return () => {
+      window.removeEventListener("scroll", updateCoords, true);
+      window.removeEventListener("resize", updateCoords);
+    };
+  }, [open, updateCoords]);
+
+  // Close when clicking/tapping outside the trigger AND the (portaled) popup.
+  useEffect(() => {
+    if (!open) return;
+    function onPointerDown(event: PointerEvent) {
+      const target = event.target as Node;
+      if (containerRef.current?.contains(target)) return;
+      if (popupRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  // Move DOM focus to the focused menu item while the popup is open.
+  useEffect(() => {
+    if (open) itemRefs.current[focusedIndex]?.focus();
+  }, [open, focusedIndex]);
+
+  function openMenu(index: number) {
+    updateCoords();
+    setFocusedIndex(index);
+    setOpen(true);
+  }
+
+  function closeMenu(returnFocus = true) {
+    setOpen(false);
+    if (returnFocus) triggerRef.current?.focus();
+  }
+
+  function selectLocale(loc: (typeof locales)[number]) {
+    closeMenu();
+    if (loc !== locale) router.replace(pathname, { locale: loc });
+  }
+
+  function onTriggerKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    if (event.key === "Escape") {
+      if (open) {
+        event.preventDefault();
+        setOpen(false);
+      }
+      return;
+    }
+    if (!open && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      event.preventDefault();
+      openMenu(event.key === "ArrowDown" ? 0 : locales.length - 1);
+    }
+  }
+
+  function onItemKeyDown(event: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        setFocusedIndex((index + 1) % locales.length);
+        break;
+      case "ArrowUp":
+        event.preventDefault();
+        setFocusedIndex((index - 1 + locales.length) % locales.length);
+        break;
+      case "Home":
+        event.preventDefault();
+        setFocusedIndex(0);
+        break;
+      case "End":
+        event.preventDefault();
+        setFocusedIndex(locales.length - 1);
+        break;
+      case "Escape":
+        event.preventDefault();
+        closeMenu();
+        break;
+      case "Tab":
+        setOpen(false);
+        break;
+      default:
+        break;
+    }
   }
 
   return (
-    <div className="relative flex items-center">
-      <select
-        value={locale}
-        onChange={handleChange}
-        aria-label={t("ariaLabel")}
-        className="cursor-pointer appearance-none rounded-[2px] border border-[var(--color-soil)] bg-surface-ui py-1.5 pl-2 pr-7 text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:border-leaf-light hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
+    <div ref={containerRef} className="relative flex items-center">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => (open ? setOpen(false) : openMenu(activeIndex))}
+        onKeyDown={onTriggerKeyDown}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label={`${t("ariaLabel")}: ${localeNames[locale]}`}
+        className="flex cursor-pointer items-center gap-1.5 rounded-[2px] border border-[var(--color-soil)] bg-surface-ui px-2 py-1.5 text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:border-leaf-light hover:text-leaf-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
         style={{
           fontFamily: "var(--font-pixel)",
           fontSize: "0.6875rem" /* --text-caption */,
@@ -75,20 +228,77 @@ function LocaleSwitcher() {
           lineHeight: 1.4,
         }}
       >
-        {routing.locales.map((loc) => (
-          <option key={loc} value={loc}>
-            {localeNames[loc]}
-          </option>
-        ))}
-      </select>
-      {/* Custom caret */}
-      <span
-        className="pointer-events-none absolute right-2 text-[var(--color-text-muted-dark)]"
-        style={{ fontSize: "0.55rem", pointerEvents: "none" }}
-        aria-hidden
-      >
-        ▾
-      </span>
+        <GlobeIcon className="h-3.5 w-3.5 shrink-0" />
+        <span>{localeNames[locale]}</span>
+        <span
+          aria-hidden
+          className="transition-transform duration-100"
+          style={{ fontSize: "0.55rem", transform: open ? "rotate(180deg)" : "none" }}
+        >
+          ▾
+        </span>
+      </button>
+
+      {open &&
+        mounted &&
+        coords &&
+        createPortal(
+          <ul
+            ref={popupRef}
+            role="menu"
+            aria-label={t("ariaLabel")}
+            className="fixed flex min-w-[9rem] flex-col gap-0.5 p-1"
+            style={{
+              top: coords.top,
+              right: coords.right,
+              zIndex: 1000,
+              background: "var(--color-surface-panel)",
+              border: "var(--border-pixel)",
+              borderRadius: "var(--radius-pixel)",
+              boxShadow: "var(--shadow-pixel)",
+            }}
+          >
+            {locales.map((loc, index) => {
+              const isActive = loc === locale;
+              return (
+                <li key={loc} role="none">
+                  <button
+                    ref={(el) => {
+                      itemRefs.current[index] = el;
+                    }}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={isActive}
+                    tabIndex={focusedIndex === index ? 0 : -1}
+                    onClick={() => selectLocale(loc)}
+                    onKeyDown={(event) => onItemKeyDown(event, index)}
+                    className={[
+                      "flex w-full cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-left transition-colors duration-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-leaf-light",
+                      isActive
+                        ? "bg-leaf-deep/25 text-leaf-light"
+                        : "text-[var(--color-text-muted-dark)] hover:bg-leaf-deep/15 hover:text-leaf-light",
+                    ].join(" ")}
+                    style={{
+                      fontFamily: "var(--font-pixel)",
+                      fontSize: "0.6875rem",
+                      minHeight: "2.25rem",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    <span
+                      className="flex h-3.5 w-3.5 shrink-0 items-center justify-center"
+                      aria-hidden
+                    >
+                      {isActive ? <LocaleCheckIcon /> : null}
+                    </span>
+                    <span>{localeNames[loc]}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }
@@ -126,12 +336,18 @@ export function TopBar() {
           className="flex shrink-0 items-center gap-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-leaf-light"
           aria-label={t("logoAriaLabel")}
         >
-          <span className="text-base leading-none" aria-hidden>
-            🌳
-          </span>
+          <Image
+            src="/logo.svg"
+            alt=""
+            width={24}
+            height={24}
+            className="pixelated h-6 w-6 shrink-0"
+            aria-hidden
+            priority
+          />
           <span
-            className="hidden font-pixel text-[11px] leading-none text-leaf-deep sm:block"
-            style={{ textShadow: "1px 1px 0 rgb(0 0 0 / 20%)" }}
+            className="hidden font-pixel text-[14px] font-bold leading-none text-[var(--color-text-cream)] sm:block"
+            style={{ textShadow: "1px 1px 0 rgb(0 0 0 / 25%)" }}
           >
             Token-Forest
           </span>
@@ -165,7 +381,7 @@ export function TopBar() {
         </nav>
 
         {/* ── Right-side actions ── */}
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-3 md:gap-4">
           {/* Language switcher */}
           <LocaleSwitcher />
 
