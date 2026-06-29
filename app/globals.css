@@ -423,10 +423,14 @@ footer {
   overflow-wrap: anywhere;
 }
 
-/* Ensure the overall page never scroll-x */
+/* Ensure the overall page never scroll-x.
+   Use `clip` (not `hidden`): `overflow-x: hidden` makes html/body a scroll
+   container, which silently breaks `position: sticky` on the header (it
+   scrolls away instead of sticking). `clip` prevents horizontal overflow
+   without establishing a scroll container, so sticky keeps working. */
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -496,7 +500,10 @@ body {
     opacity: 0;
     animation: reveal-rise both linear;
     animation-timeline: view();
-    animation-range: entry 0% cover 35%;
+    /* Complete the reveal once the element has fully entered the viewport.
+       A `cover`-based end can be unreachable for elements near the page
+       bottom on tall screens, leaving them stuck semi-transparent. */
+    animation-range: entry 0% entry 100%;
     animation-delay: var(--reveal-delay, 0ms);
   }
 }
