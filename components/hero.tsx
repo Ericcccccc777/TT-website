@@ -156,7 +156,9 @@ export function Hero() {
           className="relative mb-8 flex w-[200px] items-end justify-center sm:w-[240px]"
           style={{ aspectRatio: "3 / 4" }}
         >
-          <TokenBubbles className="absolute inset-0 z-10" />
+          {/* Token bubbles appear scattered AROUND the canopy (incl. its left
+              & right sides), linger ~3s, drift up slightly, then fade. */}
+          <TokenBubbles className="absolute -inset-x-10 top-0 bottom-[38%] z-30" />
           <div
             className="animate-tree-breathe absolute inset-0 z-20"
             style={{ transformOrigin: "bottom center" }}

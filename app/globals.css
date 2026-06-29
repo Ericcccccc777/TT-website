@@ -172,17 +172,23 @@ body {
 }
 
 /* Bubble float — VERTICAL component */
-@keyframes bubble-float-y {
+/* Bubble life-cycle: fade in → linger ~3s → drift up slightly → fade out.
+   At 4.2s total this holds full-opacity from ~0.4s to ~3.4s (≈ 3s). */
+@keyframes bubble-linger {
   0% {
-    transform: translateY(0);
-    opacity: 0.9;
+    transform: translateY(6px) scale(0.92);
+    opacity: 0;
   }
-  75% {
-    transform: translateY(-105px);
-    opacity: 0.9;
+  10% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(-7px) scale(1);
+    opacity: 1;
   }
   100% {
-    transform: translateY(-140px);
+    transform: translateY(-26px) scale(0.97);
     opacity: 0;
   }
 }
