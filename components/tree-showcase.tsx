@@ -252,12 +252,7 @@ function SkinStrip({
 }) {
   return (
     <div className="mt-3">
-      <div
-        className="flex gap-2 overflow-x-auto pb-1"
-        style={{ scrollSnapType: "x mandatory" }}
-        role="group"
-        aria-label={ariaLabel}
-      >
+      <div className="flex flex-wrap justify-center gap-2 pt-1" role="group" aria-label={ariaLabel}>
         {SKINS.map((skin) => {
           const label = skinLabels[skin.id] ?? comingSoon;
           const isActive = activeSkin === skin.id;
