@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
+import { TreeModalButton } from "@/components/tree-modal";
 
 export const revalidate = 60;
 
@@ -37,6 +38,29 @@ function relativeTime(iso: string, t: TFunc): string {
 
 function spriteStage(stageIndex: number): number {
   return Math.min(8, Math.max(1, stageIndex + 1));
+}
+
+/** Sprite filename prefix for a tree species; unknown species fall back to apple. */
+function treeSpritePrefix(tree: string): string {
+  return tree === "cherry" ? "CherryTree" : "AppleTree";
+}
+
+/**
+ * Turns an ISO 3166-1 alpha-2 code (what the desktop app stores in `region`)
+ * into a flag emoji + a locale-aware country name. Returns null for empty or
+ * malformed codes so the row simply renders without a flag.
+ */
+function regionInfo(code: string, locale: string): { flag: string; name: string } | null {
+  const cc = code.trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(cc)) return null;
+  const flag = String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
+  let name = cc;
+  try {
+    name = new Intl.DisplayNames([locale], { type: "region" }).of(cc) ?? cc;
+  } catch {
+    name = cc;
+  }
+  return { flag, name };
 }
 
 const MEDAL: Record<number, string> = {
@@ -171,6 +195,8 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                     const rank = i + 1;
                     const medalColor = MEDAL[rank];
                     const stage = spriteStage(entry.stage_index);
+                    const treePrefix = treeSpritePrefix(entry.tree);
+                    const region = regionInfo(entry.region, locale);
                     const animDelay = `${i * 60}ms`;
                     return (
                       <tr
@@ -195,15 +221,27 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex min-w-0 items-center gap-2">
-                            <Image
-                              src={`/sprites/AppleTree_${stage}.png`}
-                              alt=""
-                              width={24}
-                              height={24}
-                              className="pixelated shrink-0"
-                              aria-hidden
+                            <TreeModalButton
+                              username={entry.username}
+                              treePrefix={treePrefix}
+                              stage={stage}
+                              triggerLabel={t("treeViewAria", { username: entry.username })}
+                              stageLabel={t("treeModalStage", { n: stage })}
+                              treeAlt={t("treeModalAlt", { username: entry.username })}
+                              closeLabel={t("treeModalClose")}
                             />
                             <span className="truncate text-text-forest">{entry.username}</span>
+                            {region && (
+                              <span
+                                role="img"
+                                aria-label={region.name}
+                                title={region.name}
+                                className="shrink-0 leading-none"
+                                style={{ fontSize: "1rem" }}
+                              >
+                                {region.flag}
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td

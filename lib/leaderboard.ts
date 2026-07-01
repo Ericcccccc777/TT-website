@@ -7,6 +7,8 @@ export type LeaderboardEntry = {
   username: string;
   score: number; // bigint in DB; JS number is safe up to 2^53
   stage_index: number; // 0–7, mirrors the 8 desktop app growth stages
+  tree: string; // current tree species: "apple" | "cherry" | … (defaults to "apple")
+  region: string; // ISO 3166-1 alpha-2 country code, or "" if unset
   created_at: string;
   updated_at: string;
 };
@@ -31,7 +33,7 @@ export async function getLeaderboard(): Promise<{
     const client = getSupabaseServerClient();
     const { data, error } = await client
       .from("leaderboard")
-      .select("id, username, score, stage_index, created_at, updated_at")
+      .select("id, username, score, stage_index, tree, region, created_at, updated_at")
       .order("score", { ascending: false })
       .limit(100);
 
@@ -39,7 +41,15 @@ export async function getLeaderboard(): Promise<{
       return { entries: [], error: error.message };
     }
 
-    return { entries: (data ?? []) as LeaderboardEntry[], error: null };
+    // Normalise the extension columns: older/synthetic rows may have null
+    // tree/region until the desktop app upserts them.
+    const entries = (data ?? []).map((row) => ({
+      ...row,
+      tree: (row.tree as string | null) ?? "apple",
+      region: (row.region as string | null) ?? "",
+    })) as LeaderboardEntry[];
+
+    return { entries, error: null };
   } catch (e) {
     return { entries: [], error: e instanceof Error ? e.message : String(e) };
   }
