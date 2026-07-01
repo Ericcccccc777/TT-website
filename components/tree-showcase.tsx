@@ -54,7 +54,7 @@ export interface DecorationDef {
 
 const SKINS: SkinDef[] = [
   { id: "apple", src: "AppleTree", available: true },
-  { id: "cherry", src: null, available: false },
+  { id: "cherry", src: "CherryTree", available: true },
   { id: "pine", src: null, available: false },
   { id: "blossom", src: null, available: false },
 ];
@@ -543,6 +543,7 @@ export function TreeShowcase() {
 
   const skinLabels: Record<string, string> = {
     apple: t("skinApple"),
+    cherry: t("skinCherry"),
   };
 
   const decoLabels: Record<string, string> = {
