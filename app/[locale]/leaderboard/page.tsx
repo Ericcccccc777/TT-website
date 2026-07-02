@@ -41,8 +41,14 @@ function spriteStage(stageIndex: number): number {
 }
 
 /** Sprite filename prefix for a tree species; unknown species fall back to apple. */
+const TREE_PREFIX: Record<string, string> = {
+  apple: "AppleTree",
+  cherry: "CherryTree",
+  cactus: "Cactus",
+};
+
 function treeSpritePrefix(tree: string): string {
-  return tree === "cherry" ? "CherryTree" : "AppleTree";
+  return TREE_PREFIX[tree] ?? "AppleTree";
 }
 
 /**
@@ -136,7 +142,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
               alt=""
               width={64}
               height={64}
-              className="pixelated mx-auto mb-4 opacity-60"
+              className="pixelated mx-auto mb-4 h-16 w-16 object-contain opacity-60"
               aria-hidden
             />
             <p

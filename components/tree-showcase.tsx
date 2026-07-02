@@ -7,17 +7,16 @@ import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 // ── Real growth thresholds from garden.py ─────────────────────────────────────
 
-/** Cumulative token thresholds for each stage (index 0-7 = AppleTree_1..8). */
-const STAGES = [
-  { threshold: 0 }, // stage 1 — 幼枝   AppleTree_1
-  { threshold: 500_000 }, // stage 2 — 树苗   AppleTree_2
-  { threshold: 1_500_000 }, // stage 3 — 小树   AppleTree_3
-  { threshold: 4_000_000 }, // stage 4 — 成树   AppleTree_4
-  { threshold: 10_000_000 }, // stage 5 — 茂树   AppleTree_5
-  { threshold: 22_000_000 }, // stage 6 — 大树   AppleTree_6
-  { threshold: 45_000_000 }, // stage 7 — 繁茂   AppleTree_7
-  { threshold: 90_000_000 }, // stage 8 — 硕果累累 AppleTree_8
-] as const;
+/**
+ * Cumulative token thresholds per stage (index 0-7 = {Prefix}_1..8), per tree
+ * kind — mirrors garden.py STAGE_TOKENS. Later trees grow slower: max stage
+ * costs apple 90M / cherry 270M / cactus 360M.
+ */
+const STAGE_TOKENS: Record<string, number[]> = {
+  apple: [0, 500_000, 1_500_000, 4_000_000, 10_000_000, 22_000_000, 45_000_000, 90_000_000],
+  cherry: [0, 1_500_000, 4_500_000, 12_000_000, 30_000_000, 66_000_000, 135_000_000, 270_000_000],
+  cactus: [0, 2_000_000, 6_000_000, 16_000_000, 40_000_000, 88_000_000, 180_000_000, 360_000_000],
+};
 
 /** Roman numerals I..VIII for stage selector buttons. */
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"] as const;
@@ -43,60 +42,142 @@ export interface SkinDef {
   available: boolean;
 }
 
+/**
+ * Decoration placement mirrors the desktop app (sprites.py TREE_DEFS +
+ * app.py DECO_ANCHOR_F / _deco_x / _deco_y):
+ *   - All decoration sprites are authored at the apple-tree canvas scale
+ *     (823 px tall), so each renders at nativeSize / 823 of the canvas side.
+ *   - `anchor` = horizontal centre as a fraction of the soil strip
+ *     (Ground.png, 531 px wide, centred under the tree).
+ *   - `y` undefined → base sits on the ground line (canvas bottom, like the
+ *     tree). A number → hanging: vertical centre at y × tree height.
+ *   - `layer: "behind"` paints behind the tree (e.g. the torii gate).
+ */
 export interface DecorationDef {
   id: string;
   src: string;
-  position: React.CSSProperties;
-  /** How to fit the sprite inside the decoration area. Default: "contain". */
-  objectFit?: "contain" | "cover";
-  mirrorX?: boolean;
+  /** native sprite px (sheet decorations: one frame's px) */
+  w: number;
+  h: number;
+  /** horizontal anchor along the soil strip: left 0.26 / center 0.5 / right 0.8 */
+  anchor: number;
+  /** hanging height as a fraction of tree height (undefined = on the ground) */
+  y?: number;
+  layer: "front" | "behind";
+  /** extra per-decoration scale on top of the global factor (wind chimes 0.42) */
+  scale?: number;
+  /** sprite-sheet frame count — rendered cropped to frame 0 */
+  sheetFrames?: number;
 }
 
 const SKINS: SkinDef[] = [
   { id: "apple", src: "AppleTree", available: true },
   { id: "cherry", src: "CherryTree", available: true },
-  { id: "pine", src: null, available: false },
+  { id: "cactus", src: "Cactus", available: true },
   { id: "blossom", src: null, available: false },
 ];
 
+// ── Desktop-app geometry basis (sprites.py / app.py) ──────────────────────────
+
+/** Apple-tree canvas height (px) — the app's global decoration scale basis. */
+const APPLE_NATIVE_H = 823;
+/** Ground.png native width / apple height — the soil strip's share of the canvas. */
+const SOIL_FRAC = 531 / APPLE_NATIVE_H;
+
 /**
- * Fence and Basket only — Chest is handled separately as an
- * interactive animated sprite-sheet widget.
- *
- * Sizing rationale (tree canvas = 320 × 320 px):
- *   AppleTree native = 759 × 823 → SCALE_K ≈ 0.389
- *   Fence (193 × 67) at natural scale → ~75 × 26 px (too small).
- *   We scale ~2× to make decorations clearly visible.
- *   Fence: full-width band with cover fill.
- *   Basket: right-aligned at 64 × 45 px.
+ * Per-skin decorations, straight from sprites.py TREE_DEFS (store price order).
+ * Chest is handled separately as an interactive animated sprite-sheet widget.
  */
-const DECORATIONS: DecorationDef[] = [
-  {
-    id: "fence",
-    src: "/sprites/Fence.png",
-    // Full-width fence band at the tree base; objectFit: "cover" tiles horizontally.
-    position: { bottom: 0, left: 0, width: "100%", height: 54 },
-    objectFit: "cover",
-  },
-  {
-    id: "basket",
-    src: "/sprites/Basket.png",
-    // Basket: right side, 64 × 45 px (≈2× natural scale for visibility).
-    position: { bottom: 0, right: 12, width: 64, height: 45 },
-    objectFit: "contain",
-  },
-];
+const DECORATIONS: Record<string, DecorationDef[]> = {
+  apple: [
+    { id: "fence", src: "/sprites/Fence.png", w: 193, h: 67, anchor: 0.5, layer: "front" },
+    { id: "basket", src: "/sprites/Basket.png", w: 86, h: 60, anchor: 0.8, layer: "front" },
+    {
+      id: "swing",
+      src: "/sprites/Swing.png",
+      w: 90,
+      h: 200,
+      anchor: 0.72,
+      y: 0.24,
+      layer: "front",
+    },
+  ],
+  cherry: [
+    {
+      id: "bambooFence",
+      src: "/sprites/BambooFence.png",
+      w: 193,
+      h: 65,
+      anchor: 0.5,
+      layer: "front",
+    },
+    {
+      id: "stoneLamp",
+      src: "/sprites/StoneLamp_1.png",
+      w: 100,
+      h: 184,
+      anchor: 0.8,
+      layer: "front",
+    },
+    {
+      id: "windChimes",
+      src: "/sprites/WindChimes.png",
+      w: 337,
+      h: 431,
+      anchor: 0.26,
+      y: 0.5,
+      layer: "front",
+      scale: 0.42,
+      sheetFrames: 7,
+    },
+    { id: "torii", src: "/sprites/Torii.png", w: 780, h: 674, anchor: 0.5, layer: "behind" },
+  ],
+  cactus: [
+    {
+      id: "brokenFence",
+      src: "/sprites/BrokenFence.png",
+      w: 193,
+      h: 63,
+      anchor: 0.5,
+      layer: "front",
+    },
+  ],
+};
+
+/** Decoration equipped by default when a skin is selected (its fence). */
+const DEFAULT_DECO: Record<string, string> = {
+  apple: "fence",
+  cherry: "bambooFence",
+  cactus: "brokenFence",
+};
+
+/** CSS placement for a decoration inside the square tree canvas (all in %). */
+function decoStyle(d: DecorationDef): React.CSSProperties {
+  const k = ((d.scale ?? 1) / APPLE_NATIVE_H) * 100;
+  const w = d.w * k;
+  const h = d.h * k;
+  const centerX = 50 + (d.anchor - 0.5) * SOIL_FRAC * 100;
+  return {
+    left: `${centerX - w / 2}%`,
+    bottom: d.y === undefined ? 0 : `${d.y * 100 - h / 2}%`,
+    width: `${w}%`,
+    height: `${h}%`,
+  };
+}
 
 // ── Chest sprite constants ─────────────────────────────────────────────────────
 // Chest-sheet.png: 436 × 102, 4 frames each 109 × 102 (left = closed, right = open).
+// Placement mirrors the desktop app: bottom-left on the soil strip
+// (soil left edge + CHEST_MARGIN), same global scale as every decoration.
 
 const CHEST_NATIVE_W = 109;
 const CHEST_NATIVE_H = 102;
 const CHEST_TOTAL_FRAMES = 4;
-const CHEST_DISPLAY_H = 84; // display height in px (≈ 2× natural scale)
-const CHEST_DISPLAY_W = Math.round((CHEST_NATIVE_W / CHEST_NATIVE_H) * CHEST_DISPLAY_H); // ≈ 90 px
-const CHEST_SHEET_DISPLAY_W = CHEST_DISPLAY_W * CHEST_TOTAL_FRAMES;
 const CHEST_FRAME_MS = 100; // ms per animation frame (matches Chest.json duration: 100)
+/** width as % of the tree canvas side (109 / 823, like every decoration) */
+const CHEST_W_PCT = (CHEST_NATIVE_W / APPLE_NATIVE_H) * 100;
+/** left offset % — soil strip left edge + the app's CHEST_MARGIN (12 px at 300 px tree height) */
+const CHEST_LEFT_PCT = 50 - (SOIL_FRAC * 100) / 2 + (12 / 300) * 100;
 
 type ChestState = "closed" | "opening" | "open" | "closing";
 
@@ -163,12 +244,12 @@ function StageDots({
 
 // ── Progress bar (real token thresholds) ──────────────────────────────────────
 
-function ProgressBar({ stage }: { stage: number }) {
+function ProgressBar({ stage, thresholds }: { stage: number; thresholds: number[] }) {
   const stageIndex = stage - 1; // 0..7
-  const isMaxStage = stageIndex >= STAGES.length - 1;
+  const isMaxStage = stageIndex >= thresholds.length - 1;
 
-  const curThreshold = STAGES[stageIndex]?.threshold ?? 0;
-  const nextThreshold = isMaxStage ? null : STAGES[stageIndex + 1].threshold;
+  const curThreshold = thresholds[stageIndex] ?? 0;
+  const nextThreshold = isMaxStage ? null : thresholds[stageIndex + 1];
 
   // Demo value: 35% progress into the current stage so the bar is visually interesting.
   const demoTokens = isMaxStage
@@ -280,7 +361,7 @@ function SkinStrip({
                     alt={label}
                     width={36}
                     height={36}
-                    className="pixelated"
+                    className="pixelated h-9 w-9 object-contain"
                   />
                 </button>
               ) : (
@@ -356,14 +437,30 @@ function DecorationToggle({
         cursor: "pointer",
       }}
     >
-      <Image
-        src={deco.src}
-        alt=""
-        width={16}
-        height={16}
-        className="pixelated shrink-0"
-        aria-hidden
-      />
+      {deco.sheetFrames ? (
+        // Sheet decoration: crop to frame 0 for the icon (like the chest button)
+        <div
+          className="shrink-0"
+          style={{
+            width: 16,
+            height: 16,
+            backgroundImage: `url('${deco.src}')`,
+            backgroundSize: `${16 * deco.sheetFrames}px 16px`,
+            backgroundPosition: "0 0",
+            imageRendering: "pixelated",
+          }}
+          aria-hidden
+        />
+      ) : (
+        <Image
+          src={deco.src}
+          alt=""
+          width={16}
+          height={16}
+          className="pixelated h-4 w-4 shrink-0 object-contain"
+          aria-hidden
+        />
+      )}
       {label}
     </button>
   );
@@ -437,13 +534,12 @@ function ChestWidget({
   closeLabel: string;
   prefersReduced: boolean;
 }) {
-  const bgX = frame * CHEST_DISPLAY_W;
   const isOpen = chestState === "open";
 
   return (
     <div
       className="absolute flex flex-col items-start"
-      style={{ bottom: 0, left: 12, zIndex: 6 }}
+      style={{ bottom: 0, left: `${CHEST_LEFT_PCT}%`, width: `${CHEST_W_PCT}%`, zIndex: 6 }}
       aria-hidden={false}
     >
       {/* Speech bubble teaser — only visible when fully open */}
@@ -506,16 +602,18 @@ function ChestWidget({
           padding: 0,
           cursor: "pointer",
           display: "block",
-          animation: !prefersReduced && chestState === "closed" ? undefined : undefined,
+          width: "100%",
         }}
       >
         <div
           style={{
-            width: CHEST_DISPLAY_W,
-            height: CHEST_DISPLAY_H,
+            width: "100%",
+            aspectRatio: `${CHEST_NATIVE_W} / ${CHEST_NATIVE_H}`,
             backgroundImage: "url('/sprites/Chest-sheet.png')",
-            backgroundSize: `${CHEST_SHEET_DISPLAY_W}px ${CHEST_DISPLAY_H}px`,
-            backgroundPosition: `-${bgX}px 0`,
+            backgroundSize: `${CHEST_TOTAL_FRAMES * 100}% 100%`,
+            // frame n of N: background-position-x = n / (N − 1) — %-based so the
+            // sheet scales with the responsive canvas
+            backgroundPosition: `${(frame / (CHEST_TOTAL_FRAMES - 1)) * 100}% 0`,
             imageRendering: "pixelated",
           }}
         />
@@ -544,11 +642,18 @@ export function TreeShowcase() {
   const skinLabels: Record<string, string> = {
     apple: t("skinApple"),
     cherry: t("skinCherry"),
+    cactus: t("skinCactus"),
   };
 
   const decoLabels: Record<string, string> = {
     fence: t("decoFence"),
     basket: t("decoBasket"),
+    swing: t("decoSwing"),
+    bambooFence: t("decoBambooFence"),
+    stoneLamp: t("decoStoneLamp"),
+    windChimes: t("decoWindChimes"),
+    torii: t("decoTorii"),
+    brokenFence: t("decoBrokenFence"),
     chest: t("decoChest"),
   };
 
@@ -578,15 +683,20 @@ export function TreeShowcase() {
   const changeSkin = useCallback(
     (id: string) => {
       if (id === activeSkin || !SKINS.find((s) => s.id === id)?.available) return;
-      if (prefersReduced) {
+      // Each skin owns its decoration set (like the app) — equip its fence.
+      const applySkin = () => {
         setActiveSkin(id);
+        setEquipped(new Set([DEFAULT_DECO[id]]));
+      };
+      if (prefersReduced) {
+        applySkin();
         return;
       }
       setIsShaking(true);
       setTimeout(() => {
         setIsShaking(false);
         setIsFading(true);
-        setActiveSkin(id);
+        applySkin();
         setTimeout(() => setIsFading(false), 200);
       }, 150);
     },
@@ -668,6 +778,58 @@ export function TreeShowcase() {
   const spriteBase = activeSkinDef?.src ?? "AppleTree";
   const treeSrc = `/sprites/${spriteBase}_${stage}.png`;
   const prevTreeSrc = prevStage ? `/sprites/${spriteBase}_${prevStage}.png` : null;
+  const activeDecos = DECORATIONS[activeSkin] ?? [];
+
+  // One decoration layer ("behind" paints under the tree, "front" above it),
+  // placed/sized per the desktop app via decoStyle().
+  const renderDecoLayer = (layer: "front" | "behind") =>
+    activeDecos
+      .filter((d) => d.layer === layer)
+      .map((deco) => {
+        const on = equipped.has(deco.id);
+        return (
+          <div
+            key={deco.id}
+            className="pointer-events-none absolute"
+            style={{
+              ...decoStyle(deco),
+              zIndex: layer === "behind" ? 1 : 5,
+              animation: on
+                ? prefersReduced
+                  ? undefined
+                  : "decoration-enter 350ms cubic-bezier(0.34,1.56,0.64,1) forwards"
+                : prefersReduced
+                  ? undefined
+                  : "decoration-exit 180ms ease forwards",
+              opacity: on ? 1 : 0,
+            }}
+            aria-hidden
+          >
+            {on &&
+              (deco.sheetFrames ? (
+                // Sprite-sheet decoration (wind chimes): crop to frame 0
+                <div
+                  className="h-full w-full"
+                  style={{
+                    backgroundImage: `url('${deco.src}')`,
+                    backgroundSize: `${deco.sheetFrames * 100}% 100%`,
+                    backgroundPosition: "0 0",
+                    imageRendering: "pixelated",
+                  }}
+                />
+              ) : (
+                <Image
+                  src={deco.src}
+                  alt=""
+                  fill
+                  // rendered width in px at the canvas's 320 px max — for srcset selection
+                  sizes={`${Math.round((320 * deco.w * (deco.scale ?? 1)) / APPLE_NATIVE_H)}px`}
+                  className="pixelated object-contain"
+                />
+              ))}
+          </div>
+        );
+      });
 
   return (
     <section
@@ -698,22 +860,26 @@ export function TreeShowcase() {
           stageBtnLabel={(n) => t("stageBtn", { n })}
         />
 
-        {/* Progress bar — real token thresholds, h-4 thickness */}
-        <ProgressBar stage={stage} />
+        {/* Progress bar — real token thresholds for the active skin, h-4 thickness */}
+        <ProgressBar stage={stage} thresholds={STAGE_TOKENS[activeSkin] ?? STAGE_TOKENS.apple} />
 
         {/* ── Tree + decorations canvas ── */}
         <div className="relative mx-auto w-full max-w-[320px]">
           <div className="relative w-full overflow-visible" style={{ aspectRatio: "1 / 1" }}>
+            {/* Behind-layer decorations (e.g. torii) — painted under the tree */}
+            {renderDecoLayer("behind")}
+
             {/* Tree sprite with shake + crossfade */}
             <div
               className={`animate-tree-breathe absolute inset-0 ${isShaking ? "animate-grow-shake" : ""}`}
-              style={{ transformOrigin: "bottom center" }}
+              style={{ transformOrigin: "bottom center", zIndex: 2 }}
             >
               {prevTreeSrc && (
                 <Image
                   src={prevTreeSrc}
                   alt=""
                   fill
+                  sizes="320px"
                   className="pixelated object-contain object-bottom"
                   style={{
                     opacity: isFading ? 0 : 1,
@@ -727,6 +893,7 @@ export function TreeShowcase() {
                 src={treeSrc}
                 alt={t("treeAlt", { stage })}
                 fill
+                sizes="320px"
                 className="pixelated object-contain object-bottom"
                 style={{
                   opacity: prevTreeSrc ? (isFading ? 1 : 0) : 1,
@@ -737,39 +904,8 @@ export function TreeShowcase() {
               />
             </div>
 
-            {/* Fence and Basket decorations */}
-            {DECORATIONS.map((deco) => {
-              const on = equipped.has(deco.id);
-              return (
-                <div
-                  key={deco.id}
-                  className="pointer-events-none absolute"
-                  style={{
-                    ...deco.position,
-                    zIndex: 5,
-                    animation: on
-                      ? prefersReduced
-                        ? undefined
-                        : "decoration-enter 350ms cubic-bezier(0.34,1.56,0.64,1) forwards"
-                      : prefersReduced
-                        ? undefined
-                        : "decoration-exit 180ms ease forwards",
-                    opacity: on ? 1 : 0,
-                  }}
-                  aria-hidden
-                >
-                  {on && (
-                    <Image
-                      src={deco.src}
-                      alt=""
-                      fill
-                      className="pixelated"
-                      style={{ objectFit: deco.objectFit ?? "contain" }}
-                    />
-                  )}
-                </div>
-              );
-            })}
+            {/* Front-layer decorations */}
+            {renderDecoLayer("front")}
 
             {/* Animated Chest widget */}
             {chestVisible && (
@@ -787,19 +923,25 @@ export function TreeShowcase() {
 
           {/* Ground strip */}
           <div className="relative h-10 w-full" aria-hidden>
-            <Image src="/sprites/Ground.png" alt="" fill className="pixelated object-cover" />
+            <Image
+              src="/sprites/Ground.png"
+              alt=""
+              fill
+              sizes="320px"
+              className="pixelated object-cover"
+            />
           </div>
         </div>
 
-        {/* Decoration toggle group (fence, basket, chest) */}
+        {/* Decoration toggle group (active skin's decorations + chest) */}
         <div className="mt-4 flex justify-center">
           <div
-            className="inline-flex divide-x overflow-hidden"
+            className="inline-flex flex-wrap justify-center divide-x overflow-hidden"
             style={{ border: "var(--border-pixel)" }}
             role="group"
             aria-label={t("decorationGroupAriaLabel")}
           >
-            {DECORATIONS.map((deco) => (
+            {activeDecos.map((deco) => (
               <DecorationToggle
                 key={deco.id}
                 deco={deco}
