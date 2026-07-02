@@ -29,7 +29,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
             src="/sprites/AppleTree_8.png"
             alt={t("heroTreeAlt")}
             width={120}
-            height={160}
+            height={130}
             className="pixelated mb-6 drop-shadow-[3px_3px_0_rgba(0,0,0,0.25)]"
             priority
           />
@@ -258,7 +258,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
             alt=""
             width={32}
             height={32}
-            className="pixelated opacity-70"
+            className="pixelated h-8 w-8 object-contain opacity-70"
             aria-hidden
           />
           <p

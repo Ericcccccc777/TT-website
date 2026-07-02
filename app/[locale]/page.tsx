@@ -443,7 +443,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                           alt=""
                           width={20}
                           height={20}
-                          className="pixelated shrink-0"
+                          className="pixelated h-5 w-5 shrink-0 object-contain"
                           aria-hidden
                         />
                         <span style={{ color: "var(--color-text-cream)" }}>{row.name}</span>
@@ -553,7 +553,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             src="/sprites/AppleTree_8.png"
             alt=""
             width={80}
-            height={108}
+            height={87}
             className="pixelated mx-auto mb-6"
             aria-hidden
           />

@@ -144,6 +144,7 @@ export function Hero() {
           src="/sprites/Ground.png"
           alt=""
           fill
+          sizes="100vw"
           className="pixelated object-cover object-bottom"
           priority
         />
@@ -167,6 +168,7 @@ export function Hero() {
               src="/sprites/AppleTree_8.png"
               alt={t("treeAlt")}
               fill
+              sizes="(max-width: 640px) 200px, 240px"
               className="pixelated object-contain object-bottom"
               priority
             />

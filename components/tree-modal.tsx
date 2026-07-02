@@ -71,7 +71,14 @@ export function TreeModalButton({
         className="shrink-0 rounded-[2px] p-0.5 transition-transform duration-100 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light active:scale-95"
         style={{ cursor: "pointer", background: "none", border: "none", lineHeight: 0 }}
       >
-        <Image src={src} alt="" width={24} height={24} className="pixelated" aria-hidden />
+        <Image
+          src={src}
+          alt=""
+          width={24}
+          height={24}
+          className="pixelated h-6 w-6 object-contain"
+          aria-hidden
+        />
       </button>
 
       {mounted &&
@@ -144,7 +151,13 @@ export function TreeModalButton({
                   />
                 </div>
                 <div className="relative h-8 w-full" aria-hidden>
-                  <Image src="/sprites/Ground.png" alt="" fill className="pixelated object-cover" />
+                  <Image
+                    src="/sprites/Ground.png"
+                    alt=""
+                    fill
+                    sizes="220px"
+                    className="pixelated object-cover"
+                  />
                 </div>
               </div>
 
