@@ -97,6 +97,9 @@
 
   /* Scroll position updated by JS for parallax */
   --scroll-y: 0px;
+
+  /* Neon section-title size (bigger + responsive) */
+  --text-neon: clamp(2.3rem, 5.2vw, 2.9rem);
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1088,6 +1091,12 @@ body {
   .scroll-hud {
     display: none !important;
   }
+
+  /* Neon titles keep their glow, lose the flicker */
+  .neon-title {
+    animation: none !important;
+    opacity: 1 !important;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -2013,4 +2022,72 @@ body {
 
 .lb-row-light:hover {
   background: color-mix(in srgb, var(--color-leaf-light) 14%, transparent);
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   NEON SECTION TITLES
+   Applied to an inner <span> so the flicker never fights the
+   heading's .reveal animation. Dark variant = tube glow on the
+   forest/night sections; light = softer halo on parchment.
+───────────────────────────────────────────────────────────── */
+
+/* Occasional tube stutter — uneven, mostly steady */
+@keyframes neon-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  3% {
+    opacity: 0.82;
+  }
+
+  4.5% {
+    opacity: 1;
+  }
+
+  41% {
+    opacity: 1;
+  }
+
+  42.5% {
+    opacity: 0.88;
+  }
+
+  44% {
+    opacity: 1;
+  }
+
+  72% {
+    opacity: 0.93;
+  }
+
+  74% {
+    opacity: 1;
+  }
+}
+
+.neon-title {
+  font-weight: 700;
+  animation: neon-flicker 7s steps(1) infinite;
+  animation-delay: var(--neon-delay, 0s);
+}
+
+.neon-title.neon-dark {
+  color: var(--color-leaf-light);
+  text-shadow:
+    0 0 4px rgb(123 216 143 / 90%),
+    0 0 12px rgb(123 216 143 / 55%),
+    0 0 28px rgb(123 216 143 / 35%),
+    3px 3px 0 rgb(0 0 0 / 45%);
+}
+
+.neon-title.neon-light {
+  color: var(--color-leaf-deep);
+  text-shadow:
+    0 0 3px rgb(123 216 143 / 85%),
+    0 0 10px rgb(123 216 143 / 55%),
+    0 0 20px rgb(58 125 68 / 30%),
+    2px 2px 0 rgb(58 125 68 / 30%);
 }

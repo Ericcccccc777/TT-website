@@ -866,13 +866,18 @@ export function TreeShowcase() {
           className="mb-8 text-center text-leaf-deep"
           style={{
             fontFamily: "var(--font-pixel)",
-            fontSize: "var(--text-display)",
+            fontSize: "var(--text-neon)",
             lineHeight: 1.25,
             wordBreak: "break-word",
             overflowWrap: "anywhere",
           }}
         >
-          {t("heading")}
+          <span
+            className="neon-title neon-light"
+            style={{ "--neon-delay": "0.7s" } as React.CSSProperties}
+          >
+            {t("heading")}
+          </span>
         </h2>
 
         {/* Stage selector — Roman numerals, ≥44px tap targets */}

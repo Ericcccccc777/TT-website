@@ -336,11 +336,16 @@ export function RoadmapSection() {
           className="reveal text-center text-leaf-light"
           style={{
             fontFamily: "var(--font-pixel)",
-            fontSize: "var(--text-display)",
+            fontSize: "var(--text-neon)",
             lineHeight: 1.25,
           }}
         >
-          {t("heading")}
+          <span
+            className="neon-title neon-dark"
+            style={{ "--neon-delay": "2.1s" } as React.CSSProperties}
+          >
+            {t("heading")}
+          </span>
         </h2>
         <p
           className="reveal mx-auto mt-4 max-w-xl text-center"

@@ -111,11 +111,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             className="reveal mb-12 text-center text-leaf-deep"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
             }}
           >
+            <span className="neon-title neon-light" style={{ "--neon-delay": "0s" } as React.CSSProperties}>
             {t("heading")}
+          </span>
           </h2>
 
           <HowSteps
@@ -145,11 +147,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             className="reveal mb-10 text-center text-leaf-light"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
             }}
           >
+            <span className="neon-title neon-dark" style={{ "--neon-delay": "1.4s" } as React.CSSProperties}>
             {tf("heading")}
+          </span>
           </h2>
           <InViewGate className="grid gap-5 sm:grid-cols-2">
             {FEATURES.map((f, i) => (
@@ -191,13 +195,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             className="reveal mb-3 text-center text-leaf-light"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
+            <span className="neon-title neon-dark" style={{ "--neon-delay": "2.8s" } as React.CSSProperties}>
             {tlt("heading")}
+          </span>
           </h2>
           <p
             className="reveal mb-10 text-center"
@@ -467,11 +473,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             className="reveal mb-4 text-leaf-deep"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
             }}
           >
+            <span className="neon-title neon-light" style={{ "--neon-delay": "4.2s" } as React.CSSProperties}>
             {tdl("heading")}
+          </span>
           </h2>
           <p
             className="reveal mx-auto mb-8 max-w-md"
