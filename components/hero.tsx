@@ -139,7 +139,8 @@ export function Hero() {
               priority
             />
           </div>
-          <div className="absolute inset-0 z-30">
+          {/* pointer-events-none: this overlay must never eat bubble clicks */}
+          <div className="pointer-events-none absolute inset-0 z-30">
             <Sparkles />
           </div>
         </div>

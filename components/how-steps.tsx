@@ -145,8 +145,8 @@ function MiniBubble({ value, color }: { value: string; color: string }) {
 // ── Demo 01: terminal → tokens → bubble ────────────────────────────────────────
 
 function TerminalDemo({ playing, reduced }: { playing: boolean; reduced: boolean }) {
-  const [runId, setRunId] = useState(0);
-  // SSR/at-rest shows the final count; each play resets and ticks up
+  // SSR/at-rest shows the final count; the entry play resets and ticks up.
+  // No hover interaction by design — this box plays once, then just idles.
   const [count, setCount] = useState<number>(COUNT_SEQ[COUNT_SEQ.length - 1]);
 
   useEffect(() => {
@@ -165,7 +165,7 @@ function TerminalDemo({ playing, reduced }: { playing: boolean; reduced: boolean
       }, 1200),
     );
     return () => timers.forEach(clearTimeout);
-  }, [playing, reduced, runId]);
+  }, [playing, reduced]);
 
   const animate = playing && !reduced;
 
@@ -177,10 +177,9 @@ function TerminalDemo({ playing, reduced }: { playing: boolean; reduced: boolean
         borderRadius: "var(--radius-pixel)",
         background: "var(--color-surface-deepest)",
       }}
-      onMouseEnter={() => animate && setRunId((k) => k + 1)}
       aria-hidden
     >
-      <div key={runId} className="absolute inset-0">
+      <div className="absolute inset-0">
         {/* token counter */}
         <div className="absolute left-2 top-1.5 flex items-baseline gap-1">
           <span
@@ -423,6 +422,8 @@ function GrowDemo({
   // SSR/at-rest shows the autoplay's final stage
   const [stage, setStage] = useState(3);
   const [lvup, setLvup] = useState(false);
+  // hide the "press here" affordance once the visitor has held the button
+  const [discovered, setDiscovered] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const holdingKey = useRef(false);
   const interacted = useRef(false);
@@ -476,6 +477,7 @@ function GrowDemo({
 
   const startHold = () => {
     interacted.current = true;
+    setDiscovered(true);
     if (holdTimer.current) clearInterval(holdTimer.current);
     bumpStage();
     holdTimer.current = setInterval(bumpStage, reduced ? 240 : 400);
@@ -493,11 +495,12 @@ function GrowDemo({
       <button
         type="button"
         aria-label={holdToGrow}
-        className="relative block h-24 w-full cursor-pointer overflow-hidden p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
+        className="relative block h-24 w-full cursor-pointer overflow-hidden p-0 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
         style={{
           border: "var(--border-pixel)",
           borderRadius: "var(--radius-pixel)",
           background: "var(--color-surface-card)",
+          boxShadow: "var(--shadow-pixel)",
           touchAction: "none",
         }}
         onPointerDown={(e) => {
@@ -550,6 +553,21 @@ function GrowDemo({
           />
         </span>
 
+        {/* "press here" affordance — the same pixel hand the visitor just met
+            in demo 02, nudging at the tree until the first hold */}
+        {!discovered && (
+          <span
+            className="pointer-events-none absolute right-[24%] top-[30%]"
+            style={{
+              animation:
+                playing && !reduced ? "hand-nudge 700ms steps(2) infinite alternate" : undefined,
+            }}
+            aria-hidden
+          >
+            <PixelHand width={16} />
+          </span>
+        )}
+
         {/* LV UP! blip */}
         {lvup && (
           <span
@@ -587,13 +605,13 @@ function GrowDemo({
         </span>
       </button>
 
-      {/* hint */}
+      {/* hint — leaf-deep so the "press & hold" instruction reads clearly */}
       <p
         className="mt-1.5 text-center"
         style={{
           fontFamily: "var(--font-pixel)",
-          fontSize: "0.55rem",
-          color: "var(--color-text-muted-light)",
+          fontSize: "0.6rem",
+          color: "var(--color-leaf-deep)",
           lineHeight: 1,
         }}
       >
