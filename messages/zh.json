@@ -139,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "用户名",
     "tokensHeader": "Tokens",
-    "comingSoon": "现已上线",
     "viewAll": "查看完整排行榜"
   },
   "DownloadCta": {
@@ -165,7 +164,6 @@
     "treeModalStage": "阶段 {n} / 8",
     "treeModalAlt": "{username} 的像素树",
     "treeModalClose": "关闭",
-    "comingSoon": "即将推出",
     "howToHeading": "如何上榜",
     "howTo01Title": "下载 App",
     "howTo01Body": "前往下载页面，运行 setup.ps1（Windows）或 setup.sh（macOS / Linux）完成安装。",

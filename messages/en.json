@@ -139,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "Username",
     "tokensHeader": "Tokens",
-    "comingSoon": "Live now",
     "viewAll": "View Full Leaderboard"
   },
   "DownloadCta": {
@@ -165,7 +164,6 @@
     "treeModalStage": "Stage {n} / 8",
     "treeModalAlt": "{username}'s pixel tree",
     "treeModalClose": "Close",
-    "comingSoon": "Coming Soon",
     "howToHeading": "How to Join",
     "howTo01Title": "Download the App",
     "howTo01Body": "Visit the download page and run setup.ps1 (Windows) or setup.sh (macOS / Linux) to install.",

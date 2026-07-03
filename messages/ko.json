@@ -139,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "사용자명",
     "tokensHeader": "Tokens",
-    "comingSoon": "출시됨",
     "viewAll": "전체 리더보드 보기"
   },
   "DownloadCta": {
@@ -165,7 +164,6 @@
     "treeModalStage": "단계 {n} / 8",
     "treeModalAlt": "{username}님의 픽셀 나무",
     "treeModalClose": "닫기",
-    "comingSoon": "출시 예정",
     "howToHeading": "참여 방법",
     "howTo01Title": "앱 다운로드",
     "howTo01Body": "다운로드 페이지에서 setup.ps1（Windows）또는 setup.sh（macOS / Linux）를 실행하여 설치.",

@@ -13,6 +13,7 @@ import {
   LeaderboardDemo,
 } from "@/components/feature-demos";
 import { InViewGate } from "@/components/in-view-gate";
+import { PixelCrown } from "@/components/pixel-crown";
 import { ScrollTreeHud } from "@/components/scroll-tree-hud";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
@@ -282,162 +283,150 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
           </div>
 
-          {/* Mock leaderboard table */}
-          <div
-            className="reveal overflow-x-auto rounded-[2px]"
-            style={
-              { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
-            }
-          >
-            <table className="w-full border-collapse">
-              <colgroup>
-                <col style={{ width: "2.5rem" }} />
-                <col />
-                <col style={{ width: "auto" }} />
-              </colgroup>
-              <thead>
-                <tr
-                  className="bg-leaf-deep"
-                  style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                >
-                  <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                    {tlt("rankHeader")}
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                    {tlt("usernameHeader")}
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-right text-text-cream">
-                    {tlt("tokensHeader")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    rank: "01",
-                    name: "devwanderer",
-                    tokens: "2,840,192",
-                    color: "var(--color-accent-gold)",
-                  },
-                  { rank: "02", name: "nightcoder_x", tokens: "1,902,448", color: "#9ba8af" },
-                  {
-                    rank: "03",
-                    name: "token_farmer",
-                    tokens: "1,233,760",
-                    color: "var(--color-soil-light)",
-                  },
-                ].map((row) => (
+          {/* Mock leaderboard table — rows slide in, ranks 1/2 trade places on
+              a slow loop, the champion wears a crown; frozen offscreen */}
+          <InViewGate>
+            <div
+              className="reveal overflow-x-auto rounded-[2px]"
+              style={
+                { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
+              }
+            >
+              <table className="w-full border-collapse">
+                <colgroup>
+                  <col style={{ width: "3.5rem" }} />
+                  <col />
+                  <col style={{ width: "auto" }} />
+                </colgroup>
+                <thead>
                   <tr
-                    key={row.rank}
-                    className="border-t border-leaf-deep/20"
-                    style={{
-                      background: "color-mix(in srgb, var(--color-surface-panel) 60%, transparent)",
-                      backdropFilter: "blur(4px)",
-                      fontFamily: "var(--font-body)",
-                      fontSize: "var(--text-body)",
-                    }}
+                    className="bg-leaf-deep"
+                    style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
                   >
-                    <td
-                      className="px-4 py-3"
-                      style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "var(--text-caption)",
-                        color: row.color,
-                      }}
-                    >
-                      {row.rank}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/sprites/AppleTree_8.png"
-                          alt=""
-                          width={20}
-                          height={20}
-                          className="pixelated shrink-0"
-                          style={{ width: 20, height: 20, objectFit: "contain" }}
-                          aria-hidden
-                        />
-                        <span style={{ color: "var(--color-text-cream)" }}>{row.name}</span>
-                      </div>
-                    </td>
-                    <td
-                      className="px-4 py-3 text-right"
-                      style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "var(--text-caption)",
-                        color: "var(--color-accent-gold)",
-                      }}
-                    >
-                      {row.tokens}
-                    </td>
+                    <th scope="col" className="px-4 py-2 text-left text-text-cream">
+                      {tlt("rankHeader")}
+                    </th>
+                    <th scope="col" className="px-4 py-2 text-left text-text-cream">
+                      {tlt("usernameHeader")}
+                    </th>
+                    <th scope="col" className="px-4 py-2 text-right text-text-cream">
+                      {tlt("tokensHeader")}
+                    </th>
                   </tr>
-                ))}
-
-                {/* Blurred YOUR TREE row */}
-                <tr className="border-t border-leaf-deep/20">
-                  <td
-                    colSpan={3}
-                    className="relative overflow-hidden p-0"
-                    style={{
-                      background: "color-mix(in srgb, var(--color-surface-panel) 60%, transparent)",
-                    }}
-                  >
-                    <div
-                      className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-x-4 px-4 py-3"
-                      style={{
-                        filter: "blur(4px)",
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-body)",
-                      }}
+                </thead>
+                <tbody>
+                  {[
+                    {
+                      rank: "01",
+                      name: "devwanderer",
+                      tokens: "2,840,192",
+                      color: "var(--color-accent-gold)",
+                      swapClass: "lbt-swap-first",
+                      crowned: true,
+                    },
+                    {
+                      rank: "02",
+                      name: "nightcoder_x",
+                      tokens: "1,902,448",
+                      color: "#9ba8af",
+                      swapClass: "lbt-swap-second",
+                      crowned: false,
+                    },
+                    {
+                      rank: "03",
+                      name: "token_farmer",
+                      tokens: "1,233,760",
+                      color: "var(--color-soil-light)",
+                      swapClass: "",
+                      crowned: false,
+                    },
+                  ].map((row, i) => (
+                    <tr
+                      key={row.rank}
+                      className={`lb-row reveal reveal-right border-t border-leaf-deep/20 ${row.swapClass}`}
+                      style={
+                        {
+                          "--reveal-delay": `${280 + i * 120}ms`,
+                          fontFamily: "var(--font-body)",
+                          fontSize: "var(--text-body)",
+                        } as React.CSSProperties
+                      }
                     >
-                      <span
+                      <td
+                        className="whitespace-nowrap px-4 py-3"
                         style={{
                           fontFamily: "var(--font-pixel)",
                           fontSize: "var(--text-caption)",
-                          color: "var(--color-text-muted-dark)",
+                          color: row.color,
                         }}
                       >
-                        ?
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-5 w-5 shrink-0"
-                          style={{ background: "var(--color-surface-card)" }}
-                        />
-                        <span style={{ color: "var(--color-text-cream)" }}>YOUR TREE</span>
-                      </div>
-                      <span
-                        className="text-right"
+                        {row.rank}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="animate-tree-breathe inline-block shrink-0"
+                            style={{ transformOrigin: "bottom center" }}
+                            aria-hidden
+                          >
+                            <Image
+                              src="/sprites/AppleTree_8.png"
+                              alt=""
+                              width={20}
+                              height={20}
+                              className="pixelated"
+                              style={{ width: 20, height: 20, objectFit: "contain" }}
+                            />
+                          </span>
+                          <span style={{ color: "var(--color-text-cream)" }}>{row.name}</span>
+                          {row.crowned && (
+                            <span className="relative inline-flex shrink-0" aria-hidden>
+                              <PixelCrown />
+                              <span
+                                className="absolute -right-2 -top-1 text-accent-gold"
+                                style={{
+                                  fontSize: 7,
+                                  lineHeight: 1,
+                                  animation: "star-twinkle 3.6s ease-in-out infinite",
+                                }}
+                              >
+                                ✦
+                              </span>
+                            </span>
+                          )}
+                          {i === 1 && (
+                            <span
+                              className="lbt-arrow shrink-0"
+                              style={{
+                                fontFamily: "var(--font-pixel)",
+                                fontSize: "0.55rem",
+                                color: "var(--color-leaf-light)",
+                                opacity: 0,
+                                lineHeight: 1,
+                              }}
+                              aria-hidden
+                            >
+                              ▲
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        className="px-4 py-3 text-right"
                         style={{
                           fontFamily: "var(--font-pixel)",
                           fontSize: "var(--text-caption)",
                           color: "var(--color-accent-gold)",
                         }}
                       >
-                        ???
-                      </span>
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span
-                        className="px-3 py-1"
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: "var(--color-leaf-light)",
-                          background: "var(--color-surface-panel)",
-                          border: "2px solid var(--color-leaf-light)",
-                          borderRadius: "var(--radius-pixel)",
-                        }}
-                      >
-                        {tlt("comingSoon")}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                        {row.tokens}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </InViewGate>
 
           {/* CTA */}
           <div className="reveal mt-8 flex justify-center">

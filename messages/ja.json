@@ -139,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "ユーザー名",
     "tokensHeader": "Tokens",
-    "comingSoon": "公開中",
     "viewAll": "ランキング全体を見る"
   },
   "DownloadCta": {
@@ -165,7 +164,6 @@
     "treeModalStage": "ステージ {n} / 8",
     "treeModalAlt": "{username} さんのピクセルツリー",
     "treeModalClose": "閉じる",
-    "comingSoon": "近日公開",
     "howToHeading": "参加方法",
     "howTo01Title": "アプリをダウンロード",
     "howTo01Body": "ダウンロードページで setup.ps1（Windows）または setup.sh（macOS / Linux）を実行してインストール。",

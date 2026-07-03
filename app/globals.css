@@ -1946,3 +1946,71 @@ body {
     }
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   LEADERBOARD TEASER + LEADERBOARD PAGE ROWS
+───────────────────────────────────────────────────────────── */
+
+/* Full-size rank swap for the teaser table (row height ≈ 46px) */
+@keyframes lb-swap-down-lg {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  8%,
+  44% {
+    transform: translateY(46px);
+  }
+
+  52% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes lb-swap-up-lg {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  8%,
+  44% {
+    transform: translateY(-46px);
+  }
+
+  52% {
+    transform: translateY(0);
+  }
+}
+
+.lbt-swap-first {
+  animation: lb-swap-down-lg 11s ease-in-out 4s infinite;
+}
+
+.lbt-swap-second {
+  animation: lb-swap-up-lg 11s ease-in-out 4s infinite;
+}
+
+.lbt-arrow {
+  animation: lb-arrow-blip 11s linear 4s infinite;
+}
+
+/* Shared row treatment (teaser + leaderboard page): hover tint, no blur */
+.lb-row {
+  background: color-mix(in srgb, var(--color-surface-panel) 60%, transparent);
+  transition: background-color 120ms ease;
+}
+
+.lb-row:hover {
+  background: color-mix(in srgb, var(--color-surface-panel) 92%, var(--color-leaf-deep));
+}
+
+/* Light-surface variant for the /leaderboard page table */
+.lb-row-light {
+  transition: background-color 120ms ease;
+}
+
+.lb-row-light:hover {
+  background: color-mix(in srgb, var(--color-leaf-light) 14%, transparent);
+}
