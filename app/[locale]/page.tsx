@@ -13,7 +13,7 @@ import {
   LeaderboardDemo,
 } from "@/components/feature-demos";
 import { InViewGate } from "@/components/in-view-gate";
-import { PixelCrown } from "@/components/pixel-crown";
+import { TeaserTable } from "@/components/teaser-table";
 import { ScrollTreeHud } from "@/components/scroll-tree-hud";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
@@ -289,147 +289,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
           </div>
 
-          {/* Mock leaderboard table — rows slide in, ranks 1/2 trade places on
-              a slow loop, the champion wears a crown; frozen offscreen */}
-          <InViewGate>
-            <div
-              className="reveal overflow-x-auto rounded-[2px]"
-              style={
-                { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
-              }
-            >
-              <table className="w-full border-collapse">
-                <colgroup>
-                  <col style={{ width: "3.5rem" }} />
-                  <col />
-                  <col style={{ width: "auto" }} />
-                </colgroup>
-                <thead>
-                  <tr
-                    className="bg-leaf-deep"
-                    style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                  >
-                    <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                      {tlt("rankHeader")}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                      {tlt("usernameHeader")}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-right text-text-cream">
-                      {tlt("tokensHeader")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    {
-                      rank: "01",
-                      name: "devwanderer",
-                      tokens: "2,840,192",
-                      color: "var(--color-accent-gold)",
-                      swapClass: "lbt-swap-first",
-                      crowned: true,
-                    },
-                    {
-                      rank: "02",
-                      name: "nightcoder_x",
-                      tokens: "1,902,448",
-                      color: "#9ba8af",
-                      swapClass: "lbt-swap-second",
-                      crowned: false,
-                    },
-                    {
-                      rank: "03",
-                      name: "token_farmer",
-                      tokens: "1,233,760",
-                      color: "var(--color-soil-light)",
-                      swapClass: "",
-                      crowned: false,
-                    },
-                  ].map((row, i) => (
-                    <tr
-                      key={row.rank}
-                      className={`lb-row border-t border-leaf-deep/20 ${row.swapClass}`}
-                      style={{
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-body)",
-                      }}
-                    >
-                      <td
-                        className="whitespace-nowrap px-4 py-3"
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: row.color,
-                        }}
-                      >
-                        {row.rank}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="animate-tree-breathe inline-block shrink-0"
-                            style={{ transformOrigin: "bottom center" }}
-                            aria-hidden
-                          >
-                            <Image
-                              src="/sprites/AppleTree_8.png"
-                              alt=""
-                              width={20}
-                              height={20}
-                              className="pixelated"
-                              style={{ width: 20, height: 20, objectFit: "contain" }}
-                            />
-                          </span>
-                          <span style={{ color: "var(--color-text-cream)" }}>{row.name}</span>
-                          {row.crowned && (
-                            <span className="relative inline-flex shrink-0" aria-hidden>
-                              <PixelCrown />
-                              <span
-                                className="absolute -right-2 -top-1 text-accent-gold"
-                                style={{
-                                  fontSize: 7,
-                                  lineHeight: 1,
-                                  animation: "star-twinkle 3.6s ease-in-out infinite",
-                                }}
-                              >
-                                ✦
-                              </span>
-                            </span>
-                          )}
-                          {i === 1 && (
-                            <span
-                              className="lbt-arrow shrink-0"
-                              style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "0.55rem",
-                                color: "var(--color-leaf-light)",
-                                opacity: 0,
-                                lineHeight: 1,
-                              }}
-                              aria-hidden
-                            >
-                              ▲
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td
-                        className="px-4 py-3 text-right"
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: "var(--color-accent-gold)",
-                        }}
-                      >
-                        {row.tokens}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </InViewGate>
+          {/* Mock leaderboard table — the runner-up's count climbs past the
+              leader, then the rows trade places (always rank-coherent) */}
+          <div
+            className="reveal overflow-x-auto rounded-[2px]"
+            style={
+              { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
+            }
+          >
+            <TeaserTable
+              rankHeader={tlt("rankHeader")}
+              usernameHeader={tlt("usernameHeader")}
+              tokensHeader={tlt("tokensHeader")}
+              locale={locale}
+            />
+          </div>
 
           {/* CTA */}
           <div className="reveal mt-8 flex justify-center">
