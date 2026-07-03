@@ -76,7 +76,8 @@ export function TreeModalButton({
           alt=""
           width={24}
           height={24}
-          className="pixelated h-6 w-6 object-contain"
+          className="pixelated"
+          style={{ width: 24, height: 24, objectFit: "contain" }}
           aria-hidden
         />
       </button>

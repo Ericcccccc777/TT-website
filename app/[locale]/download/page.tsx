@@ -258,7 +258,8 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
             alt=""
             width={32}
             height={32}
-            className="pixelated h-8 w-8 object-contain opacity-70"
+            className="pixelated opacity-70"
+            style={{ width: 32, height: 32, objectFit: "contain" }}
             aria-hidden
           />
           <p
