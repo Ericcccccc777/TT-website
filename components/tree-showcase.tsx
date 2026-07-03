@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { TreeScene } from "@/components/tree-scene";
 
 // ── Real growth thresholds from garden.py ─────────────────────────────────────
 
@@ -344,7 +345,7 @@ function SkinStrip({
                   onClick={() => onSelect(skin.id)}
                   aria-pressed={isActive}
                   aria-label={label}
-                  className="relative flex h-12 w-12 items-center justify-center transition-transform duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
+                  className="relative flex h-12 w-12 items-end justify-center overflow-hidden transition-transform duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
                   style={{
                     borderRadius: "var(--radius-pixel)",
                     border: isActive
@@ -356,12 +357,25 @@ function SkinStrip({
                     cursor: "pointer",
                   }}
                 >
+                  {/* Stage-5 sprite (the app's tab-icon stage), oversized and
+                      bottom-anchored so the transparent canvas margins crop
+                      away and the tree fills the button. Inline box: immune
+                      to the dev-time stylesheet-loading race. */}
                   <Image
-                    src={`/sprites/${skin.src}_4.png`}
+                    src={`/sprites/${skin.src}_5.png`}
                     alt={label}
-                    width={36}
-                    height={36}
-                    className="pixelated h-9 w-9 object-contain"
+                    width={54}
+                    height={54}
+                    className="pixelated shrink-0"
+                    style={{
+                      width: 54,
+                      height: 54,
+                      // the sprite intentionally overflows the 44px button window;
+                      // undo preflight's max-width:100% or it clamps width only
+                      maxWidth: "none",
+                      objectFit: "contain",
+                      objectPosition: "50% 100%",
+                    }}
                   />
                 </button>
               ) : (
@@ -457,7 +471,8 @@ function DecorationToggle({
           alt=""
           width={16}
           height={16}
-          className="pixelated h-4 w-4 shrink-0 object-contain"
+          className="pixelated shrink-0"
+          style={{ width: 16, height: 16, objectFit: "contain" }}
           aria-hidden
         />
       )}
@@ -863,71 +878,84 @@ export function TreeShowcase() {
         {/* Progress bar — real token thresholds for the active skin, h-4 thickness */}
         <ProgressBar stage={stage} thresholds={STAGE_TOKENS[activeSkin] ?? STAGE_TOKENS.apple} />
 
-        {/* ── Tree + decorations canvas ── */}
-        <div className="relative mx-auto w-full max-w-[320px]">
-          <div className="relative w-full overflow-visible" style={{ aspectRatio: "1 / 1" }}>
-            {/* Behind-layer decorations (e.g. torii) — painted under the tree */}
-            {renderDecoLayer("behind")}
+        {/* ── Cinematic diorama: widescreen themed backdrop, tree centred ── */}
+        <div
+          className="relative mx-auto w-full max-w-[640px] overflow-hidden pt-5"
+          style={{
+            border: "var(--border-pixel)",
+            borderRadius: "var(--radius-pixel)",
+            boxShadow: "var(--shadow-pixel)",
+          }}
+        >
+          {/* Skin-themed scene behind tree + ground (crossfades on switch) */}
+          <TreeScene skin={activeSkin} prefersReduced={prefersReduced} />
 
-            {/* Tree sprite with shake + crossfade */}
-            <div
-              className={`animate-tree-breathe absolute inset-0 ${isShaking ? "animate-grow-shake" : ""}`}
-              style={{ transformOrigin: "bottom center", zIndex: 2 }}
-            >
-              {prevTreeSrc && (
+          {/* Tree column — canvas keeps its 320px geometry, centred in the frame */}
+          <div className="relative mx-auto w-full max-w-[320px]">
+            <div className="relative w-full overflow-visible" style={{ aspectRatio: "1 / 1" }}>
+              {/* Behind-layer decorations (e.g. torii) — painted under the tree */}
+              {renderDecoLayer("behind")}
+
+              {/* Tree sprite with shake + crossfade */}
+              <div
+                className={`animate-tree-breathe absolute inset-0 ${isShaking ? "animate-grow-shake" : ""}`}
+                style={{ transformOrigin: "bottom center", zIndex: 2 }}
+              >
+                {prevTreeSrc && (
+                  <Image
+                    src={prevTreeSrc}
+                    alt=""
+                    fill
+                    sizes="320px"
+                    className="pixelated object-contain object-bottom"
+                    style={{
+                      opacity: isFading ? 0 : 1,
+                      transition: prefersReduced ? "none" : "opacity 350ms ease",
+                      zIndex: 1,
+                    }}
+                    aria-hidden
+                  />
+                )}
                 <Image
-                  src={prevTreeSrc}
-                  alt=""
+                  src={treeSrc}
+                  alt={t("treeAlt", { stage })}
                   fill
                   sizes="320px"
                   className="pixelated object-contain object-bottom"
                   style={{
-                    opacity: isFading ? 0 : 1,
-                    transition: prefersReduced ? "none" : "opacity 350ms ease",
-                    zIndex: 1,
+                    opacity: prevTreeSrc ? (isFading ? 1 : 0) : 1,
+                    transition: prevTreeSrc && !prefersReduced ? "opacity 350ms ease" : "none",
+                    zIndex: 2,
                   }}
-                  aria-hidden
+                  priority={stage === 8}
+                />
+              </div>
+
+              {/* Front-layer decorations */}
+              {renderDecoLayer("front")}
+
+              {/* Animated Chest widget */}
+              {chestVisible && (
+                <ChestWidget
+                  frame={chestFrame}
+                  chestState={chestState}
+                  onToggle={toggleChest}
+                  teaserText={t("chestTeaserShop")}
+                  openLabel={t("openChest")}
+                  closeLabel={t("closeChest")}
+                  prefersReduced={prefersReduced}
                 />
               )}
-              <Image
-                src={treeSrc}
-                alt={t("treeAlt", { stage })}
-                fill
-                sizes="320px"
-                className="pixelated object-contain object-bottom"
-                style={{
-                  opacity: prevTreeSrc ? (isFading ? 1 : 0) : 1,
-                  transition: prevTreeSrc && !prefersReduced ? "opacity 350ms ease" : "none",
-                  zIndex: 2,
-                }}
-                priority={stage === 8}
-              />
             </div>
-
-            {/* Front-layer decorations */}
-            {renderDecoLayer("front")}
-
-            {/* Animated Chest widget */}
-            {chestVisible && (
-              <ChestWidget
-                frame={chestFrame}
-                chestState={chestState}
-                onToggle={toggleChest}
-                teaserText={t("chestTeaserShop")}
-                openLabel={t("openChest")}
-                closeLabel={t("closeChest")}
-                prefersReduced={prefersReduced}
-              />
-            )}
           </div>
 
-          {/* Ground strip */}
+          {/* Ground strip — full frame width */}
           <div className="relative h-10 w-full" aria-hidden>
             <Image
               src="/sprites/Ground.png"
               alt=""
               fill
-              sizes="320px"
+              sizes="640px"
               className="pixelated object-cover"
             />
           </div>
