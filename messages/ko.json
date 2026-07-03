@@ -57,7 +57,10 @@
     "step03Title": "나무가 천천히 자랍니다",
     "step03Body": "축적된 토큰이 나무를 8단계 성장 과정을 거쳐 발전시킵니다. 작은 씨앗부터 열매 맺는 사과나무까지. 완전 로컬, 네트워크 불필요.",
     "privacyStrong": "프라이버시 우선",
-    "privacyBody": "Token-Forest는 로컬 Claude Code / Codex 사용 로그만 읽습니다. 완전 오프라인——데이터 업로드 없음, 계정 불필요, 인터넷 불필요."
+    "privacyBody": "Token-Forest는 로컬 Claude Code / Codex 사용 로그만 읽습니다. 완전 오프라인——데이터 업로드 없음, 계정 불필요, 인터넷 불필요.",
+    "uploadedZero": "업로드: 0 bytes",
+    "holdToGrow": "길게 눌러 키우기",
+    "tryBubbleAria": "데모 버블 수집"
   },
   "Features": {
     "heading": "기능",
@@ -84,7 +87,8 @@
     "seasonsBadge": "계획 중",
     "lbTitle": "글로벌 리더보드",
     "lbBody": "지금 바로 참여하세요. 데스크톱 앱 설정에서 켜기만 하면 됩니다. 누적 토큰 수와 닉네임만 업로드해 전 세계 플레이어와 나무를 겨뤄요.",
-    "lbBadge": "출시됨"
+    "lbBadge": "출시됨",
+    "offlineOn": "오프라인 모드"
   },
   "TreeShowcase": {
     "heading": "나무를 체험해보세요",
@@ -135,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "사용자명",
     "tokensHeader": "Tokens",
-    "comingSoon": "출시됨",
     "viewAll": "전체 리더보드 보기"
   },
   "DownloadCta": {
@@ -161,7 +164,6 @@
     "treeModalStage": "단계 {n} / 8",
     "treeModalAlt": "{username}님의 픽셀 나무",
     "treeModalClose": "닫기",
-    "comingSoon": "출시 예정",
     "howToHeading": "참여 방법",
     "howTo01Title": "앱 다운로드",
     "howTo01Body": "다운로드 페이지에서 setup.ps1（Windows）또는 setup.sh（macOS / Linux）를 실행하여 설치.",
@@ -205,5 +207,8 @@
     "sysReq2": "Claude Code CLI 또는 OpenAI Codex CLI（사용 로그가 생성되면 OK）",
     "sysReq3": "약 50 MB 디스크 공간",
     "githubBody": "Token-Forest는 완전 오픈소스입니다. Issue, PR, Star 환영합니다!"
+  },
+  "ScrollHud": {
+    "backToTop": "맨 위로"
   }
 }

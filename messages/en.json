@@ -57,7 +57,10 @@
     "step03Title": "Your Tree Grows",
     "step03Body": "Accumulated tokens drive the tree through 8 growth stages, from a tiny seed to a fruit-laden apple tree. Fully local, no network needed.",
     "privacyStrong": "Privacy first",
-    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Completely offline — no data uploaded, no account needed, no internet required."
+    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Completely offline — no data uploaded, no account needed, no internet required.",
+    "uploadedZero": "Uploaded: 0 bytes",
+    "holdToGrow": "Press & hold to grow",
+    "tryBubbleAria": "Collect the demo bubble"
   },
   "Features": {
     "heading": "Features",
@@ -84,7 +87,8 @@
     "seasonsBadge": "Planned",
     "lbTitle": "Global Leaderboard",
     "lbBody": "Available now — turn it on in the desktop app settings. It only uploads your token total and a nickname, then you compare trees with players worldwide.",
-    "lbBadge": "Live now"
+    "lbBadge": "Live now",
+    "offlineOn": "Offline mode"
   },
   "TreeShowcase": {
     "heading": "Try Your Tree",
@@ -135,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "Username",
     "tokensHeader": "Tokens",
-    "comingSoon": "Live now",
     "viewAll": "View Full Leaderboard"
   },
   "DownloadCta": {
@@ -161,7 +164,6 @@
     "treeModalStage": "Stage {n} / 8",
     "treeModalAlt": "{username}'s pixel tree",
     "treeModalClose": "Close",
-    "comingSoon": "Coming Soon",
     "howToHeading": "How to Join",
     "howTo01Title": "Download the App",
     "howTo01Body": "Visit the download page and run setup.ps1 (Windows) or setup.sh (macOS / Linux) to install.",
@@ -205,5 +207,8 @@
     "sysReq2": "Claude Code CLI or OpenAI Codex CLI (just needs usage logs generated)",
     "sysReq3": "~50 MB disk space",
     "githubBody": "Token-Forest is fully open source. Issues, PRs, and Stars are very welcome."
+  },
+  "ScrollHud": {
+    "backToTop": "Back to top"
   }
 }

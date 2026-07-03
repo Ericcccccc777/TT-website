@@ -57,7 +57,10 @@
     "step03Title": "ツリーがゆっくり育つ",
     "step03Body": "蓄積したトークンがツリーを 8 つの成長ステージを経て進化させます。小さな種からリンゴが実るまで。完全ローカル、ネット不要。",
     "privacyStrong": "プライバシー優先",
-    "privacyBody": "Token-Forest はローカルの Claude Code / Codex 使用ログのみを読み込みます。完全オフライン——データのアップロードなし、アカウント不要、ネット不要。"
+    "privacyBody": "Token-Forest はローカルの Claude Code / Codex 使用ログのみを読み込みます。完全オフライン——データのアップロードなし、アカウント不要、ネット不要。",
+    "uploadedZero": "アップロード：0 bytes",
+    "holdToGrow": "長押しで育てる",
+    "tryBubbleAria": "デモバブルを集める"
   },
   "Features": {
     "heading": "機能",
@@ -84,7 +87,8 @@
     "seasonsBadge": "計画中",
     "lbTitle": "グローバルランキング",
     "lbBody": "今すぐ参加できます。デスクトップアプリの設定でオンにするだけ。アップロードは累計トークン数とニックネームのみ。世界中のプレイヤーと木を競おう。",
-    "lbBadge": "公開中"
+    "lbBadge": "公開中",
+    "offlineOn": "オフラインモード"
   },
   "TreeShowcase": {
     "heading": "あなたのツリーを試そう",
@@ -135,7 +139,6 @@
     "rankHeader": "#",
     "usernameHeader": "ユーザー名",
     "tokensHeader": "Tokens",
-    "comingSoon": "公開中",
     "viewAll": "ランキング全体を見る"
   },
   "DownloadCta": {
@@ -161,7 +164,6 @@
     "treeModalStage": "ステージ {n} / 8",
     "treeModalAlt": "{username} さんのピクセルツリー",
     "treeModalClose": "閉じる",
-    "comingSoon": "近日公開",
     "howToHeading": "参加方法",
     "howTo01Title": "アプリをダウンロード",
     "howTo01Body": "ダウンロードページで setup.ps1（Windows）または setup.sh（macOS / Linux）を実行してインストール。",
@@ -205,5 +207,8 @@
     "sysReq2": "Claude Code CLI または OpenAI Codex CLI（使用ログが生成されていれば OK）",
     "sysReq3": "約 50 MB のディスク容量",
     "githubBody": "Token-Forest は完全オープンソースです。Issue、PR、Star 大歓迎！"
+  },
+  "ScrollHud": {
+    "backToTop": "トップへ戻る"
   }
 }

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { setTreeSkin, type TreeSkinId } from "@/hooks/use-tree-skin";
 import { TreeScene } from "@/components/tree-scene";
 
 // ── Real growth thresholds from garden.py ─────────────────────────────────────
@@ -354,6 +355,8 @@ function SkinStrip({
                     boxShadow: isActive ? "var(--shadow-pixel-gold)" : undefined,
                     transform: isActive ? "scale(1.08)" : undefined,
                     background: "var(--color-surface-card)",
+                    // breathing room so the tree's roots don't clip on the base edge
+                    paddingBottom: 4,
                     cursor: "pointer",
                   }}
                 >
@@ -442,10 +445,12 @@ function DecorationToggle({
       style={{
         fontFamily: "var(--font-pixel)",
         fontSize: "var(--text-caption)",
-        background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
-        color: active ? "var(--color-text-cream)" : "var(--color-text-muted-light)",
-        boxShadow: active ? "none" : "var(--shadow-pixel)",
-        transform: active ? "translate(2px, 2px)" : undefined,
+        background: active
+          ? "color-mix(in srgb, var(--color-leaf-light) 34%, var(--color-surface-card))"
+          : "var(--color-surface-card)",
+        color: active ? "var(--color-leaf-deep)" : "var(--color-text-muted-light)",
+        // selected = pressed-in pixel key: soft green fill + inset, stays put (no shift)
+        boxShadow: active ? "inset 2px 2px 0 rgba(58, 125, 68, 0.3)" : "var(--shadow-pixel)",
         border: "1px solid var(--color-soil)",
         borderRadius: 0,
         cursor: "pointer",
@@ -502,10 +507,12 @@ function ChestToggleButton({
       style={{
         fontFamily: "var(--font-pixel)",
         fontSize: "var(--text-caption)",
-        background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
-        color: active ? "var(--color-text-cream)" : "var(--color-text-muted-light)",
-        boxShadow: active ? "none" : "var(--shadow-pixel)",
-        transform: active ? "translate(2px, 2px)" : undefined,
+        background: active
+          ? "color-mix(in srgb, var(--color-leaf-light) 34%, var(--color-surface-card))"
+          : "var(--color-surface-card)",
+        color: active ? "var(--color-leaf-deep)" : "var(--color-text-muted-light)",
+        // selected = pressed-in pixel key: soft green fill + inset, stays put (no shift)
+        boxShadow: active ? "inset 2px 2px 0 rgba(58, 125, 68, 0.3)" : "var(--shadow-pixel)",
         border: "1px solid var(--color-soil)",
         borderRadius: 0,
         cursor: "pointer",
@@ -702,6 +709,7 @@ export function TreeShowcase() {
       const applySkin = () => {
         setActiveSkin(id);
         setEquipped(new Set([DEFAULT_DECO[id]]));
+        setTreeSkin(id as TreeSkinId); // keep the scroll HUD's sprite in sync
       };
       if (prefersReduced) {
         applySkin();
@@ -848,7 +856,7 @@ export function TreeShowcase() {
 
   return (
     <section
-      className="bg-surface-parchment py-20"
+      className="scroll-mt-20 bg-surface-parchment py-20"
       id="showcase"
       aria-labelledby="showcase-heading"
     >
@@ -858,13 +866,18 @@ export function TreeShowcase() {
           className="mb-8 text-center text-leaf-deep"
           style={{
             fontFamily: "var(--font-pixel)",
-            fontSize: "var(--text-display)",
+            fontSize: "var(--text-neon)",
             lineHeight: 1.25,
             wordBreak: "break-word",
             overflowWrap: "anywhere",
           }}
         >
-          {t("heading")}
+          <span
+            className="neon-title neon-light"
+            style={{ "--neon-delay": "0.7s" } as React.CSSProperties}
+          >
+            {t("heading")}
+          </span>
         </h2>
 
         {/* Stage selector — Roman numerals, ≥44px tap targets */}

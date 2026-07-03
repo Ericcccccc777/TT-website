@@ -66,7 +66,6 @@ function Sparkles() {
 export function Hero() {
   const t = useTranslations("Hero");
   const cloudRef = useRef<HTMLDivElement>(null);
-  const grassRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -78,7 +77,6 @@ export function Hero() {
         const y = window.scrollY;
         document.documentElement.style.setProperty("--scroll-y", `${y}px`);
         if (cloudRef.current) cloudRef.current.style.transform = `translateY(calc(${y}px * -0.25))`;
-        if (grassRef.current) grassRef.current.style.transform = `translateY(calc(${y}px * -0.06))`;
       });
     }
 
@@ -87,7 +85,6 @@ export function Hero() {
         window.removeEventListener("scroll", onScroll);
         cancelAnimationFrame(raf);
         if (cloudRef.current) cloudRef.current.style.transform = "";
-        if (grassRef.current) grassRef.current.style.transform = "";
       } else {
         window.addEventListener("scroll", onScroll, { passive: true });
       }
@@ -104,11 +101,7 @@ export function Hero() {
   }, []);
 
   return (
-    <section
-      className="relative overflow-hidden bg-day-sky"
-      style={{ minHeight: "100svh" }}
-      aria-label={t("ariaLabel")}
-    >
+    <section className="relative overflow-hidden bg-day-sky" aria-label={t("ariaLabel")}>
       {/* ── Cloud parallax layer ── */}
       <div
         ref={cloudRef}
@@ -123,35 +116,8 @@ export function Hero() {
         />
       </div>
 
-      {/* ── Grass parallax layer ── */}
-      <div
-        ref={grassRef}
-        className="pointer-events-none absolute inset-x-0 bottom-16 z-0 will-change-transform"
-        aria-hidden
-      >
-        <svg viewBox="0 0 1440 48" className="w-full" preserveAspectRatio="none" aria-hidden>
-          <path
-            d="M0 48 Q 30 20 60 36 Q 90 52 120 32 Q 150 14 180 30 Q 210 46 240 28 Q 270 10 300 32 Q 330 52 360 36 Q 390 20 420 40 Q 450 56 480 34 Q 510 14 540 36 Q 570 54 600 32 Q 630 12 660 34 Q 690 52 720 36 Q 750 20 780 38 Q 810 52 840 30 Q 870 10 900 32 Q 930 52 960 34 Q 990 16 1020 36 Q 1050 54 1080 32 Q 1110 12 1140 36 Q 1170 56 1200 34 Q 1230 14 1260 36 Q 1290 54 1320 32 Q 1350 12 1380 36 Q 1410 56 1440 36 L1440 48 Z"
-            fill="var(--color-leaf-deep)"
-            opacity="0.35"
-          />
-        </svg>
-      </div>
-
-      {/* ── Ground strip ── */}
-      <div className="absolute inset-x-0 bottom-0 z-10 h-16" aria-hidden>
-        <Image
-          src="/sprites/Ground.png"
-          alt=""
-          fill
-          sizes="100vw"
-          className="pixelated object-cover object-bottom"
-          priority
-        />
-      </div>
-
       {/* ── Main content ── */}
-      <div className="relative z-20 mx-auto flex max-w-5xl flex-col items-center px-6 pb-32 pt-16 sm:pt-20">
+      <div className="relative z-20 mx-auto flex max-w-5xl flex-col items-center px-6 pb-10 pt-16 sm:pt-20">
         {/* Tree + bubbles */}
         <div
           className="relative mb-8 flex w-[200px] items-end justify-center sm:w-[240px]"
@@ -173,7 +139,8 @@ export function Hero() {
               priority
             />
           </div>
-          <div className="absolute inset-0 z-30">
+          {/* pointer-events-none: this overlay must never eat bubble clicks */}
+          <div className="pointer-events-none absolute inset-0 z-30">
             <Sparkles />
           </div>
         </div>
@@ -265,6 +232,18 @@ export function Hero() {
         >
           {t("privacyCopy")}
         </p>
+      </div>
+
+      {/* ── Ground strip — sits directly under the copy ── */}
+      <div className="relative z-10 h-16 w-full" aria-hidden>
+        <Image
+          src="/sprites/Ground.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className="pixelated object-cover object-bottom"
+          priority
+        />
       </div>
     </section>
   );

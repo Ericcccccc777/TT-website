@@ -3,7 +3,18 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/hero";
+import { HowSteps } from "@/components/how-steps";
 import { FeatureCard } from "@/components/feature-card";
+import {
+  RealtimeDemo,
+  GrowthFilmstripDemo,
+  OfflineToggleDemo,
+  TaskbarDemo,
+  LeaderboardDemo,
+} from "@/components/feature-demos";
+import { InViewGate } from "@/components/in-view-gate";
+import { TeaserTable } from "@/components/teaser-table";
+import { ScrollTreeHud } from "@/components/scroll-tree-hud";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
 import { getGlobalStats } from "@/lib/leaderboard";
@@ -18,73 +29,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tf = await getTranslations("Features");
   const tlt = await getTranslations("LeaderboardTeaser");
   const tdl = await getTranslations("DownloadCta");
+  const th = await getTranslations("ScrollHud");
 
-  // ── How-it-works steps ────────────────────────────────────────────────────
-  const HOW_STEPS = [
-    {
-      num: "01",
-      title: t("step01Title"),
-      body: t("step01Body"),
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-          <circle
-            cx="16"
-            cy="16"
-            r="13"
-            fill="#D97757"
-            opacity="0.2"
-            stroke="#D97757"
-            strokeWidth="2"
-          />
-          <text
-            x="16"
-            y="21"
-            textAnchor="middle"
-            fill="#D97757"
-            fontSize="11"
-            fontFamily="monospace"
-            fontWeight="bold"
-          >
-            256
-          </text>
-        </svg>
-      ),
-    },
-    {
-      num: "02",
-      title: t("step02Title"),
-      body: t("step02Body"),
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-          <circle
-            cx="16"
-            cy="16"
-            r="13"
-            fill="#10A37F"
-            opacity="0.2"
-            stroke="#10A37F"
-            strokeWidth="2"
-          />
-          <path d="M10 16l4 4 8-8" stroke="#10A37F" strokeWidth="2.5" strokeLinecap="square" />
-        </svg>
-      ),
-    },
-    {
-      num: "03",
-      title: t("step03Title"),
-      body: t("step03Body"),
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-          <rect x="14" y="20" width="4" height="8" fill="#7a5a3a" />
-          <ellipse cx="16" cy="14" rx="9" ry="10" fill="#3a7d44" opacity="0.85" />
-          <circle cx="12" cy="18" r="3" fill="#7bd88f" opacity="0.7" />
-          <circle cx="20" cy="16" r="2.5" fill="#7bd88f" opacity="0.6" />
-        </svg>
-      ),
-    },
-  ] as const;
-
-  // ── Feature grid data ─────────────────────────────────────────────────────
+  // ── Feature grid data — each card carries a live demo screen ─────────────
   const FEATURES: Array<{
     title: string;
     body?: string;
@@ -92,26 +39,31 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     accentColor: "leaf" | "soil";
     badge?: string;
     badgeTone?: "soon" | "live";
+    demo: React.ReactNode;
   }> = [
     {
       title: tf("realtimeTitle"),
       bullets: [tf("realtimeBullet0"), tf("realtimeBullet1")],
       accentColor: "leaf",
+      demo: <RealtimeDemo />,
     },
     {
       title: tf("growthTitle"),
       bullets: [tf("growthBullet0"), tf("growthBullet1")],
       accentColor: "soil",
+      demo: <GrowthFilmstripDemo />,
     },
     {
       title: tf("privacyTitle"),
       bullets: [tf("privacyBullet0"), tf("privacyBullet1")],
       accentColor: "leaf",
+      demo: <OfflineToggleDemo offlineOn={tf("offlineOn")} />,
     },
     {
       title: tf("taskbarTitle"),
       bullets: [tf("taskbarBullet0"), tf("taskbarBullet1")],
       accentColor: "soil",
+      demo: <TaskbarDemo />,
     },
     {
       title: tf("lbTitle"),
@@ -119,6 +71,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       accentColor: "soil",
       badge: tf("lbBadge"),
       badgeTone: "live",
+      demo: <LeaderboardDemo />,
     },
   ];
 
@@ -140,107 +93,69 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </svg>
       </div>
 
+      {/* Scroll-progress tree HUD (pure CSS scroll timeline) */}
+      <ScrollTreeHud backToTop={th("backToTop")} />
+
       {/* ── 1. Hero ── */}
       <Hero />
 
-      {/* ── 2. How it works ── */}
-      <section id="how" className="bg-surface-parchment py-20" aria-labelledby="how-heading">
+      {/* ── 2. How it works — live demo pipeline ── */}
+      <section
+        id="how"
+        className="scroll-mt-20 bg-surface-parchment py-20"
+        aria-labelledby="how-heading"
+      >
         <div className="mx-auto max-w-5xl px-6">
           <h2
             id="how-heading"
             className="reveal mb-12 text-center text-leaf-deep"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
             }}
           >
+            <span className="neon-title neon-light" style={{ "--neon-delay": "0s" } as React.CSSProperties}>
             {t("heading")}
+          </span>
           </h2>
 
-          <div className="grid gap-10 sm:grid-cols-3 sm:gap-6">
-            {HOW_STEPS.map((step, i) => (
-              <div
-                key={step.num}
-                className="reveal flex flex-col items-center text-center sm:items-start sm:text-left"
-                style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
-              >
-                <div className="mb-4 flex items-center gap-3">
-                  <span
-                    style={{
-                      fontFamily: "var(--font-brand)",
-                      fontSize: "var(--text-counter)",
-                      color: "var(--color-accent-gold)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {step.num}
-                  </span>
-                  <span aria-hidden>{step.icon}</span>
-                </div>
-                <h3
-                  className="mb-2 text-leaf-deep"
-                  style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "var(--text-h1)",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {step.title}
-                </h3>
-                <p
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "var(--text-body)",
-                    color: "var(--color-text-muted-light)",
-                    lineHeight: 1.7,
-                  }}
-                >
-                  {step.body}
-                </p>
-                {i < HOW_STEPS.length - 1 && (
-                  <hr
-                    className="mt-8 w-full sm:hidden"
-                    style={{ borderColor: "var(--color-soil)", opacity: 0.4 }}
-                    aria-hidden
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Privacy note */}
-          <div className="reveal mx-auto mt-14 max-w-2xl rounded-[2px] border-2 border-leaf-deep/30 bg-surface-card px-6 py-4 text-center">
-            <p
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "var(--text-small)",
-                color: "var(--color-text-muted-light)",
-                lineHeight: 1.6,
-              }}
-            >
-              🔒 <strong style={{ color: "var(--color-leaf-deep)" }}>{t("privacyStrong")}</strong>：
-              {t("privacyBody")}
-            </p>
-          </div>
+          <HowSteps
+            steps={[
+              { num: "01", title: t("step01Title"), body: t("step01Body") },
+              { num: "02", title: t("step02Title"), body: t("step02Body") },
+              { num: "03", title: t("step03Title"), body: t("step03Body") },
+            ]}
+            privacyStrong={t("privacyStrong")}
+            privacyBody={t("privacyBody")}
+            uploadedZero={t("uploadedZero")}
+            holdToGrow={t("holdToGrow")}
+            bubbleAria={t("tryBubbleAria")}
+          />
         </div>
       </section>
 
       {/* ── 3. Features ── */}
-      <section id="features" className="bg-surface-forest py-20" aria-labelledby="features-heading">
+      <section
+        id="features"
+        className="scroll-mt-20 bg-surface-forest py-20"
+        aria-labelledby="features-heading"
+      >
         <div className="mx-auto max-w-5xl px-6">
           <h2
             id="features-heading"
             className="reveal mb-10 text-center text-leaf-light"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
             }}
           >
+            <span className="neon-title neon-dark" style={{ "--neon-delay": "1.4s" } as React.CSSProperties}>
             {tf("heading")}
+          </span>
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <InViewGate className="grid gap-5 sm:grid-cols-2">
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
@@ -253,11 +168,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   accentColor={f.accentColor}
                   badge={f.badge}
                   badgeTone={f.badgeTone}
-                  className="reveal"
+                  demo={f.demo}
+                  className={`reveal ${i % 2 === 0 ? "reveal-left" : "reveal-right"}`}
                 />
               </div>
             ))}
-          </div>
+          </InViewGate>
         </div>
       </section>
 
@@ -279,13 +195,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             className="reveal mb-3 text-center text-leaf-light"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
               wordBreak: "break-word",
               overflowWrap: "anywhere",
             }}
           >
+            <span className="neon-title neon-dark" style={{ "--neon-delay": "2.8s" } as React.CSSProperties}>
             {tlt("heading")}
+          </span>
           </h2>
           <p
             className="reveal mb-10 text-center"
@@ -371,161 +289,20 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </div>
           </div>
 
-          {/* Mock leaderboard table */}
+          {/* Mock leaderboard table — the runner-up's count climbs past the
+              leader, then the rows trade places (always rank-coherent) */}
           <div
             className="reveal overflow-x-auto rounded-[2px]"
             style={
               { "--reveal-delay": "240ms", border: "var(--border-pixel)" } as React.CSSProperties
             }
           >
-            <table className="w-full border-collapse">
-              <colgroup>
-                <col style={{ width: "2.5rem" }} />
-                <col />
-                <col style={{ width: "auto" }} />
-              </colgroup>
-              <thead>
-                <tr
-                  className="bg-leaf-deep"
-                  style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-                >
-                  <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                    {tlt("rankHeader")}
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-left text-text-cream">
-                    {tlt("usernameHeader")}
-                  </th>
-                  <th scope="col" className="px-4 py-2 text-right text-text-cream">
-                    {tlt("tokensHeader")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    rank: "01",
-                    name: "devwanderer",
-                    tokens: "2,840,192",
-                    color: "var(--color-accent-gold)",
-                  },
-                  { rank: "02", name: "nightcoder_x", tokens: "1,902,448", color: "#9ba8af" },
-                  {
-                    rank: "03",
-                    name: "token_farmer",
-                    tokens: "1,233,760",
-                    color: "var(--color-soil-light)",
-                  },
-                ].map((row) => (
-                  <tr
-                    key={row.rank}
-                    className="border-t border-leaf-deep/20"
-                    style={{
-                      background: "color-mix(in srgb, var(--color-surface-panel) 60%, transparent)",
-                      backdropFilter: "blur(4px)",
-                      fontFamily: "var(--font-body)",
-                      fontSize: "var(--text-body)",
-                    }}
-                  >
-                    <td
-                      className="px-4 py-3"
-                      style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "var(--text-caption)",
-                        color: row.color,
-                      }}
-                    >
-                      {row.rank}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Image
-                          src="/sprites/AppleTree_8.png"
-                          alt=""
-                          width={20}
-                          height={20}
-                          className="pixelated shrink-0"
-                          style={{ width: 20, height: 20, objectFit: "contain" }}
-                          aria-hidden
-                        />
-                        <span style={{ color: "var(--color-text-cream)" }}>{row.name}</span>
-                      </div>
-                    </td>
-                    <td
-                      className="px-4 py-3 text-right"
-                      style={{
-                        fontFamily: "var(--font-pixel)",
-                        fontSize: "var(--text-caption)",
-                        color: "var(--color-accent-gold)",
-                      }}
-                    >
-                      {row.tokens}
-                    </td>
-                  </tr>
-                ))}
-
-                {/* Blurred YOUR TREE row */}
-                <tr className="border-t border-leaf-deep/20">
-                  <td
-                    colSpan={3}
-                    className="relative overflow-hidden p-0"
-                    style={{
-                      background: "color-mix(in srgb, var(--color-surface-panel) 60%, transparent)",
-                    }}
-                  >
-                    <div
-                      className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-x-4 px-4 py-3"
-                      style={{
-                        filter: "blur(4px)",
-                        fontFamily: "var(--font-body)",
-                        fontSize: "var(--text-body)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: "var(--color-text-muted-dark)",
-                        }}
-                      >
-                        ?
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="h-5 w-5 shrink-0"
-                          style={{ background: "var(--color-surface-card)" }}
-                        />
-                        <span style={{ color: "var(--color-text-cream)" }}>YOUR TREE</span>
-                      </div>
-                      <span
-                        className="text-right"
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: "var(--color-accent-gold)",
-                        }}
-                      >
-                        ???
-                      </span>
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span
-                        className="px-3 py-1"
-                        style={{
-                          fontFamily: "var(--font-pixel)",
-                          fontSize: "var(--text-caption)",
-                          color: "var(--color-leaf-light)",
-                          background: "var(--color-surface-panel)",
-                          border: "2px solid var(--color-leaf-light)",
-                          borderRadius: "var(--radius-pixel)",
-                        }}
-                      >
-                        {tlt("comingSoon")}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <TeaserTable
+              rankHeader={tlt("rankHeader")}
+              usernameHeader={tlt("usernameHeader")}
+              tokensHeader={tlt("tokensHeader")}
+              locale={locale}
+            />
           </div>
 
           {/* CTA */}
@@ -548,7 +325,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       {/* ── 7. Download CTA ── */}
-      <section id="download" className="bg-surface-parchment py-20" aria-labelledby="dl-heading">
+      <section
+        id="download"
+        className="scroll-mt-20 bg-surface-parchment py-20"
+        aria-labelledby="dl-heading"
+      >
         <div className="mx-auto max-w-3xl px-6 text-center">
           <Image
             src="/sprites/AppleTree_8.png"
@@ -563,11 +344,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             className="reveal mb-4 text-leaf-deep"
             style={{
               fontFamily: "var(--font-pixel)",
-              fontSize: "var(--text-display)",
+              fontSize: "var(--text-neon)",
               lineHeight: 1.25,
             }}
           >
+            <span className="neon-title neon-light" style={{ "--neon-delay": "4.2s" } as React.CSSProperties}>
             {tdl("heading")}
+          </span>
           </h2>
           <p
             className="reveal mx-auto mb-8 max-w-md"
