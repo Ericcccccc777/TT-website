@@ -443,7 +443,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                           alt=""
                           width={20}
                           height={20}
-                          className="pixelated h-5 w-5 shrink-0 object-contain"
+                          className="pixelated shrink-0"
+                          style={{ width: 20, height: 20, objectFit: "contain" }}
                           aria-hidden
                         />
                         <span style={{ color: "var(--color-text-cream)" }}>{row.name}</span>

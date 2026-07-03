@@ -142,7 +142,8 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
               alt=""
               width={64}
               height={64}
-              className="pixelated mx-auto mb-4 h-16 w-16 object-contain opacity-60"
+              className="pixelated mx-auto mb-4 opacity-60"
+              style={{ width: 64, height: 64, objectFit: "contain" }}
               aria-hidden
             />
             <p
