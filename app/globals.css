@@ -99,7 +99,7 @@
   --scroll-y: 0px;
 
   /* Neon section-title size (bigger + responsive) */
-  --text-neon: clamp(2.3rem, 5.2vw, 2.9rem);
+  --text-neon: clamp(2.05rem, 4.2vw, 2.4rem);
 }
 
 /* ─────────────────────────────────────────────────────────────

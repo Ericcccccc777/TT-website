@@ -90,7 +90,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
   return (
     <div className="min-h-screen bg-surface-parchment text-text-forest">
       {/* ── Global stats banner ── */}
-      <div className="bg-surface-card">
+      <div className="border-b-2 border-leaf-deep bg-surface-card">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 px-6 py-6 sm:flex-row sm:justify-around">
           <StatChip
             label={t("globalTrees")}
@@ -132,10 +132,6 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
         </div>
       </div>
 
-      {/* pixel ground divider under the banner */}
-      <div className="relative h-5 w-full" aria-hidden>
-        <Image src="/sprites/Ground.png" alt="" fill sizes="100vw" className="pixelated object-cover" />
-      </div>
 
       {/* ── Main content ── */}
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">

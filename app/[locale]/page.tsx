@@ -349,14 +349,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   ].map((row, i) => (
                     <tr
                       key={row.rank}
-                      className={`lb-row reveal reveal-right border-t border-leaf-deep/20 ${row.swapClass}`}
-                      style={
-                        {
-                          "--reveal-delay": `${280 + i * 120}ms`,
-                          fontFamily: "var(--font-body)",
-                          fontSize: "var(--text-body)",
-                        } as React.CSSProperties
-                      }
+                      className={`lb-row border-t border-leaf-deep/20 ${row.swapClass}`}
+                      style={{
+                        fontFamily: "var(--font-body)",
+                        fontSize: "var(--text-body)",
+                      }}
                     >
                       <td
                         className="whitespace-nowrap px-4 py-3"
