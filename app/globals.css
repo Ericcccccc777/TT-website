@@ -1083,6 +1083,11 @@ body {
     animation: none !important;
     transform: none !important;
   }
+
+  /* Scroll-progress HUD is pure motion — hide it entirely */
+  .scroll-hud {
+    display: none !important;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1870,4 +1875,74 @@ body {
 
 .group:active .day-overlay {
   opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLL TREE HUD  (components/scroll-tree-hud.tsx)
+   Page scroll progress = tree growth stage. Pure CSS scroll()
+   timeline; hidden on small screens, unsupported browsers and
+   under reduced motion.
+───────────────────────────────────────────────────────────── */
+
+.scroll-hud {
+  display: none;
+}
+
+/* 8 stages held evenly across the page scroll (7 × 44px strip travel) */
+@keyframes hud-strip-scrub {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-308px);
+  }
+}
+
+@keyframes hud-xp-scrub {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes hud-max-blip {
+  0%,
+  95% {
+    opacity: 0;
+  }
+
+  96%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 640px) {
+  @supports (animation-timeline: scroll()) {
+    .scroll-hud {
+      display: block;
+    }
+
+    .hud-strip {
+      animation: hud-strip-scrub steps(8, jump-none) both;
+
+      /* fixed-position → must target the root scroller explicitly */
+      animation-timeline: scroll(root);
+      will-change: transform;
+    }
+
+    .hud-xp {
+      animation: hud-xp-scrub linear both;
+      animation-timeline: scroll(root);
+    }
+
+    .hud-max {
+      animation: hud-max-blip steps(1) both;
+      animation-timeline: scroll(root);
+    }
+  }
 }

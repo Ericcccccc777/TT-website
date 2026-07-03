@@ -13,6 +13,7 @@ import {
   LeaderboardDemo,
 } from "@/components/feature-demos";
 import { InViewGate } from "@/components/in-view-gate";
+import { ScrollTreeHud } from "@/components/scroll-tree-hud";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
 import { getGlobalStats } from "@/lib/leaderboard";
@@ -89,6 +90,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <rect width="100%" height="100%" filter="url(#grain)" />
         </svg>
       </div>
+
+      {/* Scroll-progress tree HUD (pure CSS scroll timeline) */}
+      <ScrollTreeHud />
 
       {/* ── 1. Hero ── */}
       <Hero />
