@@ -87,7 +87,8 @@
     "seasonsBadge": "계획 중",
     "lbTitle": "글로벌 리더보드",
     "lbBody": "지금 바로 참여하세요. 데스크톱 앱 설정에서 켜기만 하면 됩니다. 누적 토큰 수와 닉네임만 업로드해 전 세계 플레이어와 나무를 겨뤄요.",
-    "lbBadge": "출시됨"
+    "lbBadge": "출시됨",
+    "offlineOn": "오프라인 모드"
   },
   "TreeShowcase": {
     "heading": "나무를 체험해보세요",

@@ -87,7 +87,8 @@
     "seasonsBadge": "Planned",
     "lbTitle": "Global Leaderboard",
     "lbBody": "Available now — turn it on in the desktop app settings. It only uploads your token total and a nickname, then you compare trees with players worldwide.",
-    "lbBadge": "Live now"
+    "lbBadge": "Live now",
+    "offlineOn": "Offline mode"
   },
   "TreeShowcase": {
     "heading": "Try Your Tree",

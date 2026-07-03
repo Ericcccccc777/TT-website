@@ -1277,3 +1277,319 @@ body {
     animation: padlock-jiggle 320ms ease-in-out;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   FEATURE DEMO SCREENS + CARD HOVER SUITE
+   (components/feature-demos.tsx, feature-card.tsx)
+   Idle loops are gentle, desynced 3-5s cycles; everything inside
+   the grid freezes offscreen via <InViewGate> → .scene-paused.
+───────────────────────────────────────────────────────────── */
+
+/* Activity-monitor bar blip (scaleY between resting and full) */
+@keyframes bar-blip {
+  from {
+    transform: scaleY(0.35);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Filmstrip idle cycle: each frame is visible for its 1/8 slice.
+   Frames get animation-delay: i * 0.8s over an 6.4s cycle. */
+@keyframes film-cycle {
+  0% {
+    opacity: 1;
+  }
+
+  12.4% {
+    opacity: 1;
+  }
+
+  12.5% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The offline toggle tries to flip, then snaps back (head-shake) */
+@keyframes toggle-refuse {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  35% {
+    transform: translateX(-11px);
+  }
+
+  45% {
+    transform: translateX(-8px);
+  }
+
+  55% {
+    transform: translateX(-12px);
+  }
+
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+/* Red ✕ refusal stamp */
+@keyframes stamp-x {
+  0% {
+    transform: translateY(-50%) scale(1.6);
+    opacity: 0;
+  }
+
+  20% {
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+  }
+
+  70% {
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Micro-leaderboard rank swap (rows trade places, then trade back) */
+@keyframes lb-swap-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  8%,
+  44% {
+    transform: translateY(15px);
+  }
+
+  52% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes lb-swap-up {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  8%,
+  44% {
+    transform: translateY(-15px);
+  }
+
+  52% {
+    transform: translateY(0);
+  }
+}
+
+/* Rank-up arrow blips in while the rows are swapped */
+@keyframes lb-arrow-blip {
+  0%,
+  6% {
+    opacity: 0;
+  }
+
+  12%,
+  40% {
+    opacity: 1;
+  }
+
+  48%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* LIVE indicator: recording-light blink */
+@keyframes live-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.15;
+  }
+}
+
+/* Check bullet re-stamps on card hover */
+@keyframes check-stamp {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* One-shot diagonal shine sweep across the card */
+@keyframes card-shine {
+  from {
+    transform: translateX(-150%) skewX(-18deg);
+  }
+
+  to {
+    transform: translateX(450%) skewX(-18deg);
+  }
+}
+
+/* Idle loops (also run on touch devices) */
+.live-dot {
+  animation: live-blink 1.4s steps(1) infinite;
+}
+
+.lb-row-first {
+  animation: lb-swap-down 9s ease-in-out 3s infinite;
+}
+
+.lb-row-second {
+  animation: lb-swap-up 9s ease-in-out 3s infinite;
+}
+
+.lb-arrow {
+  animation: lb-arrow-blip 9s linear 3s infinite;
+}
+
+/* Filmstrip: stage VIII rests visible; the idle cycle steps I→VIII */
+.film-frame {
+  opacity: 0;
+  animation: film-cycle 6.4s steps(1) infinite;
+}
+
+.film-zone {
+  cursor: crosshair;
+}
+
+/* Card stripe baseline (transition lives here so it eases both ways) */
+.card-stripe {
+  transition: transform 150ms steps(2, end);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .card-stripe {
+    transform: scaleX(2.5);
+  }
+
+  .group:hover .card-shine {
+    animation: card-shine 650ms ease both;
+  }
+
+  .group:hover li:nth-child(1) .leaf-check {
+    animation: check-stamp 220ms ease both;
+  }
+
+  .group:hover li:nth-child(2) .leaf-check {
+    animation: check-stamp 220ms ease 90ms both;
+  }
+
+  .group:hover .demo-screen {
+    --demo-speed: 0.33;
+  }
+
+  .group:hover .toggle-knob {
+    animation: toggle-refuse 700ms ease both;
+  }
+
+  .group:hover .toggle-x {
+    animation: stamp-x 900ms ease 150ms both;
+  }
+
+  .group:hover .taskbar-shake {
+    animation: grow-shake 300ms ease-in-out;
+  }
+
+  .group:hover .lb-you {
+    animation: row-slide-in 320ms ease both;
+  }
+
+  /* Hover-scrub: pause the idle cycle, show the hovered column's stage */
+  .film-scrub:hover .film-frame {
+    animation: none;
+    opacity: 0;
+  }
+
+  .film-scrub:has(.film-zone-1:hover) .film-frame-1,
+  .film-scrub:has(.film-zone-2:hover) .film-frame-2,
+  .film-scrub:has(.film-zone-3:hover) .film-frame-3,
+  .film-scrub:has(.film-zone-4:hover) .film-frame-4,
+  .film-scrub:has(.film-zone-5:hover) .film-frame-5,
+  .film-scrub:has(.film-zone-6:hover) .film-frame-6,
+  .film-scrub:has(.film-zone-7:hover) .film-frame-7,
+  .film-scrub:has(.film-zone-8:hover) .film-frame-8 {
+    opacity: 1;
+  }
+
+  /* No column hovered while inside the screen → rest on stage VIII */
+  .film-scrub:hover:not(:has(.film-zone:hover)) .film-frame-8 {
+    opacity: 1;
+  }
+
+  .film-scrub:has(.film-zone-1:hover) .film-cell-1,
+  .film-scrub:has(.film-zone-2:hover) .film-cell-2,
+  .film-scrub:has(.film-zone-3:hover) .film-cell-3,
+  .film-scrub:has(.film-zone-4:hover) .film-cell-4,
+  .film-scrub:has(.film-zone-5:hover) .film-cell-5,
+  .film-scrub:has(.film-zone-6:hover) .film-cell-6,
+  .film-scrub:has(.film-zone-7:hover) .film-cell-7,
+  .film-scrub:has(.film-zone-8:hover) .film-cell-8 {
+    outline: 1px solid var(--color-leaf-light);
+    outline-offset: 1px;
+  }
+}
+
+/* Reveal entrance variants (same system, different animation-name) */
+@keyframes reveal-slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .reveal.reveal-left {
+    animation-name: reveal-slide-left;
+  }
+
+  .reveal.reveal-right {
+    animation-name: reveal-slide-right;
+  }
+}

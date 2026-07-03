@@ -5,6 +5,14 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/hero";
 import { HowSteps } from "@/components/how-steps";
 import { FeatureCard } from "@/components/feature-card";
+import {
+  RealtimeDemo,
+  GrowthFilmstripDemo,
+  OfflineToggleDemo,
+  TaskbarDemo,
+  LeaderboardDemo,
+} from "@/components/feature-demos";
+import { InViewGate } from "@/components/in-view-gate";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
 import { getGlobalStats } from "@/lib/leaderboard";
@@ -20,7 +28,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tlt = await getTranslations("LeaderboardTeaser");
   const tdl = await getTranslations("DownloadCta");
 
-  // ── Feature grid data ─────────────────────────────────────────────────────
+  // ── Feature grid data — each card carries a live demo screen ─────────────
   const FEATURES: Array<{
     title: string;
     body?: string;
@@ -28,26 +36,31 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     accentColor: "leaf" | "soil";
     badge?: string;
     badgeTone?: "soon" | "live";
+    demo: React.ReactNode;
   }> = [
     {
       title: tf("realtimeTitle"),
       bullets: [tf("realtimeBullet0"), tf("realtimeBullet1")],
       accentColor: "leaf",
+      demo: <RealtimeDemo />,
     },
     {
       title: tf("growthTitle"),
       bullets: [tf("growthBullet0"), tf("growthBullet1")],
       accentColor: "soil",
+      demo: <GrowthFilmstripDemo />,
     },
     {
       title: tf("privacyTitle"),
       bullets: [tf("privacyBullet0"), tf("privacyBullet1")],
       accentColor: "leaf",
+      demo: <OfflineToggleDemo offlineOn={tf("offlineOn")} />,
     },
     {
       title: tf("taskbarTitle"),
       bullets: [tf("taskbarBullet0"), tf("taskbarBullet1")],
       accentColor: "soil",
+      demo: <TaskbarDemo />,
     },
     {
       title: tf("lbTitle"),
@@ -55,6 +68,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       accentColor: "soil",
       badge: tf("lbBadge"),
       badgeTone: "live",
+      demo: <LeaderboardDemo />,
     },
   ];
 
@@ -131,7 +145,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           >
             {tf("heading")}
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2">
+          <InViewGate className="grid gap-5 sm:grid-cols-2">
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
@@ -144,11 +158,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   accentColor={f.accentColor}
                   badge={f.badge}
                   badgeTone={f.badgeTone}
-                  className="reveal"
+                  demo={f.demo}
+                  className={`reveal ${i % 2 === 0 ? "reveal-left" : "reveal-right"}`}
                 />
               </div>
             ))}
-          </div>
+          </InViewGate>
         </div>
       </section>
 

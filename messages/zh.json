@@ -87,7 +87,8 @@
     "seasonsBadge": "规划中",
     "lbTitle": "全球排行榜",
     "lbBody": "现在就能参与:在桌面 App 设置里一键开启,仅上传 token 总量与昵称,和全球玩家比谁的树最茂盛。",
-    "lbBadge": "现已上线"
+    "lbBadge": "现已上线",
+    "offlineOn": "离线模式"
   },
   "TreeShowcase": {
     "heading": "试试你的树",
