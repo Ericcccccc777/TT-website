@@ -354,6 +354,8 @@ function SkinStrip({
                     boxShadow: isActive ? "var(--shadow-pixel-gold)" : undefined,
                     transform: isActive ? "scale(1.08)" : undefined,
                     background: "var(--color-surface-card)",
+                    // breathing room so the tree's roots don't clip on the base edge
+                    paddingBottom: 4,
                     cursor: "pointer",
                   }}
                 >
@@ -442,10 +444,12 @@ function DecorationToggle({
       style={{
         fontFamily: "var(--font-pixel)",
         fontSize: "var(--text-caption)",
-        background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
-        color: active ? "var(--color-text-cream)" : "var(--color-text-muted-light)",
-        boxShadow: active ? "none" : "var(--shadow-pixel)",
-        transform: active ? "translate(2px, 2px)" : undefined,
+        background: active
+          ? "color-mix(in srgb, var(--color-leaf-light) 34%, var(--color-surface-card))"
+          : "var(--color-surface-card)",
+        color: active ? "var(--color-leaf-deep)" : "var(--color-text-muted-light)",
+        // selected = pressed-in pixel key: soft green fill + inset, stays put (no shift)
+        boxShadow: active ? "inset 2px 2px 0 rgba(58, 125, 68, 0.3)" : "var(--shadow-pixel)",
         border: "1px solid var(--color-soil)",
         borderRadius: 0,
         cursor: "pointer",
@@ -502,10 +506,12 @@ function ChestToggleButton({
       style={{
         fontFamily: "var(--font-pixel)",
         fontSize: "var(--text-caption)",
-        background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
-        color: active ? "var(--color-text-cream)" : "var(--color-text-muted-light)",
-        boxShadow: active ? "none" : "var(--shadow-pixel)",
-        transform: active ? "translate(2px, 2px)" : undefined,
+        background: active
+          ? "color-mix(in srgb, var(--color-leaf-light) 34%, var(--color-surface-card))"
+          : "var(--color-surface-card)",
+        color: active ? "var(--color-leaf-deep)" : "var(--color-text-muted-light)",
+        // selected = pressed-in pixel key: soft green fill + inset, stays put (no shift)
+        boxShadow: active ? "inset 2px 2px 0 rgba(58, 125, 68, 0.3)" : "var(--shadow-pixel)",
         border: "1px solid var(--color-soil)",
         borderRadius: 0,
         cursor: "pointer",
