@@ -209,5 +209,8 @@
     "sysReq2": "Claude Code CLI または OpenAI Codex CLI（使用ログが生成されていれば OK）",
     "sysReq3": "約 50 MB のディスク容量",
     "githubBody": "Token-Forest は完全オープンソースです。Issue、PR、Star 大歓迎！"
+  },
+  "ScrollHud": {
+    "backToTop": "トップへ戻る"
   }
 }

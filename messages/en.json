@@ -209,5 +209,8 @@
     "sysReq2": "Claude Code CLI or OpenAI Codex CLI (just needs usage logs generated)",
     "sysReq3": "~50 MB disk space",
     "githubBody": "Token-Forest is fully open source. Issues, PRs, and Stars are very welcome."
+  },
+  "ScrollHud": {
+    "backToTop": "Back to top"
   }
 }

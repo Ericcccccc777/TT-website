@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { setTreeSkin, type TreeSkinId } from "@/hooks/use-tree-skin";
 import { TreeScene } from "@/components/tree-scene";
 
 // ── Real growth thresholds from garden.py ─────────────────────────────────────
@@ -708,6 +709,7 @@ export function TreeShowcase() {
       const applySkin = () => {
         setActiveSkin(id);
         setEquipped(new Set([DEFAULT_DECO[id]]));
+        setTreeSkin(id as TreeSkinId); // keep the scroll HUD's sprite in sync
       };
       if (prefersReduced) {
         applySkin();

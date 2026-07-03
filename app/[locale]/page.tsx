@@ -28,6 +28,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tf = await getTranslations("Features");
   const tlt = await getTranslations("LeaderboardTeaser");
   const tdl = await getTranslations("DownloadCta");
+  const th = await getTranslations("ScrollHud");
 
   // ── Feature grid data — each card carries a live demo screen ─────────────
   const FEATURES: Array<{
@@ -92,7 +93,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </div>
 
       {/* Scroll-progress tree HUD (pure CSS scroll timeline) */}
-      <ScrollTreeHud />
+      <ScrollTreeHud backToTop={th("backToTop")} />
 
       {/* ── 1. Hero ── */}
       <Hero />

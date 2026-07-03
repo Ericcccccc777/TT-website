@@ -1888,14 +1888,14 @@ body {
   display: none;
 }
 
-/* 8 stages held evenly across the page scroll (7 × 44px strip travel) */
+/* 8 stages held evenly across the page scroll (7 × 56px strip travel) */
 @keyframes hud-strip-scrub {
   from {
     transform: translateY(0);
   }
 
   to {
-    transform: translateY(-308px);
+    transform: translateY(-392px);
   }
 }
 

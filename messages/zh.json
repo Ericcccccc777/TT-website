@@ -209,5 +209,8 @@
     "sysReq2": "Claude Code CLI 或 OpenAI Codex CLI（已生成使用日志即可）",
     "sysReq3": "约 50 MB 磁盘空间",
     "githubBody": "Token-Forest 完全开源。欢迎提 Issue、PR 或给个 Star。"
+  },
+  "ScrollHud": {
+    "backToTop": "回到顶部"
   }
 }
