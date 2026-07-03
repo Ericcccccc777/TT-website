@@ -57,7 +57,10 @@
     "step03Title": "나무가 천천히 자랍니다",
     "step03Body": "축적된 토큰이 나무를 8단계 성장 과정을 거쳐 발전시킵니다. 작은 씨앗부터 열매 맺는 사과나무까지. 완전 로컬, 네트워크 불필요.",
     "privacyStrong": "프라이버시 우선",
-    "privacyBody": "Token-Forest는 로컬 Claude Code / Codex 사용 로그만 읽습니다. 완전 오프라인——데이터 업로드 없음, 계정 불필요, 인터넷 불필요."
+    "privacyBody": "Token-Forest는 로컬 Claude Code / Codex 사용 로그만 읽습니다. 완전 오프라인——데이터 업로드 없음, 계정 불필요, 인터넷 불필요.",
+    "uploadedZero": "업로드: 0 bytes",
+    "holdToGrow": "길게 눌러 키우기",
+    "tryBubbleAria": "데모 버블 수집"
   },
   "Features": {
     "heading": "기능",

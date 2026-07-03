@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/hero";
+import { HowSteps } from "@/components/how-steps";
 import { FeatureCard } from "@/components/feature-card";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
@@ -18,71 +19,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const tf = await getTranslations("Features");
   const tlt = await getTranslations("LeaderboardTeaser");
   const tdl = await getTranslations("DownloadCta");
-
-  // ── How-it-works steps ────────────────────────────────────────────────────
-  const HOW_STEPS = [
-    {
-      num: "01",
-      title: t("step01Title"),
-      body: t("step01Body"),
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-          <circle
-            cx="16"
-            cy="16"
-            r="13"
-            fill="#D97757"
-            opacity="0.2"
-            stroke="#D97757"
-            strokeWidth="2"
-          />
-          <text
-            x="16"
-            y="21"
-            textAnchor="middle"
-            fill="#D97757"
-            fontSize="11"
-            fontFamily="monospace"
-            fontWeight="bold"
-          >
-            256
-          </text>
-        </svg>
-      ),
-    },
-    {
-      num: "02",
-      title: t("step02Title"),
-      body: t("step02Body"),
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-          <circle
-            cx="16"
-            cy="16"
-            r="13"
-            fill="#10A37F"
-            opacity="0.2"
-            stroke="#10A37F"
-            strokeWidth="2"
-          />
-          <path d="M10 16l4 4 8-8" stroke="#10A37F" strokeWidth="2.5" strokeLinecap="square" />
-        </svg>
-      ),
-    },
-    {
-      num: "03",
-      title: t("step03Title"),
-      body: t("step03Body"),
-      icon: (
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden>
-          <rect x="14" y="20" width="4" height="8" fill="#7a5a3a" />
-          <ellipse cx="16" cy="14" rx="9" ry="10" fill="#3a7d44" opacity="0.85" />
-          <circle cx="12" cy="18" r="3" fill="#7bd88f" opacity="0.7" />
-          <circle cx="20" cy="16" r="2.5" fill="#7bd88f" opacity="0.6" />
-        </svg>
-      ),
-    },
-  ] as const;
 
   // ── Feature grid data ─────────────────────────────────────────────────────
   const FEATURES: Array<{
@@ -143,8 +79,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* ── 1. Hero ── */}
       <Hero />
 
-      {/* ── 2. How it works ── */}
-      <section id="how" className="bg-surface-parchment py-20" aria-labelledby="how-heading">
+      {/* ── 2. How it works — live demo pipeline ── */}
+      <section
+        id="how"
+        className="scroll-mt-20 bg-surface-parchment py-20"
+        aria-labelledby="how-heading"
+      >
         <div className="mx-auto max-w-5xl px-6">
           <h2
             id="how-heading"
@@ -158,76 +98,27 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {t("heading")}
           </h2>
 
-          <div className="grid gap-10 sm:grid-cols-3 sm:gap-6">
-            {HOW_STEPS.map((step, i) => (
-              <div
-                key={step.num}
-                className="reveal flex flex-col items-center text-center sm:items-start sm:text-left"
-                style={{ "--reveal-delay": `${i * 80}ms` } as React.CSSProperties}
-              >
-                <div className="mb-4 flex items-center gap-3">
-                  <span
-                    style={{
-                      fontFamily: "var(--font-brand)",
-                      fontSize: "var(--text-counter)",
-                      color: "var(--color-accent-gold)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {step.num}
-                  </span>
-                  <span aria-hidden>{step.icon}</span>
-                </div>
-                <h3
-                  className="mb-2 text-leaf-deep"
-                  style={{
-                    fontFamily: "var(--font-pixel)",
-                    fontSize: "var(--text-h1)",
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {step.title}
-                </h3>
-                <p
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "var(--text-body)",
-                    color: "var(--color-text-muted-light)",
-                    lineHeight: 1.7,
-                  }}
-                >
-                  {step.body}
-                </p>
-                {i < HOW_STEPS.length - 1 && (
-                  <hr
-                    className="mt-8 w-full sm:hidden"
-                    style={{ borderColor: "var(--color-soil)", opacity: 0.4 }}
-                    aria-hidden
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Privacy note */}
-          <div className="reveal mx-auto mt-14 max-w-2xl rounded-[2px] border-2 border-leaf-deep/30 bg-surface-card px-6 py-4 text-center">
-            <p
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "var(--text-small)",
-                color: "var(--color-text-muted-light)",
-                lineHeight: 1.6,
-              }}
-            >
-              🔒 <strong style={{ color: "var(--color-leaf-deep)" }}>{t("privacyStrong")}</strong>：
-              {t("privacyBody")}
-            </p>
-          </div>
+          <HowSteps
+            steps={[
+              { num: "01", title: t("step01Title"), body: t("step01Body") },
+              { num: "02", title: t("step02Title"), body: t("step02Body") },
+              { num: "03", title: t("step03Title"), body: t("step03Body") },
+            ]}
+            privacyStrong={t("privacyStrong")}
+            privacyBody={t("privacyBody")}
+            uploadedZero={t("uploadedZero")}
+            holdToGrow={t("holdToGrow")}
+            bubbleAria={t("tryBubbleAria")}
+          />
         </div>
       </section>
 
       {/* ── 3. Features ── */}
-      <section id="features" className="bg-surface-forest py-20" aria-labelledby="features-heading">
+      <section
+        id="features"
+        className="scroll-mt-20 bg-surface-forest py-20"
+        aria-labelledby="features-heading"
+      >
         <div className="mx-auto max-w-5xl px-6">
           <h2
             id="features-heading"
@@ -548,7 +439,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       </section>
 
       {/* ── 7. Download CTA ── */}
-      <section id="download" className="bg-surface-parchment py-20" aria-labelledby="dl-heading">
+      <section
+        id="download"
+        className="scroll-mt-20 bg-surface-parchment py-20"
+        aria-labelledby="dl-heading"
+      >
         <div className="mx-auto max-w-3xl px-6 text-center">
           <Image
             src="/sprites/AppleTree_8.png"

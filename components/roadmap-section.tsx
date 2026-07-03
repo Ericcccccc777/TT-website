@@ -24,7 +24,11 @@ export function RoadmapSection() {
   ];
 
   return (
-    <section id="roadmap" className="bg-night-sky py-20" aria-labelledby="roadmap-heading">
+    <section
+      id="roadmap"
+      className="scroll-mt-20 bg-night-sky py-20"
+      aria-labelledby="roadmap-heading"
+    >
       <div className="mx-auto max-w-4xl px-6">
         {/* Static star glyphs — drift subtly with scroll via star-ambient */}
         <div className="star-ambient pointer-events-none relative mb-2 h-8" aria-hidden>

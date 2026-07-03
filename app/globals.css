@@ -1049,6 +1049,20 @@ body {
     animation: none !important;
     transform: none !important;
   }
+
+  /* §how staged pipeline: settle to the fully-played state */
+  .stage-armed .seq-item,
+  .stage-play .seq-item {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .stage-armed .how-connector-path,
+  .stage-play .how-connector-path {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1111,5 +1125,155 @@ body {
     animation-timeline: scroll();
     animation-range: 0% 100%;
     will-change: transform;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   §HOW STAGED PIPELINE  (components/how-steps.tsx)
+   Wrapper gets `stage-armed` post-hydration (never under reduced
+   motion) and `stage-play` on first viewport entry. Server HTML /
+   no-JS / reduced motion always shows the final resting state.
+───────────────────────────────────────────────────────────── */
+
+/* Demo box pop-in with overshoot */
+@keyframes step-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Latin-only typewriter (clip-path wipe, stepped) */
+@keyframes type-on {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 -2% 0 0);
+  }
+}
+
+/* Token bubble inflates out of the terminal in discrete size steps */
+@keyframes bubble-inflate {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  30% {
+    transform: scale(0.45);
+    opacity: 1;
+  }
+
+  60% {
+    transform: scale(0.72);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Gentle idle bob for demo bubbles */
+@keyframes demo-bob {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+/* Pixel hand cursor nudging toward its click target */
+@keyframes hand-nudge {
+  from {
+    transform: translate(4px, 4px);
+  }
+
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+/* LV UP! toast: pop in, ride up, fade out */
+@keyframes lvup-pop {
+  0% {
+    transform: translate(-50%, 6px) scale(0.6);
+    opacity: 0;
+  }
+
+  25% {
+    transform: translate(-50%, 0) scale(1.1);
+    opacity: 1;
+  }
+
+  70% {
+    transform: translate(-50%, -10px) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-50%, -18px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Save-slot padlock jiggle */
+@keyframes padlock-jiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+
+  30% {
+    transform: rotate(-12deg);
+  }
+
+  70% {
+    transform: rotate(12deg);
+  }
+}
+
+/* Armed (JS ready, motion allowed): hide the sequence until it plays */
+.stage-armed .seq-item {
+  opacity: 0;
+}
+
+.stage-armed .how-connector-path {
+  stroke-dashoffset: 1000;
+}
+
+/* Playing: staggered chain — cards rise, line draws, demo boxes pop */
+.stage-play .seq-item {
+  animation: reveal-rise 450ms ease both;
+  animation-delay: var(--seq-delay, 0ms);
+}
+
+.stage-play .how-connector-path {
+  animation: draw-line 900ms linear 250ms forwards;
+}
+
+.stage-play .demo-pop {
+  animation: step-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: calc(var(--seq-delay, 0ms) + 140ms);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .save-slot:hover .save-slot-lock {
+    animation: padlock-jiggle 320ms ease-in-out;
   }
 }

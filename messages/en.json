@@ -57,7 +57,10 @@
     "step03Title": "Your Tree Grows",
     "step03Body": "Accumulated tokens drive the tree through 8 growth stages, from a tiny seed to a fruit-laden apple tree. Fully local, no network needed.",
     "privacyStrong": "Privacy first",
-    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Completely offline — no data uploaded, no account needed, no internet required."
+    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Completely offline — no data uploaded, no account needed, no internet required.",
+    "uploadedZero": "Uploaded: 0 bytes",
+    "holdToGrow": "Press & hold to grow",
+    "tryBubbleAria": "Collect the demo bubble"
   },
   "Features": {
     "heading": "Features",

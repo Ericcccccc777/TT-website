@@ -854,7 +854,7 @@ export function TreeShowcase() {
 
   return (
     <section
-      className="bg-surface-parchment py-20"
+      className="scroll-mt-20 bg-surface-parchment py-20"
       id="showcase"
       aria-labelledby="showcase-heading"
     >

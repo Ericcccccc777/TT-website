@@ -57,7 +57,10 @@
     "step03Title": "树慢慢长大",
     "step03Body": "累积的 token 推动树经历 8 个成长阶段，从一粒种子到硕果累累的苹果树，完全本地，不联网。",
     "privacyStrong": "隐私第一",
-    "privacyBody": "Token-Forest 只读取你本机的 Claude Code / Codex 使用日志，完全离线运行，不上传任何数据，不需要账号，不需要网络。"
+    "privacyBody": "Token-Forest 只读取你本机的 Claude Code / Codex 使用日志，完全离线运行，不上传任何数据，不需要账号，不需要网络。",
+    "uploadedZero": "已上传：0 bytes",
+    "holdToGrow": "按住，让树长大",
+    "tryBubbleAria": "点击收集演示气泡"
   },
   "Features": {
     "heading": "特性",

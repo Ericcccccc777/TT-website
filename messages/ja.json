@@ -57,7 +57,10 @@
     "step03Title": "ツリーがゆっくり育つ",
     "step03Body": "蓄積したトークンがツリーを 8 つの成長ステージを経て進化させます。小さな種からリンゴが実るまで。完全ローカル、ネット不要。",
     "privacyStrong": "プライバシー優先",
-    "privacyBody": "Token-Forest はローカルの Claude Code / Codex 使用ログのみを読み込みます。完全オフライン——データのアップロードなし、アカウント不要、ネット不要。"
+    "privacyBody": "Token-Forest はローカルの Claude Code / Codex 使用ログのみを読み込みます。完全オフライン——データのアップロードなし、アカウント不要、ネット不要。",
+    "uploadedZero": "アップロード：0 bytes",
+    "holdToGrow": "長押しで育てる",
+    "tryBubbleAria": "デモバブルを集める"
   },
   "Features": {
     "heading": "機能",
