@@ -367,54 +367,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {tdl("body")}
           </p>
 
-          {/* Terminal block */}
-          <div
-            className="reveal mx-auto mb-8 flex max-w-sm items-center gap-3 rounded-[2px] px-4 py-3"
-            style={
-              {
-                "--reveal-delay": "160ms",
-                background: "var(--color-surface-deepest)",
-                border: "2px solid var(--color-leaf-deep)",
-              } as React.CSSProperties
-            }
-          >
-            <span
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "var(--text-caption)",
-                color: "var(--color-text-muted-dark)",
-                userSelect: "none",
-              }}
-            >
-              PS&gt;
-            </span>
-            <code
-              className="flex-1 text-left"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "var(--text-small)",
-                color: "var(--color-leaf-light)",
-              }}
-            >
-              .\setup.ps1
-            </code>
-            <span
-              className="animate-cursor-blink"
-              aria-hidden
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "var(--text-caption)",
-                color: "var(--color-leaf-light)",
-              }}
-            >
-              ▌
-            </span>
-          </div>
-
           {/* OS buttons */}
           <div
             className="reveal flex flex-wrap justify-center gap-4"
-            style={{ "--reveal-delay": "240ms" } as React.CSSProperties}
+            style={{ "--reveal-delay": "160ms" } as React.CSSProperties}
           >
             <Link
               href="/download"
@@ -461,7 +417,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   strokeLinecap="square"
                 />
               </svg>
-              macOS / Linux
+              macOS
             </Link>
           </div>
 
@@ -474,7 +430,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             }}
           >
             <a
-              href="https://github.com/YimingRen111/Token-Forest"
+              href="https://github.com/Ericcccccc777/Token-Forest-P"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-leaf-deep"
