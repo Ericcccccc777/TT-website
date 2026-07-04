@@ -372,32 +372,6 @@ body {
   }
 }
 
-/* Decoration sprite enter (bounce overshoot) */
-@keyframes decoration-enter {
-  0% {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Decoration sprite exit */
-@keyframes decoration-exit {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
-}
-
 /* Terminal blinking cursor ▌ */
 @keyframes cursor-blink {
   0%,
@@ -413,24 +387,6 @@ body {
 
 .animate-cursor-blink {
   animation: cursor-blink 1s steps(1) infinite;
-}
-
-/* Chest speech-bubble pop-in */
-@keyframes chest-bubble-in {
-  0% {
-    transform: scale(0.6) translateY(6px);
-    opacity: 0;
-  }
-
-  70% {
-    transform: scale(1.06) translateY(-1px);
-    opacity: 1;
-  }
-
-  100% {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
 }
 
 /* ── Tree-scene backdrop (themed per skin, components/tree-scene.tsx) ── */
