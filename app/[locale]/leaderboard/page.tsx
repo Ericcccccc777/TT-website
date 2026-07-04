@@ -83,11 +83,16 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, tnav, [{ entries, error }, stats]] = await Promise.all([
+  const [t, tnav, ts, [{ entries, error }, stats]] = await Promise.all([
     getTranslations("LeaderboardPage"),
     getTranslations("TopBar"),
+    getTranslations("TreeShowcase"),
     Promise.all([getLeaderboard(), getGlobalStats()]),
   ]);
+
+  // Localised species names (reused from the homepage showcase), for the tree popup.
+  const speciesLabel = (kind: string): string =>
+    kind === "cherry" ? ts("skinCherry") : kind === "cactus" ? ts("skinCactus") : ts("skinApple");
 
   return (
     <div className="min-h-screen bg-surface-parchment text-text-forest">
@@ -242,8 +247,18 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                   {entries.map((entry, i) => {
                     const rank = i + 1;
                     const medalColor = MEDAL[rank];
-                    const stage = spriteStage(entry.stage_index);
-                    const treePrefix = treeSpritePrefix(entry.tree);
+                    // The user's trees for the popup — main (current) tree first.
+                    const treeViews = entry.trees.map((tv) => {
+                      const sStage = spriteStage(tv.stage_index);
+                      return {
+                        prefix: treeSpritePrefix(tv.kind),
+                        stage: sStage,
+                        speciesLabel: speciesLabel(tv.kind),
+                        tokensLabel: formatTokens(tv.tokens, locale),
+                        stageLabel: t("treeModalStage", { n: sStage }),
+                        alt: t("treeModalAlt", { username: entry.username }),
+                      };
+                    });
                     const region = regionInfo(entry.region, locale);
                     // cap the entrance stagger so deep rows don't wait seconds
                     const animDelay = `${Math.min(i, 12) * 60}ms`;
@@ -273,12 +288,11 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                           <div className="flex min-w-0 items-center gap-2">
                             <TreeModalButton
                               username={entry.username}
-                              treePrefix={treePrefix}
-                              stage={stage}
+                              trees={treeViews}
                               triggerLabel={t("treeViewAria", { username: entry.username })}
-                              stageLabel={t("treeModalStage", { n: stage })}
-                              treeAlt={t("treeModalAlt", { username: entry.username })}
                               closeLabel={t("treeModalClose")}
+                              tokensUnit={t("tokenUnit")}
+                              mainLabel={t("treeModalMain")}
                             />
                             <span className="truncate text-text-forest">{entry.username}</span>
                             {rank === 1 && (

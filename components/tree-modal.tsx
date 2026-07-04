@@ -4,37 +4,51 @@ import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+/** One tree in the popup — main tree first, then the user's other trees. */
+export interface TreeView {
+  /** Sprite filename prefix, e.g. "AppleTree" | "CherryTree" | "Cactus". */
+  prefix: string;
+  /** Growth stage 1..8 — picks which sprite frame to show. */
+  stage: number;
+  /** Localised species name, e.g. "Apple Tree". */
+  speciesLabel: string;
+  /** This tree's own token count, pre-formatted for the locale. */
+  tokensLabel: string;
+  /** Localised "Stage n / 8" label. */
+  stageLabel: string;
+  /** alt text for the sprite (localised). */
+  alt: string;
+}
+
 interface TreeModalButtonProps {
   /** Display name shown as the popup heading. */
   username: string;
-  /** Sprite filename prefix, e.g. "AppleTree" | "CherryTree". */
-  treePrefix: string;
-  /** Growth stage 1..8 — picks which sprite frame to show. */
-  stage: number;
+  /** The user's trees — index 0 is the main (current) tree. */
+  trees: TreeView[];
   /** aria-label / hover title for the trigger button (localised, includes username). */
   triggerLabel: string;
-  /** Localised "Stage n / 8" label shown under the enlarged tree. */
-  stageLabel: string;
-  /** alt text for the enlarged sprite (localised, includes username). */
-  treeAlt: string;
   /** Localised "Close" label for the dismiss button. */
   closeLabel: string;
+  /** Localised token unit, e.g. "tokens". */
+  tokensUnit: string;
+  /** Localised "Main tree" badge label. */
+  mainLabel: string;
 }
 
 /**
- * Leaderboard tree icon that opens a centred popup with an enlarged, stage-aware
- * view of the user's tree (apple or cherry). Rendered through a portal to
- * document.body so the fixed overlay escapes the table's blur/animation
- * stacking contexts. Dismisses on backdrop click or Escape.
+ * Leaderboard tree icon that opens a centred popup showing all of a user's
+ * trees: the main (current) tree first, then any other grown trees, each with
+ * its own token count and growth stage. Rendered through a portal to
+ * document.body so the fixed overlay escapes the table's stacking contexts.
+ * Dismisses on backdrop click or Escape.
  */
 export function TreeModalButton({
   username,
-  treePrefix,
-  stage,
+  trees,
   triggerLabel,
-  stageLabel,
-  treeAlt,
   closeLabel,
+  tokensUnit,
+  mainLabel,
 }: TreeModalButtonProps) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -58,7 +72,10 @@ export function TreeModalButton({
     };
   }, [open, close]);
 
-  const src = `/sprites/${treePrefix}_${stage}.png`;
+  const main = trees[0];
+  if (!main) return null;
+  const others = trees.slice(1);
+  const triggerSrc = `/sprites/${main.prefix}_${main.stage}.png`;
 
   return (
     <>
@@ -77,7 +94,7 @@ export function TreeModalButton({
           aria-hidden
         >
           <Image
-            src={src}
+            src={triggerSrc}
             alt=""
             width={24}
             height={24}
@@ -99,8 +116,8 @@ export function TreeModalButton({
             <div
               role="dialog"
               aria-modal="true"
-              aria-label={treeAlt}
-              className="relative w-full max-w-xs"
+              aria-label={username}
+              className="relative flex max-h-[85vh] w-full max-w-xs flex-col"
               style={{
                 background: "var(--color-surface-card)",
                 border: "var(--border-pixel)",
@@ -133,7 +150,7 @@ export function TreeModalButton({
 
               {/* Username heading */}
               <h2
-                className="mb-3 pr-8 text-leaf-deep"
+                className="mb-3 shrink-0 pr-8 text-leaf-deep"
                 style={{
                   fontFamily: "var(--font-pixel)",
                   fontSize: "var(--text-caption)",
@@ -145,39 +162,168 @@ export function TreeModalButton({
                 {username}
               </h2>
 
-              {/* Enlarged tree canvas + ground strip (echoes the homepage showcase) */}
-              <div className="relative mx-auto w-full max-w-[220px]">
-                <div className="relative w-full" style={{ aspectRatio: "1 / 1" }}>
-                  <Image
-                    src={src}
-                    alt={treeAlt}
-                    fill
-                    sizes="220px"
-                    className="pixelated object-contain object-bottom"
-                  />
-                </div>
-                <div className="relative h-8 w-full" aria-hidden>
-                  <Image
-                    src="/sprites/Ground.png"
-                    alt=""
-                    fill
-                    sizes="220px"
-                    className="pixelated object-cover"
-                  />
-                </div>
-              </div>
+              <div className="-mr-2 overflow-y-auto pr-2">
+                {/* Main tree — large, with a "Main tree" badge */}
+                <TreeBlock tree={main} tokensUnit={tokensUnit} badge={mainLabel} large />
 
-              {/* Stage label */}
-              <p
-                className="mt-3 text-center text-text-muted-light"
-                style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
-              >
-                {stageLabel}
-              </p>
+                {/* Other trees — compact rows */}
+                {others.length > 0 && (
+                  <>
+                    <div
+                      className="my-3 h-px w-full"
+                      style={{ background: "var(--color-soil)", opacity: 0.4 }}
+                      aria-hidden
+                    />
+                    <ul className="flex flex-col gap-2">
+                      {others.map((tree, i) => (
+                        <li key={`${tree.prefix}-${i}`}>
+                          <TreeBlock tree={tree} tokensUnit={tokensUnit} />
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
             </div>
           </div>,
           document.body,
         )}
     </>
+  );
+}
+
+// ── Tree block ────────────────────────────────────────────────────────────────
+
+function TreeBlock({
+  tree,
+  tokensUnit,
+  badge,
+  large = false,
+}: {
+  tree: TreeView;
+  tokensUnit: string;
+  badge?: string;
+  large?: boolean;
+}) {
+  const src = `/sprites/${tree.prefix}_${tree.stage}.png`;
+
+  if (large) {
+    return (
+      <div>
+        <div className="relative mx-auto w-full max-w-[200px]">
+          <div className="relative w-full" style={{ aspectRatio: "1 / 1" }}>
+            <Image
+              src={src}
+              alt={tree.alt}
+              fill
+              sizes="200px"
+              className="pixelated object-contain object-bottom"
+            />
+          </div>
+          <div className="relative h-8 w-full" aria-hidden>
+            <Image
+              src="/sprites/Ground.png"
+              alt=""
+              fill
+              sizes="200px"
+              className="pixelated object-cover"
+            />
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-col items-center gap-1 text-center">
+          <div className="flex items-center gap-2">
+            <span
+              className="text-leaf-deep"
+              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
+            >
+              {tree.speciesLabel}
+            </span>
+            {badge && (
+              <span
+                className="rounded-[2px] px-1.5 py-0.5"
+                style={{
+                  fontFamily: "var(--font-pixel)",
+                  fontSize: "0.55rem",
+                  color: "var(--color-text-cream)",
+                  background: "var(--color-leaf-deep)",
+                }}
+              >
+                {badge}
+              </span>
+            )}
+          </div>
+          <TokenLine tokensLabel={tree.tokensLabel} tokensUnit={tokensUnit} big />
+          <span
+            className="text-text-muted-light"
+            style={{ fontFamily: "var(--font-pixel)", fontSize: "0.6rem" }}
+          >
+            {tree.stageLabel}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // Compact row for the user's other trees
+  return (
+    <div
+      className="flex items-center gap-3 rounded-[2px] p-2"
+      style={{ background: "var(--color-surface-panel)", border: "1px solid var(--color-soil)" }}
+    >
+      <Image
+        src={src}
+        alt={tree.alt}
+        width={44}
+        height={44}
+        className="pixelated shrink-0"
+        style={{ width: 44, height: 44, objectFit: "contain" }}
+      />
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <span
+          className="truncate text-leaf-deep"
+          style={{ fontFamily: "var(--font-pixel)", fontSize: "0.7rem" }}
+        >
+          {tree.speciesLabel}
+        </span>
+        <TokenLine tokensLabel={tree.tokensLabel} tokensUnit={tokensUnit} />
+        <span
+          className="text-text-muted-light"
+          style={{ fontFamily: "var(--font-pixel)", fontSize: "0.55rem" }}
+        >
+          {tree.stageLabel}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function TokenLine({
+  tokensLabel,
+  tokensUnit,
+  big = false,
+}: {
+  tokensLabel: string;
+  tokensUnit: string;
+  big?: boolean;
+}) {
+  return (
+    <span className="flex items-baseline gap-1">
+      <span
+        style={{
+          fontFamily: "var(--font-brand)",
+          fontSize: big ? "var(--text-body)" : "0.7rem",
+          color: "var(--color-accent-gold)",
+        }}
+      >
+        {tokensLabel}
+      </span>
+      <span
+        className="text-text-muted-light"
+        style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
+      >
+        {tokensUnit}
+      </span>
+    </span>
   );
 }

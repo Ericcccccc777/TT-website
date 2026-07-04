@@ -150,6 +150,7 @@
     "treeModalStage": "ステージ {n} / 8",
     "treeModalAlt": "{username} さんのピクセルツリー",
     "treeModalClose": "閉じる",
+    "treeModalMain": "メインの木",
     "howToHeading": "参加方法",
     "howTo01Title": "アプリをダウンロード",
     "howTo01Body": "ダウンロードページから Windows / macOS インストーラー（近日公開）を入手し、ダブルクリックでインストール。",

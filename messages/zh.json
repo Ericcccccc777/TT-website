@@ -150,6 +150,7 @@
     "treeModalStage": "阶段 {n} / 8",
     "treeModalAlt": "{username} 的像素树",
     "treeModalClose": "关闭",
+    "treeModalMain": "主树",
     "howToHeading": "如何上榜",
     "howTo01Title": "下载 App",
     "howTo01Body": "前往下载页面获取 Windows / macOS 安装包（即将发布），双击安装即可。",
