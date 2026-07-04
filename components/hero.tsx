@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { TokenBubbles } from "./token-bubbles";
 
-const GITHUB_URL = "https://github.com/YimingRen111/Token-Forest";
+const GITHUB_URL = "https://github.com/Ericcccccc777/Token-Forest-P";
 
 // ── SVG cloud ─────────────────────────────────────────────────────────────────
 

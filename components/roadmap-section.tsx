@@ -7,7 +7,7 @@ import { useInView } from "@/hooks/use-in-view";
 import { ShootingStars } from "@/components/shooting-stars";
 
 // The full, dev-facing roadmap lives on GitHub; this section is the player-facing teaser.
-const GITHUB_ROADMAP = "https://github.com/YimingRen111/Token-Forest/blob/main/docs/ROADMAP.md";
+const GITHUB_ROADMAP = "https://github.com/Ericcccccc777/Token-Forest-P/blob/main/docs/ROADMAP.md";
 
 /**
  * §roadmap "树的未来" — a star chart of the future:
@@ -23,7 +23,7 @@ const GITHUB_ROADMAP = "https://github.com/YimingRen111/Token-Forest/blob/main/d
 
 interface FutureItem {
   id: string;
-  kind: "apple" | "chest" | "daynight" | "mystery";
+  kind: "mystery" | "chart" | "daynight" | "chest";
   label: string;
   desc: string;
 }
@@ -82,18 +82,18 @@ function PixelMoon({ width = 30 }: { width?: number }) {
   );
 }
 
-function PixelApple({ width = 20 }: { width?: number }) {
+/** Mini pixel bar chart — the stats-dashboard card icon. */
+function PixelChart({ width = 20 }: { width?: number }) {
   return (
-    <svg viewBox="0 0 10 10" width={width} shapeRendering="crispEdges" aria-hidden>
-      <rect x="4" y="0" width="2" height="2" fill="#7a5a3a" />
-      <rect x="6" y="1" width="2" height="1" fill="#3a7d44" />
-      <g fill="#c75c5c">
-        <rect x="2" y="2" width="6" height="1" />
-        <rect x="1" y="3" width="8" height="4" />
-        <rect x="2" y="7" width="6" height="1" />
-        <rect x="3" y="8" width="4" height="1" />
+    <svg viewBox="0 0 12 10" width={width} shapeRendering="crispEdges" aria-hidden>
+      <g fill="#7bd88f">
+        <rect x="1" y="6" width="2" height="4" />
+        <rect x="7" y="2" width="2" height="8" />
       </g>
-      <rect x="2" y="3" width="1" height="2" fill="#e08a8a" />
+      <g fill="#c8943c">
+        <rect x="4" y="4" width="2" height="6" />
+        <rect x="10" y="5" width="2" height="5" />
+      </g>
     </svg>
   );
 }
@@ -132,39 +132,6 @@ function PixelMoonMini({ width = 18 }: { width?: number }) {
 }
 
 // ── Per-card toys ──────────────────────────────────────────────────────────────
-
-function AppleToy() {
-  return (
-    <>
-      {/* basket waiting in the corner */}
-      <span className="pointer-events-none absolute bottom-2 right-3" aria-hidden>
-        <Image
-          src="/sprites/Basket.png"
-          alt=""
-          width={26}
-          height={18}
-          className="pixelated"
-          style={{ width: 26, height: 18, objectFit: "contain", objectPosition: "50% 100%" }}
-        />
-      </span>
-      {/* three apples drop into it on hover */}
-      {[0, 1, 2].map((i) => (
-        <span
-          key={i}
-          className={`apple-drop pointer-events-none absolute opacity-0`}
-          style={{
-            right: 10 + i * 9,
-            bottom: 14,
-            animationDelay: `${i * 140}ms`,
-          }}
-          aria-hidden
-        >
-          <PixelApple width={12} />
-        </span>
-      ))}
-    </>
-  );
-}
 
 function ChestToy() {
   return (
@@ -253,10 +220,10 @@ export function RoadmapSection() {
   const [ref, inView] = useInView<HTMLElement>({ threshold: 0.05 });
 
   const ITEMS: FutureItem[] = [
-    { id: "f1", kind: "apple", label: t("f1Label"), desc: t("f1Desc") },
-    { id: "f2", kind: "chest", label: t("f2Label"), desc: t("f2Desc") },
+    { id: "f1", kind: "mystery", label: t("f1Label"), desc: t("f1Desc") },
+    { id: "f2", kind: "chart", label: t("f2Label"), desc: t("f2Desc") },
     { id: "f3", kind: "daynight", label: t("f3Label"), desc: t("f3Desc") },
-    { id: "f4", kind: "mystery", label: t("f4Label"), desc: t("f4Desc") },
+    { id: "f4", kind: "chest", label: t("f4Label"), desc: t("f4Desc") },
   ];
 
   return (
@@ -394,7 +361,7 @@ export function RoadmapSection() {
                 <div className="mb-2 flex items-center gap-3">
                   {/* pixel icon per card */}
                   <span aria-hidden className="flex h-6 w-6 items-center justify-center">
-                    {item.kind === "apple" && <PixelApple />}
+                    {item.kind === "chart" && <PixelChart />}
                     {item.kind === "chest" && (
                       <span
                         className="chest-icon inline-block"
@@ -468,7 +435,6 @@ export function RoadmapSection() {
               </div>
 
               {/* toys layered above the overlay, below nothing clickable */}
-              {item.kind === "apple" && <AppleToy />}
               {item.kind === "chest" && <ChestToy />}
               {item.kind === "mystery" && <MysteryToy />}
             </li>

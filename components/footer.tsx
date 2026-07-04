@@ -2,7 +2,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 
-const GITHUB_URL = "https://github.com/YimingRen111/Token-Forest";
+const GITHUB_URL = "https://github.com/Ericcccccc777/Token-Forest-P";
 
 export async function Footer() {
   const t = await getTranslations("Footer");
