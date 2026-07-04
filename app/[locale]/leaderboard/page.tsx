@@ -4,6 +4,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
 import { PixelCrown } from "@/components/pixel-crown";
+import type { Locale } from "@/i18n/routing";
+import { localizedMetadata } from "@/lib/seo";
+import { BreadcrumbJsonLd } from "@/components/json-ld";
 
 export const revalidate = 60;
 
@@ -13,9 +16,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  const title = t("leaderboardTitle");
-  return { title, openGraph: { title }, twitter: { title } };
+  return localizedMetadata("/leaderboard", locale as Locale);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -82,13 +83,21 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, [{ entries, error }, stats]] = await Promise.all([
+  const [t, tnav, [{ entries, error }, stats]] = await Promise.all([
     getTranslations("LeaderboardPage"),
+    getTranslations("TopBar"),
     Promise.all([getLeaderboard(), getGlobalStats()]),
   ]);
 
   return (
     <div className="min-h-screen bg-surface-parchment text-text-forest">
+      <BreadcrumbJsonLd
+        locale={locale as Locale}
+        items={[
+          { name: tnav("home"), path: "/" },
+          { name: tnav("leaderboard"), path: "/leaderboard" },
+        ]}
+      />
       {/* ── Global stats banner ── */}
       <div className="border-b-2 border-leaf-deep bg-surface-card">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 px-6 py-6 sm:flex-row sm:justify-around">
@@ -108,7 +117,12 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                   width={22}
                   height={22}
                   className="pixelated"
-                  style={{ width: 22, height: 22, objectFit: "contain", objectPosition: "50% 100%" }}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    objectFit: "contain",
+                    objectPosition: "50% 100%",
+                  }}
                 />
               </span>
             }
@@ -131,7 +145,6 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
           />
         </div>
       </div>
-
 
       {/* ── Main content ── */}
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -314,7 +327,6 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                       </tr>
                     );
                   })}
-
                 </tbody>
               </table>
             </div>

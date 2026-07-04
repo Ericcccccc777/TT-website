@@ -7,8 +7,10 @@ import {
   Noto_Sans_KR,
 } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { routing } from "@/i18n/routing";
+import { getMessages, setRequestLocale } from "next-intl/server";
+import Script from "next/script";
+import { routing, type Locale } from "@/i18n/routing";
+import { OG_IMAGE, OG_LOCALE, SITE_NAME, siteUrl } from "@/lib/seo";
 import { TopBar } from "@/components/top-bar";
 import { Footer } from "@/components/footer";
 import "../globals.css";
@@ -58,36 +60,45 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-// ── Metadata ────────────────────────────────────────────────────────────────
+// ── Metadata (site-wide defaults) ─────────────────────────────────────────────
+// Per-page identity (title/canonical/hreflang) lives in each page via
+// lib/seo's localizedMetadata; the home page owns the home title. This layer
+// only sets what every route shares: metadataBase, the title template, default
+// OG/Twitter, and webmaster verification. Icons/manifest/apple-icon are served
+// by the app/ file conventions (icon.svg, manifest.ts, apple-icon.tsx) and
+// auto-linked, so they are intentionally not duplicated here.
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
+  const loc = locale as Locale;
+  const bing = process.env.BING_SITE_VERIFICATION;
 
   return {
-    title: t("homeTitle"),
-    description: t("homeDescription"),
-    keywords: [
-      "Token-Forest",
-      "Claude Code",
-      "Codex",
-      "desktop pet",
-      "pixel art",
-      "AI tokens",
-      "token visualizer",
-    ],
+    metadataBase: new URL(siteUrl()),
+    title: {
+      template: `%s | ${SITE_NAME}`,
+      default: "Token Forest — grow a pixel tree from your Claude Code & Codex tokens",
+    },
+    description:
+      "A cozy pixel-art desktop pet for Windows and macOS that grows a tree from the Claude Code and Codex tokens you spend. Local-first, offline, free public beta.",
+    applicationName: SITE_NAME,
     openGraph: {
-      title: t("homeTitle"),
-      description: t("homeDescription"),
       type: "website",
+      siteName: SITE_NAME,
+      locale: OG_LOCALE[loc],
+      url: `${siteUrl()}/${locale}`,
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: t("homeTitle"),
-      description: t("homeDescription"),
+      images: [OG_IMAGE.url],
+    },
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+      other: bing ? { "msvalidate.01": bing } : undefined,
     },
   };
 }
@@ -122,6 +133,16 @@ export default async function LocaleLayout({
       className={`${pressStart2P.variable} ${silkscreen.variable} ${bodyFontVariable}`}
     >
       <body className="flex min-h-screen flex-col bg-surface-parchment font-body text-[var(--color-text-forest)] antialiased">
+        {/* Privacy-friendly, cookieless analytics — no-ops until the env var is
+            set (so dev/preview stay clean). */}
+        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+          <Script
+            defer
+            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+            src="https://plausible.io/js/script.js"
+            strategy="afterInteractive"
+          />
+        )}
         <NextIntlClientProvider messages={messages} locale={locale}>
           <TopBar />
           <main className="flex-1">{children}</main>
