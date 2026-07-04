@@ -64,6 +64,13 @@ A: No. It is an independent tool — a GUI alternative to the ccusage CLI, not a
 - Claude Code and/or Codex used on this machine (so usage logs exist).
 - No account and no network required — runs fully local.
 
+## Available languages
+Both the app UI and the website are available in four languages. Localized home pages:
+- English: ${base}/en
+- 中文 (Chinese): ${base}/zh
+- 日本語 (Japanese): ${base}/ja
+- 한국어 (Korean): ${base}/ko
+
 ## Official links
 - Website: ${base}/en
 - Download: ${base}/en/download

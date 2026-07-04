@@ -33,6 +33,13 @@ export function GET() {
 ## Leaderboard
 - Opt-in global leaderboard: ${base}/en/leaderboard
 
+## Available languages
+- Both the app UI and this website are available in English, 中文 (Chinese), 日本語 (Japanese), and 한국어 (Korean).
+- English: ${base}/en
+- 中文: ${base}/zh
+- 日本語: ${base}/ja
+- 한국어: ${base}/ko
+
 ## Official links
 - Website: ${base}/en
 - Source (GitHub): ${GITHUB_URL}
