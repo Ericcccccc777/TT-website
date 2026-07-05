@@ -55,6 +55,7 @@ const TREE_PREFIX: Record<string, string> = {
   apple: "AppleTree",
   cherry: "CherryTree",
   cactus: "Cactus",
+  christmas: "ChristmasTree",
 };
 
 function treeSpritePrefix(tree: string): string {
@@ -100,7 +101,13 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
 
   // Localised species names (reused from the homepage showcase), for the tree popup.
   const speciesLabel = (kind: string): string =>
-    kind === "cherry" ? ts("skinCherry") : kind === "cactus" ? ts("skinCactus") : ts("skinApple");
+    kind === "cherry"
+      ? ts("skinCherry")
+      : kind === "cactus"
+        ? ts("skinCactus")
+        : kind === "christmas"
+          ? ts("skinChristmas")
+          : ts("skinApple");
 
   return (
     <div className="min-h-screen bg-surface-parchment text-text-forest">
