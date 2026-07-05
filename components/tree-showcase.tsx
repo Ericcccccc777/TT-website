@@ -19,6 +19,9 @@ const STAGE_TOKENS: Record<string, number[]> = {
   apple: [0, 500_000, 1_500_000, 4_000_000, 10_000_000, 22_000_000, 45_000_000, 90_000_000],
   cherry: [0, 1_500_000, 4_500_000, 12_000_000, 30_000_000, 66_000_000, 135_000_000, 270_000_000],
   cactus: [0, 2_000_000, 6_000_000, 16_000_000, 40_000_000, 88_000_000, 180_000_000, 360_000_000],
+  christmas: [
+    0, 2_500_000, 7_500_000, 20_000_000, 50_000_000, 110_000_000, 225_000_000, 450_000_000,
+  ],
 };
 
 /** Roman numerals I..VIII for the stage indicator. */
@@ -52,7 +55,7 @@ const SKINS: SkinDef[] = [
   { id: "apple", src: "AppleTree", available: true },
   { id: "cherry", src: "CherryTree", available: true },
   { id: "cactus", src: "Cactus", available: true },
-  { id: "blossom", src: null, available: false },
+  { id: "christmas", src: "ChristmasTree", available: true },
 ];
 
 // ── Stage indicator (Roman numerals — display only, the carousel drives it) ───
@@ -297,6 +300,7 @@ export function TreeShowcase() {
     apple: t("skinApple"),
     cherry: t("skinCherry"),
     cactus: t("skinCactus"),
+    christmas: t("skinChristmas"),
   };
 
   // ── Stage / skin change with shake+fade animation ──────────────────────────

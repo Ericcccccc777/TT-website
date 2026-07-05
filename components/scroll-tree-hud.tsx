@@ -23,6 +23,7 @@ const SKIN_PREFIX: Record<string, string> = {
   apple: "AppleTree",
   cherry: "CherryTree",
   cactus: "Cactus",
+  christmas: "ChristmasTree",
 };
 
 export function ScrollTreeHud({ backToTop }: { backToTop: string }) {
