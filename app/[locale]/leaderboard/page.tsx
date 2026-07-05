@@ -27,6 +27,14 @@ function formatTokens(n: number, locale: string): string {
   return n.toLocaleString(locale);
 }
 
+/** Compact token count (e.g. 90M / 9000万) — fits the narrow per-tree cards. */
+function compactTokens(n: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(n);
+}
+
 function relativeTime(iso: string, t: TFunc): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60_000);
@@ -254,7 +262,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                         prefix: treeSpritePrefix(tv.kind),
                         stage: sStage,
                         speciesLabel: speciesLabel(tv.kind),
-                        tokensLabel: formatTokens(tv.tokens, locale),
+                        tokensLabel: compactTokens(tv.tokens, locale),
                         stageLabel: t("treeModalStage", { n: sStage }),
                         alt: t("treeModalAlt", { username: entry.username }),
                       };
@@ -293,6 +301,10 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                               closeLabel={t("treeModalClose")}
                               tokensUnit={t("tokenUnit")}
                               mainLabel={t("treeModalMain")}
+                              totalLabel={t("treeModalTotal")}
+                              totalTokensLabel={formatTokens(entry.score, locale)}
+                              prevLabel={t("treeModalPrev")}
+                              nextLabel={t("treeModalNext")}
                             />
                             <span className="truncate text-text-forest">{entry.username}</span>
                             {rank === 1 && (
