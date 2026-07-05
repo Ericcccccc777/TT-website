@@ -10,6 +10,7 @@ export async function Footer() {
 
   const PRODUCT_LINKS = [
     { label: t("download"), href: "/download" },
+    { label: t("dashboard"), href: "/dashboard" },
     { label: t("leaderboard"), href: "/leaderboard" },
   ] as const;
 

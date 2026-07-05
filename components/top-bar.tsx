@@ -4,8 +4,19 @@ import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+
+// Hydration-safe "am I on the client?" flag (SSR snapshot: false) — replaces
+// the setState-in-effect mounted pattern without a cascading second render.
+const emptySubscribe = () => () => {};
+function useMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 // ── Icon components ────────────────────────────────────────────────────────
 
@@ -101,7 +112,6 @@ function LocaleSwitcher() {
 
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(activeIndex);
-  const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -110,7 +120,7 @@ function LocaleSwitcher() {
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // The popup is rendered through a portal (client-only).
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   // Position the portal popup just under the trigger, right-aligned to it.
   const updateCoords = useCallback(() => {
@@ -315,6 +325,7 @@ export function TopBar() {
   const NAV_LINKS = [
     { label: t("home"), href: "/" as const },
     { label: t("download"), href: "/download" as const },
+    { label: t("dashboard"), href: "/dashboard" as const },
     { label: t("leaderboard"), href: "/leaderboard" as const },
   ];
 

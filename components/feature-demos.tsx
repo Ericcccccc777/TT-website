@@ -10,15 +10,22 @@ import Image from "next/image";
  *                 scrubs the big preview through the stages (pure CSS :has)
  *   3 privacy   — an "offline mode" toggle; hovering tries to flip it and it
  *                 snaps back with a red ✕ stamp: the app refuses to go online
- *   4 taskbar   — a mini desktop taskbar with a breathing stage-4 tree pet
+ *   4 capsule   — the taskbar pet morphs into a glowing corner capsule and
+ *                 back (tree ⇄ pill swap loop, 10s)
  *   5 lb        — a 3-row micro-leaderboard whose top rows swap ranks; hover
  *                 slides in a "YOU · ???" row
+ *   6 dashboard — a right-click story: context menu pops on the tree, a
+ *                 pixel hand clicks「数据面板」, a parchment mini window
+ *                 with the $ estimate appears (8.5s loop)
  *
  * Server components — all motion is CSS keyframes (globals.css §FEATURE DEMO
- * SCREENS); the grid is wrapped in <InViewGate> so everything freezes via
- * `.scene-paused` when offscreen. Screens are decorative (aria-hidden); the
- * global reduced-motion kill leaves each in a sensible static frame.
+ * SCREENS + §DASHBOARD); the grid is wrapped in <InViewGate> so everything
+ * freezes via `.scene-paused` when offscreen. Screens are decorative
+ * (aria-hidden); the global reduced-motion kill leaves each in a sensible
+ * static frame.
  */
+
+import { PixelHand } from "@/components/pixel-hand";
 
 // ── Shared screen bezel ────────────────────────────────────────────────────────
 
@@ -266,75 +273,91 @@ export function OfflineToggleDemo({ offlineOn }: { offlineOn: string }) {
   );
 }
 
-// ── 4. Taskbar pet ─────────────────────────────────────────────────────────────
+// ── 4. Tree ⇄ capsule morph loop ───────────────────────────────────────────────
+// The taskbar pet shrinks into the corner capsule (glow ring = engine status)
+// and back — 10s swap loop, capsule breathes a Claude-orange glow.
 
-export function TaskbarDemo() {
+function DemoDesktopScene({ children }: { children: React.ReactNode }) {
   return (
-    <Screen>
-      {/* desktop */}
+    <>
+      {/* ghost window */}
       <span
-        className="absolute left-3 top-2 h-6 w-10 opacity-60"
+        className="absolute left-3 top-2 h-6 w-10 opacity-50"
         style={{
           border: "1px solid var(--color-surface-panel)",
           borderRadius: "var(--radius-pixel)",
         }}
       />
-      <span
-        className="absolute left-16 top-4 h-5 w-8 opacity-40"
-        style={{
-          border: "1px solid var(--color-surface-panel)",
-          borderRadius: "var(--radius-pixel)",
-        }}
-      />
-
       {/* taskbar */}
       <span
-        className="absolute inset-x-0 bottom-0 h-4"
+        className="absolute inset-x-0 bottom-0 h-[11px]"
         style={{
           background: "var(--color-surface-ui)",
           borderTop: "1px solid var(--color-surface-panel)",
         }}
       >
         <span
-          className="absolute left-2 top-1 h-2 w-6"
+          className="absolute left-2 top-[3px] h-[5px] w-[22px]"
           style={{ background: "var(--color-surface-panel)" }}
         />
         <span
-          className="absolute left-9 top-1 h-2 w-6"
-          style={{ background: "var(--color-surface-panel)" }}
-        />
-        <span
-          className="absolute left-16 top-1 h-2 w-6"
+          className="absolute left-[34px] top-[3px] h-[5px] w-[22px]"
           style={{ background: "var(--color-surface-panel)" }}
         />
       </span>
+      {children}
+    </>
+  );
+}
 
-      {/* the pet tree, standing on the taskbar */}
-      <span
-        className="taskbar-shake absolute bottom-4 right-6 inline-block"
-        style={{ transformOrigin: "bottom center" }}
-      >
-        <span className="animate-tree-breathe inline-block">
+export function CapsuleSwapDemo({ workingLabel }: { workingLabel: string }) {
+  return (
+    <Screen>
+      <DemoDesktopScene>
+        {/* full tree — swaps out while the capsule is up */}
+        <span
+          className="absolute bottom-[11px] right-4"
+          style={{
+            animation: "cap-swap-tree 10s ease-in-out infinite",
+            transformOrigin: "bottom center",
+          }}
+        >
           <Image
             src="/sprites/AppleTree_4.png"
             alt=""
-            width={34}
-            height={34}
-            className="pixelated"
-            style={{ width: 34, height: 34, objectFit: "contain", objectPosition: "50% 100%" }}
+            width={44}
+            height={44}
+            className="pixelated block w-11"
+            style={{
+              animation: "tree-breathe 4.5s ease-in-out infinite alternate",
+              transformOrigin: "bottom center",
+            }}
           />
         </span>
-      </span>
 
-      {/* an occasional token bubble above the pet */}
-      <span
-        className="absolute bottom-[46px] right-7 h-2 w-2 rounded-full"
-        style={{
-          background: "var(--color-bubble-codex)",
-          border: "1px solid rgb(255 255 255 / 62%)",
-          animation: "bubble-linger 7s ease-out 2s infinite",
-        }}
-      />
+        {/* the capsule (glow ring = Claude working) */}
+        <span
+          className="absolute bottom-3.5 right-3 flex h-3 items-center gap-[3px] rounded-full px-1.5"
+          style={{
+            background: "var(--color-surface-ui)",
+            border: "1px solid var(--color-bubble-claude)",
+            animation: "cap-swap-pill 10s ease-in-out infinite, cap-glow 2.4s ease-in-out infinite",
+            transformOrigin: "bottom right",
+          }}
+        >
+          <span style={{ fontSize: 7, lineHeight: 1 }}>🍎</span>
+          <span
+            style={{
+              fontFamily: "var(--font-pixel), var(--font-body)",
+              fontSize: 6.5,
+              lineHeight: 1,
+              color: "var(--color-text-cream)",
+            }}
+          >
+            {workingLabel}
+          </span>
+        </span>
+      </DemoDesktopScene>
     </Screen>
   );
 }
@@ -437,6 +460,125 @@ export function LeaderboardDemo() {
           </span>
         </div>
       </div>
+    </Screen>
+  );
+}
+
+// ── 6. Dashboard right-click story ─────────────────────────────────────────────
+// 8.5s loop: context menu pops beside the pet → pixel hand clicks the
+// dashboard item → a parchment mini window (green XP bar + $ estimate)
+// appears top-left, then everything fades and the loop restarts.
+
+export function DashboardStoryDemo({
+  menuLabel,
+  hideLabel,
+}: {
+  menuLabel: string;
+  hideLabel: string;
+}) {
+  return (
+    <Screen>
+      <DemoDesktopScene>
+        {/* the pet tree */}
+        <Image
+          src="/sprites/AppleTree_4.png"
+          alt=""
+          width={24}
+          height={24}
+          className="pixelated absolute bottom-[11px] right-[22px] w-6"
+          style={{
+            animation: "tree-breathe 4.5s ease-in-out infinite alternate",
+            transformOrigin: "bottom center",
+          }}
+        />
+
+        {/* right-click context menu */}
+        <span
+          className="absolute bottom-4 right-[50px] w-[88px] rounded-[3px] p-[2px]"
+          style={{
+            background: "var(--color-surface-panel)",
+            border: "1px solid var(--color-surface-ui)",
+            boxShadow: "0 2px 6px rgb(0 0 0 / 55%)",
+            animation: "dash-demo-menu 8.5s ease-in-out infinite",
+            transformOrigin: "bottom right",
+          }}
+        >
+          <span
+            className="block rounded-[2px] px-1.5 py-[2px] text-leaf-light"
+            style={{
+              background: "rgb(58 125 68 / 35%)",
+              fontFamily: "var(--font-pixel), var(--font-body)",
+              fontSize: 8,
+              lineHeight: 1.3,
+            }}
+          >
+            {menuLabel}
+          </span>
+          <span
+            className="block px-1.5 py-[2px]"
+            style={{
+              fontFamily: "var(--font-pixel), var(--font-body)",
+              fontSize: 8,
+              lineHeight: 1.3,
+              color: "var(--color-text-muted-dark)",
+            }}
+          >
+            {hideLabel}
+          </span>
+        </span>
+
+        {/* pixel hand clicking the menu */}
+        <span
+          className="absolute bottom-[26px] right-11"
+          style={{ animation: "dash-demo-hand 8.5s ease-in-out infinite" }}
+        >
+          <PixelHand width={11} />
+        </span>
+
+        {/* parchment mini window with the $ estimate */}
+        <span
+          className="absolute left-3.5 top-[9px] w-32 rounded-[3px] px-1 py-[3px]"
+          style={{
+            background: "var(--dash-parchment)",
+            border: "1px solid var(--dash-line)",
+            boxShadow: "0 0 0 2px #96591f, 0 3px 8px rgb(0 0 0 / 60%)",
+            animation: "dash-demo-win 8.5s ease-in-out infinite",
+          }}
+        >
+          <span className="flex items-center gap-[3px]">
+            <span
+              className="h-1 w-[26px] rounded-[1px]"
+              style={{ background: "linear-gradient(180deg, #a5ecb0, #4f9e63)" }}
+            />
+            <span
+              className="ml-auto"
+              style={{
+                fontFamily: "var(--font-mono), monospace",
+                fontWeight: 700,
+                fontSize: 8,
+                lineHeight: 1,
+                color: "var(--dash-ink)",
+              }}
+            >
+              ≈ $128.40
+            </span>
+          </span>
+          <span className="mt-[3px] flex gap-[3px]">
+            <span
+              className="h-3 flex-1 rounded-[2px]"
+              style={{ background: "var(--dash-card)", border: "1px solid var(--dash-card-line)" }}
+            />
+            <span
+              className="h-3 flex-1 rounded-[2px]"
+              style={{ background: "var(--dash-card)", border: "1px solid var(--dash-card-line)" }}
+            />
+            <span
+              className="h-3 flex-[1.4] rounded-[2px]"
+              style={{ background: "var(--dash-card)", border: "1px solid var(--dash-card-line)" }}
+            />
+          </span>
+        </span>
+      </DemoDesktopScene>
     </Screen>
   );
 }

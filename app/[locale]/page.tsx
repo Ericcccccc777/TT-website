@@ -9,8 +9,9 @@ import {
   RealtimeDemo,
   GrowthFilmstripDemo,
   OfflineToggleDemo,
-  TaskbarDemo,
+  CapsuleSwapDemo,
   LeaderboardDemo,
+  DashboardStoryDemo,
 } from "@/components/feature-demos";
 import { InViewGate } from "@/components/in-view-gate";
 import { TeaserTable } from "@/components/teaser-table";
@@ -53,6 +54,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     badge?: string;
     badgeTone?: "soon" | "live";
     demo: React.ReactNode;
+    chips?: string[];
+    href?: string;
+    moreLabel?: string;
   }> = [
     {
       title: tf("realtimeTitle"),
@@ -73,10 +77,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       demo: <OfflineToggleDemo offlineOn={tf("offlineOn")} />,
     },
     {
-      title: tf("taskbarTitle"),
-      bullets: [tf("taskbarBullet0"), tf("taskbarBullet1")],
+      title: tf("capsuleTitle"),
+      bullets: [tf("capsuleBullet0"), tf("capsuleBullet1")],
       accentColor: "soil",
-      demo: <TaskbarDemo />,
+      demo: <CapsuleSwapDemo workingLabel={tf("capsuleDemoWorking")} />,
     },
     {
       title: tf("lbTitle"),
@@ -85,6 +89,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       badge: tf("lbBadge"),
       badgeTone: "live",
       demo: <LeaderboardDemo />,
+    },
+    {
+      title: tf("dashTitle"),
+      bullets: [tf("dashBullet0"), tf("dashBullet1"), tf("dashBullet2")],
+      accentColor: "leaf",
+      chips: [tf("dashChipGrowth"), tf("dashChipUsage"), tf("dashChipChats")],
+      href: "/dashboard",
+      moreLabel: tf("dashMore"),
+      demo: <DashboardStoryDemo menuLabel={tf("dashDemoMenu")} hideLabel={tf("dashDemoHide")} />,
     },
   ];
 
@@ -190,6 +203,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   badge={f.badge}
                   badgeTone={f.badgeTone}
                   demo={f.demo}
+                  chips={f.chips}
+                  href={f.href}
+                  moreLabel={f.moreLabel}
                   className={`reveal ${i % 2 === 0 ? "reveal-left" : "reveal-right"}`}
                 />
               </div>

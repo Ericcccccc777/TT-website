@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&amp;family=JetBrains+Mono:wght@400;700&amp;family=Silkscreen:wght@400;700&amp;family=Noto+Sans+SC:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/fusion-pixel-12px-proportional-sc/index.css">
+<style>
+  body { margin: 0; background: #e9e4d6; font-family: system-ui, sans-serif; }
+  .dv-turn { padding: 40px 44px 32px; border-bottom: 1px solid rgba(0,0,0,.08); scroll-margin-top: 16px; }
+  .dv-thd { display: flex; align-items: baseline; gap: 10px; margin: 0 0 14px; }
+  .dv-tid { font: 600 10px ui-monospace, Menlo, monospace; padding: 3px 7px; background: #1a1a1a; color: #fff; border-radius: 4px; text-decoration: none; }
+  .dv-tname { font: 600 13px/1.2 system-ui, sans-serif; color: #1a1a1a; }
+  .dv-notes { max-width: 980px; margin: 0 0 24px; padding: 12px 16px; background: rgba(255,255,255,.6); border: 1px solid rgba(0,0,0,.08); border-radius: 6px; font: 11.5px/1.75 system-ui, sans-serif; color: rgba(0,0,0,.6); }
+  .dv-notes b { color: rgba(0,0,0,.8); }
+  .dv-opts { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
+  .dv-opt { flex: none; display: flex; flex-direction: column; gap: 9px; scroll-margin-top: 16px; }
+  .dv-oid { font: 600 10.5px ui-monospace, Menlo, monospace; padding: 3px 7px; background: rgba(0,0,0,.08); color: #1a1a1a; border-radius: 5px; text-decoration: none; }
+  .dv-olabel { display: flex; align-items: baseline; gap: 8px; font: 400 11px/1.3 system-ui, sans-serif; color: rgba(0,0,0,.55); }
+  .dv-card { max-width: 100%; background: #fff; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.08); overflow: hidden; }
+  .dv-opt:target .dv-oid { background: #2a78d6; color: #fff; }
+  .dv-next { margin: 22px 0 0; font: 12px/1.5 system-ui, sans-serif; color: rgba(0,0,0,.5); }
+  .dv-next a { color: #2a6fdb; }
+  summary { list-style: none; cursor: pointer; }
+  summary::-webkit-details-marker { display: none; }
+  details[open] > summary .chev { transform: rotate(90deg); }
+  details[open] > summary { border-bottom: 1px solid rgba(122,90,58,.35); }
+  @keyframes neon-flicker { 0%,100%{opacity:1} 3%{opacity:.82} 4.5%{opacity:1} 41%{opacity:1} 42.5%{opacity:.88} 44%{opacity:1} 72%{opacity:.93} 74%{opacity:1} }
+  @keyframes sparkle-pulse { 0%,100%{opacity:0;transform:scale(.8) rotate(0deg)} 50%{opacity:1;transform:scale(1) rotate(15deg)} }
+  @keyframes tree-breathe { from{transform:scaleX(1) scaleY(1)} to{transform:scaleX(1.006) scaleY(1.014)} }
+  @keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  @keyframes tab-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+  @keyframes grow-x { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+  @keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+  @keyframes d-grow { from{transform:scaleX(.22)} to{transform:scaleX(1)} }
+  @keyframes d-twinkle { 0%,100%{opacity:.35} 50%{opacity:1} }
+  @keyframes d-menu { 0%,6%{opacity:0;transform:scale(.92)} 12%,44%{opacity:1;transform:scale(1)} 52%,100%{opacity:0;transform:scale(1)} }
+  @keyframes d-hand { 0%,6%{opacity:0} 10%,40%{opacity:1} 48%,100%{opacity:0} }
+  @keyframes d-win { 0%,46%{opacity:0;transform:translateY(5px)} 54%,90%{opacity:1;transform:none} 97%,100%{opacity:0} }
+  @keyframes d-swap-a { 0%,38%{opacity:1;transform:none} 46%,88%{opacity:0;transform:scale(.35) translateY(8px)} 96%,100%{opacity:1;transform:none} }
+  @keyframes d-swap-b { 0%,40%{opacity:0;transform:scale(1.5)} 48%,88%{opacity:1;transform:none} 96%,100%{opacity:0;transform:scale(1.5)} }
+  @keyframes d-cap-glow { 0%,100%{box-shadow:0 0 4px 0 rgba(217,119,87,.45)} 50%{box-shadow:0 0 9px 2px rgba(217,119,87,.85)} }
+  @keyframes d-ring { 0%,16%{border-color:#3c4a41;box-shadow:none} 24%,42%{border-color:#d97757;box-shadow:0 0 8px 1px rgba(217,119,87,.7)} 50%,68%{border-color:#4a9eff;box-shadow:0 0 8px 1px rgba(74,158,255,.7)} 78%,100%{border-color:#3c4a41;box-shadow:none} }
+  @keyframes d-t1 { 0%,16%{opacity:1} 24%,68%{opacity:0} 78%,100%{opacity:1} }
+  @keyframes d-t2 { 0%,16%{opacity:0} 24%,68%{opacity:1} 78%,100%{opacity:0} }
+</style>
+</helmet>
+
+<section class="dv-turn" id="t5">
+  <div class="dv-thd">
+    <a class="dv-tid" href="#t5">5</a>
+    <span class="dv-tname">Features 卡改版：悬浮任务栏 →「大树 ⇄ 胶囊 · 双形态」· 两个 demo 方向</span>
+  </div>
+  <div class="dv-notes">
+    <b>依据</b>：Token-Forest/docs/capsule-mode-design.md（✅已实现）——右下角灵动岛式胶囊、高约 1cm、左侧树 emblem；灯环=引擎状态：仅 Claude 整圈橙 <span style="color:#d97757">#D97757</span> / 仅 Codex 整圈蓝 <span style="color:#4a9eff">#4A9EFF</span> / 双跑半橙半蓝 / 空闲灭；完成时抖一下撤色；hover 出详情；菜单「切换到胶囊」一键互斥切换。<br>
+    <b>差异</b>：<a class="dv-oid" href="#5a">5a</a> demo 演「切换」——树缩成胶囊再变回（讲双形态）；<a class="dv-oid" href="#5b">5b</a> demo 演「灯环」——⇄ 并列构图 + 灭→橙→蓝 状态轮播（讲状态感知）。定稿后替换 FEATURES 数组的 taskbar 项并同步 4 语。
+  </div>
+  <div class="dv-opts">
+
+    <!-- ── 5A 形态切换故事 ── -->
+    <div class="dv-opt" id="5a">
+      <div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>demo 演切换：树 ⇄ 胶囊互换循环<span style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 7px;background:#2e7d3c;color:#fff;border-radius:5px">✓ 已选定 · 已同步英文</span></div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;right:16px;bottom:11px;animation:d-swap-a 10s ease-in-out infinite;transform-origin:bottom center">
+                  <img src="assets/sprites/AppleTree_4.png" alt="" width="44" height="44" style="width:44px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center;display:block">
+                </span>
+                <span style="position:absolute;right:12px;bottom:14px;display:flex;align-items:center;gap:3px;height:12px;padding:0 6px;background:#1e2521;border:1px solid #d97757;border-radius:999px;animation:d-swap-b 10s ease-in-out infinite,d-cap-glow 2.4s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="font-size:7px;line-height:1">🍎</span>
+                  <span style="font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:6.5px;line-height:1;color:#ede8da">处理中…</span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">大树 ⇄ 胶囊 · 双形态</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">大树悬浮任务栏上方；要专注时，一键缩成右下角小胶囊</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">灯环即状态：Claude 橙 · Codex 蓝 · 双跑半半圈，完成抖一下</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5B 灯环状态戏 ── -->
+    <div class="dv-opt" id="5b">
+      <div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>demo 演灯环：⇄ 并列 + 灭→橙→蓝轮播</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:24%;bottom:11px">
+                  <img src="assets/sprites/AppleTree_4.png" alt="" width="34" height="34" style="width:34px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center;display:block">
+                </span>
+                <span style="position:absolute;left:44%;top:32px;font-family:'Silkscreen',monospace;font-size:12px;color:#8aad91">⇄</span>
+                <span style="position:absolute;right:12%;top:31px;display:flex;align-items:center;gap:3px;height:13px;padding:0 6px;background:#1e2521;border:1px solid #3c4a41;border-radius:999px;animation:d-ring 12s ease-in-out infinite">
+                  <span style="font-size:7px;line-height:1">🍎</span>
+                  <span style="position:relative;width:50px;height:8px">
+                    <span style="position:absolute;inset:0;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:6.5px;line-height:8px;color:#8aad91;animation:d-t1 12s ease-in-out infinite">待机</span>
+                    <span style="position:absolute;inset:0;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:6.5px;line-height:8px;color:#ede8da;animation:d-t2 12s ease-in-out infinite">处理中…</span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">大树 ⇄ 胶囊 · 双形态</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">两档一键互斥切换：完整大树，或 1 cm 高的灵动岛药丸</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">灯环亮色 = 谁在跑；灭了就是待机，hover 看引擎与待收能量</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">下一步可以试："用 <a class="dv-oid" href="#5a">5a</a> 的切换 demo + <a class="dv-oid" href="#5b">5b</a> 的文案" · "胶囊 emblem 换真实 Apple.png" · "定稿后同步英文版"</p>
+</section>
+<section class="dv-turn" id="t4">
+  <div class="dv-thd">
+    <a class="dv-tid" href="#t4">4</a>
+    <span class="dv-tname">合并版（按评论：✓ bullets + 三层 chips 都保留）· 动画放慢至 8.5s · 两个文案组合</span>
+  </div>
+  <div class="dv-notes">
+    <b>结构定型</b>：demo（<a class="dv-oid" href="#2b">2b</a> 右键故事，放慢）→ 标题 → ✓ bullets ×2 → 三层 chips + 了解更多。<a class="dv-oid" href="#4a">4a</a> = <a class="dv-oid" href="#3b">3b</a> 钩子句 + <a class="dv-oid" href="#3a">3a</a> $ 句；<a class="dv-oid" href="#4b">4b</a> = <a class="dv-oid" href="#3c">3c</a> 账单句 + <a class="dv-oid" href="#3b">3b</a> 本地句。三层信息由 chips 承担，bullets 不再重复。
+  </div>
+  <div class="dv-opts">
+
+    <!-- ── 4A 钩子 + $ ── -->
+    <div class="dv-opt" id="4a">
+      <div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>钩子句 + $ 句（<a class="dv-oid" href="#3b">3b</a>×<a class="dv-oid" href="#3a">3a</a>）<span style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 7px;background:#2e7d3c;color:#fff;border-radius:5px">✓ 已选定 · 已同步英文</span></div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">树只是表面——右键，翻开它的账本</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">三层视图，三个模式：成长档案 · 用量统计 · 对话账单</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">完全离线计价：这棵树至今 ≈ $128.40</span>
+              </li>
+            </ul>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px;margin-top:2px">
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">🌳 成长</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">📊 用量</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">💬 对话</span>
+              <a href="#1b" style="margin-left:auto;font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none;align-self:center" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4B 账单 + 本地 ── -->
+    <div class="dv-opt" id="4b">
+      <div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>账单句 + 本地句（<a class="dv-oid" href="#3c">3c</a>×<a class="dv-oid" href="#3b">3b</a>）</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">每次对话一行账单：标题、项目、提问数、≈ $</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">吃了多少 token、值多少钱，全在本地算清</span>
+              </li>
+            </ul>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px;margin-top:2px">
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">🌳 成长</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">📊 用量</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">💬 对话</span>
+              <a href="#1b" style="margin-left:auto;font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none;align-self:center" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">下一步可以试："用 <a class="dv-oid" href="#4a">4a</a> 定稿，出英文版" · "chips 挪到 bullets 上面" · "动画再慢/再快一点"</p>
+</section>
+<section class="dv-turn" id="t3">
+  <div class="dv-thd">
+    <a class="dv-tid" href="#t3">3</a>
+    <span class="dv-tname">第 6 卡文案精修 · demo 固定为 <a class="dv-oid" href="#2b">2b</a> 右键故事动画 · 四个文案方向</span>
+  </div>
+  <div class="dv-notes">
+    <b>语气对齐</b>：短句、名词短语、不吹「最」（与 Features 现有 bullets 同调）。<a class="dv-oid" href="#3a">3a</a> 功能直给（与其他卡最同构）；<a class="dv-oid" href="#3b">3b</a> 树的账本叙事（钩子最强）；<a class="dv-oid" href="#3c">3c</a> 账单具体/数据向；<a class="dv-oid" href="#3d">3d</a> 单行正文 + 三层 chips（排行榜卡同构）。$ 数字统一 ≈ $128.40。
+  </div>
+  <div class="dv-opts">
+
+    <!-- ── 3A 功能直给 ── -->
+    <div class="dv-opt" id="3a">
+      <div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>功能直给 · 与其他卡最同构</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">成长 / 用量 / 对话，一个面板三层账</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">完全离线计价：这棵树至今 ≈ $128.40</span>
+              </li>
+            </ul>
+            <div style="padding-left:12px;margin-top:2px">
+              <a href="#1b" style="font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3B 树的账本叙事 ── -->
+    <div class="dv-opt" id="3b">
+      <div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>树的账本叙事 · 钩子最强</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">树只是表面——右键，翻开它的账本</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">吃了多少 token、值多少钱，全在本地算清</span>
+              </li>
+            </ul>
+            <div style="padding-left:12px;margin-top:2px">
+              <a href="#1b" style="font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3C 账单具体 · 数据向 ── -->
+    <div class="dv-opt" id="3c">
+      <div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>账单具体 · 数据向</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">每次对话一行账单：标题、项目、提问数、≈ $</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">日/周/月曲线、26 周热力图、模型拆分——全历史，全本地</span>
+              </li>
+            </ul>
+            <div style="padding-left:12px;margin-top:2px">
+              <a href="#1b" style="font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3D 单行钩子 + chips ── -->
+    <div class="dv-opt" id="3d">
+      <div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>单行钩子正文 + 三层 chips</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <p style="margin:0;padding-left:12px;font-size:13px;line-height:1.6;color:#8aad91">右键你的树，翻开它的账：吃了多少 token、值多少钱，三层看清——完全离线，绝不上传。</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px">
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">🌳 成长</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">📊 用量</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">💬 对话</span>
+              <a href="#1b" style="margin-left:auto;font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none;align-self:center" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">下一步可以试："用 <a class="dv-oid" href="#3b">3b</a>" · "<a class="dv-oid" href="#3b">3b</a> 第一句 + <a class="dv-oid" href="#3a">3a</a> 第二句" · "再收敛两版更短的" · "定稿后出英文版"</p>
+</section>
+<section class="dv-turn" id="t2">
+  <div class="dv-thd">
+    <a class="dv-tid" href="#t2">2</a>
+    <span class="dv-tname">首页 Features 第 6 卡 · 数据面板简介卡（补齐 2×3 grid；视觉承接已定稿的 <a class="dv-oid" href="#1b">1b</a>）</span>
+  </div>
+  <div class="dv-notes">
+    <b>同构</b>：完全按 feature-card.tsx 解剖——demo 屏（72px 暗屏+扫描线）→ 标题行 → bullets/正文 → 左侧 accent 条 + hover 位移；落地时按 §5-5 给 FeatureCard 加可选 href（整卡可点，hover 效果保留）。文案取 brief §4「首页 Features 第 6 卡」，按反馈以「数据面板」命名；badge 未放（与 /dashboard 页去 badge 保持一致，要加随时说）。<br>
+    <b>差异</b>：<a class="dv-oid" href="#2a">2a</a> demo=木框窗缩影（$ 大数 + 四类条 + 迷你热力图），bullets 两条，与实时/成长卡同构；<a class="dv-oid" href="#2b">2b</a> demo=右键故事循环（树 → 菜单「数据面板」→ 小窗弹出），单行正文 + 三层 chips，与排行榜卡同构。
+  </div>
+  <div class="dv-opts">
+
+    <!-- ─────────── OPTION 2A 窗口缩影 ─────────── -->
+    <div class="dv-opt" id="2a">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>窗口缩影 demo · bullets 版</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:232px;background:linear-gradient(180deg,#b07434 0%,#96591f 60%,#7c4a1e 100%);border-radius:4px;box-shadow:0 0 0 2px #1c1206,0 3px 8px rgba(0,0,0,.6);padding:3px 4px 4px">
+                  <div style="display:flex;align-items:center;gap:5px;padding:1px 2px 3px">
+                    <span style="font-family:'Silkscreen',monospace;font-size:6px;font-weight:700;letter-spacing:.08em;color:#39220b;background:linear-gradient(180deg,#c08a45,#8a5620);border:1px solid #241505;border-radius:2px;padding:1px 5px;text-shadow:0 1px 0 rgba(255,230,180,.5)">DASHBOARD</span>
+                    <span style="margin-left:auto;display:flex;gap:3px;align-items:flex-end">
+                      <span style="width:14px;height:6px;border-radius:2px 2px 0 0;background:linear-gradient(180deg,#a5ecb0,#4f9e63);border:1px solid #123314;border-bottom:none"></span>
+                      <span style="width:12px;height:5px;border-radius:2px 2px 0 0;background:linear-gradient(180deg,#f0dc9e,#e2c375);border:1px solid #241505;border-bottom:none"></span>
+                      <span style="width:12px;height:5px;border-radius:2px 2px 0 0;background:linear-gradient(180deg,#f0dc9e,#e2c375);border:1px solid #241505;border-bottom:none"></span>
+                    </span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:9px;background:#f2dfae;border:1px solid #452508;border-radius:3px;padding:5px 8px">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:3px">
+                      <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;line-height:1;color:#33210d">≈ $128.40</span>
+                      <span style="display:flex;height:6px;border:1px solid #452508;border-radius:2px;overflow:hidden;background:#e3cd8f;transform-origin:left;animation:d-grow 3.4s ease-in-out infinite alternate">
+                        <span style="width:38%;background:#2e7d3c"></span><span style="width:34%;background:#d9a83c"></span><span style="width:18%;background:#8cc46a"></span><span style="width:10%;background:#a07850"></span>
+                      </span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(8,5px);grid-auto-rows:5px;gap:1px">
+                      <span style="background:#b9d98b"></span><span style="background:#57a94e"></span><span style="background:#eadcab"></span><span style="background:#8cc46a"></span><span style="background:#2e7d3c;animation:d-twinkle 2.2s ease-in-out infinite"></span><span style="background:#b9d98b"></span><span style="background:#57a94e"></span><span style="background:#eadcab"></span>
+                      <span style="background:#8cc46a"></span><span style="background:#eadcab"></span><span style="background:#57a94e"></span><span style="background:#b9d98b"></span><span style="background:#8cc46a"></span><span style="background:#2e7d3c"></span><span style="background:#eadcab"></span><span style="background:#b9d98b;animation:d-twinkle 2.8s ease-in-out .6s infinite"></span>
+                      <span style="background:#57a94e;animation:d-twinkle 2.5s ease-in-out 1.1s infinite"></span><span style="background:#8cc46a"></span><span style="background:#b9d98b"></span><span style="background:#eadcab"></span><span style="background:#57a94e"></span><span style="background:#8cc46a"></span><span style="background:#2e7d3c"></span><span style="background:#eadcab"></span>
+                    </div>
+                  </div>
+                </div>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <ul style="display:flex;flex-direction:column;gap:4px;padding-left:12px;margin:0;list-style:none">
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">成长 / 用量 / 对话三层视图，像素风数据面板</span>
+              </li>
+              <li style="display:flex;gap:8px">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-top:2px;flex:none" aria-hidden="true"><circle cx="7" cy="7" r="6.5" stroke="#7bd88f" stroke-width="1.5"></circle><path d="M4 7l2 2 4-4" stroke="#7bd88f" stroke-width="1.5" stroke-linecap="square"></path></svg>
+                <span style="font-size:13px;line-height:1.6;color:#8aad91">完全离线的花费估算：这棵树至今 ≈ $128.40</span>
+              </li>
+            </ul>
+            <div style="padding-left:12px;margin-top:2px">
+              <a href="#1b" style="font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────── OPTION 2B 右键故事 ─────────── -->
+    <div class="dv-opt" id="2b">
+      <div class="dv-olabel"><a class="dv-oid" href="#2b">2b</a>右键故事 demo · 正文 + chips 版</div>
+      <div class="dv-card" style="width:560px">
+        <div style="background:#1b2a22;padding:36px 40px;font-family:'Noto Sans SC',system-ui,sans-serif">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12);cursor:pointer" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+            <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+            <div style="padding-left:12px">
+              <div style="position:relative;height:72px;overflow:hidden;border:1px solid #1e2521;border-radius:2px;background:#080f0c">
+                <span style="position:absolute;left:12px;top:8px;width:40px;height:22px;opacity:.5;border:1px solid #243320;border-radius:2px"></span>
+                <span style="position:absolute;left:0;right:0;bottom:0;height:11px;background:#1e2521;border-top:1px solid #243320"></span>
+                <span style="position:absolute;left:8px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <span style="position:absolute;left:34px;bottom:3px;width:22px;height:5px;background:#243320"></span>
+                <img src="assets/sprites/AppleTree_4.png" alt="" width="24" height="24" style="position:absolute;right:22px;bottom:11px;width:24px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                <span style="position:absolute;right:50px;bottom:16px;width:88px;background:#243320;border:1px solid #1e2521;border-radius:3px;padding:2px;box-shadow:0 2px 6px rgba(0,0,0,.55);animation:d-menu 8.5s ease-in-out infinite;transform-origin:bottom right">
+                  <span style="display:block;padding:2px 6px;border-radius:2px;background:rgba(58,125,68,.35);font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#7bd88f">数据面板</span>
+                  <span style="display:block;padding:2px 6px;font-family:'Fusion Pixel 12px Proportional SC','Noto Sans SC',sans-serif;font-size:8px;line-height:1.3;color:#8aad91">隐藏</span>
+                </span>
+                <span style="position:absolute;right:44px;bottom:26px;animation:d-hand 8.5s ease-in-out infinite">
+                  <svg viewBox="0 0 10 12" width="11" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                </span>
+                <span style="position:absolute;left:14px;top:9px;width:128px;background:#f2dfae;border:1px solid #452508;border-radius:3px;box-shadow:0 0 0 2px #96591f,0 3px 8px rgba(0,0,0,.6);padding:3px 4px;animation:d-win 8.5s ease-in-out infinite">
+                  <span style="display:flex;align-items:center;gap:3px">
+                    <span style="width:26px;height:4px;border-radius:1px;background:linear-gradient(180deg,#a5ecb0,#4f9e63)"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:8px;line-height:1;color:#33210d;margin-left:auto">≈ $128.40</span>
+                  </span>
+                  <span style="display:flex;gap:3px;margin-top:3px">
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                    <span style="flex:1.4;height:12px;background:#faedc8;border:1px solid #4a2a0d;border-radius:2px"></span>
+                  </span>
+                </span>
+                <span style="position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px)"></span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding-left:12px">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">数据面板</span>
+            </div>
+            <p style="margin:0;padding-left:12px;font-size:13px;line-height:1.6;color:#8aad91">右键树打开：成长、用量、对话三层账，完全离线计价——这棵树至今 ≈ $128.40，一眼看到。</p>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px">
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">🌳 成长</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">📊 用量</span>
+              <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">💬 对话</span>
+              <a href="#1b" style="margin-left:auto;font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f;text-decoration:none;align-self:center" style-hover="text-decoration:underline;text-underline-offset:3px">了解更多 →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">下一步可以试："用 <a class="dv-oid" href="#2a">2a</a>，demo 里加 tab 轮播" · "<a class="dv-oid" href="#2b">2b</a> 的故事 demo 配 <a class="dv-oid" href="#2a">2a</a> 的 bullets" · "加『即将推出』badge" · "出英文版文案"</p>
+</section>
+<section class="dv-turn" id="t1">
+  <div class="dv-thd">
+    <a class="dv-tid" href="#t1">1</a>
+    <span class="dv-tname">/dashboard 独立页 · 两个整页方案 · 中文版（<a href="Dashboard en.dc.html">英文版 →</a>）</span>
+  </div>
+  <div class="dv-notes">
+    <b>依据</b>：docs/dashboard-page.md §3 蓝图 + §4 文案 + §6 拍板（badge=即将推出、$ 示例 ≈128.40、FAQ 4 问手风琴、全球 chips 放尾部 CTA 上方）。<br>
+    <b>样式来源</b>：全部 token 逐值取自 app/globals.css；顶栏 / 页脚 / 卡片 / 按钮结构照抄 top-bar.tsx、footer.tsx、feature-card.tsx、hero.tsx；羊皮纸 mock 用 v2a 色表（dashboard-section.md §5）。<br>
+    <b>交互</b>：mock 三层 tab 自动轮播（hover 暂停、点击切换后暂停 12s）、$ 数字滚动、FAQ 手风琴；顶栏语言切换直接跳英文版文件。<br>
+    <b>差异</b>：<a class="dv-oid" href="#1a">1a</a> 按 brief 直出——浅色居中 hero，演示窗置顶（Plausible 式）；<a class="dv-oid" href="#1b">1b</a> 暗色分栏 hero，导览改横排行，How 改流水线，节奏 F→P 交替相反。<br>
+    <b>已按反馈更新</b>：去掉「即将推出」badge；窗口与右键菜单命名对齐真实 App（数据面板 · DASHBOARD；菜单=数据面板/隐藏/切换到胶囊/排行榜/退出 TokenForest，无「打开主面板」）；演示窗按 Token-Forest/design_handoff_dashboard_v2a 微调：木框+铭牌+刷新钮、木 tab（选中态绿）、羊皮纸内衬、天空树景、JetBrains Mono 数字与像素中文标签。<br>
+    <b>未含</b>：grain overlay 与滚动 reveal（画布模式下无意义，施工时按全站既有模式加回）；移动端 390 版另出。Tweaks：badge 状态（coming/live）、轮播开关与速度。
+  </div>
+  <div class="dv-opts">
+
+    <!-- ═══════════════════════ OPTION 1A ═══════════════════════ -->
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>按 brief 直出 · 浅色居中 hero · 演示窗紧贴首屏</div>
+      <div class="dv-card" style="width:1440px">
+        <div style="width:1440px;background:#faf5ea;color:#1e2521;font-family:'Noto Sans SC',system-ui,sans-serif">
+
+          <!-- ── TopBar ── -->
+          <header data-screen-label="1a TopBar" style="border-bottom:2px solid #7a5a3a;background:rgba(30,37,33,.97)">
+            <div style="margin:0 auto;display:flex;height:56px;max-width:1024px;align-items:center;justify-content:space-between;gap:16px;padding:0 24px">
+              <a href="#1a" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+                <img src="assets/logo.svg" alt="" width="24" height="24" style="width:24px;height:24px;image-rendering:pixelated">
+                <span style="font-family:'Silkscreen',monospace;font-size:14px;font-weight:700;line-height:1;color:#ede8da;text-shadow:1px 1px 0 rgba(0,0,0,.25)">Token-Forest</span>
+              </a>
+              <nav style="display:flex;align-items:center;gap:4px">
+                <a href="#1a" style="padding:6px 12px;border-radius:2px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">首页</a>
+                <a href="#1a" style="padding:6px 12px;border-radius:2px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">下载</a>
+                <a href="#1a" style="padding:6px 12px;border-radius:2px;font-size:13px;background:rgba(58,125,68,.2);color:#7bd88f;text-decoration:none">数据面板</a>
+                <a href="#1a" style="padding:6px 12px;border-radius:2px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">排行榜</a>
+                <a href="#1a" aria-label="GitHub" style="margin-left:8px;display:flex;padding:6px;border-radius:2px;color:#8aad91" style-hover="color:#7bd88f">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"></path></svg>
+                </a>
+              </nav>
+              <div style="display:flex;align-items:center;gap:16px">
+                <a href="Dashboard en.dc.html" title="切到 English 版设计稿" style="display:flex;align-items:center;gap:6px;border-radius:2px;border:1px solid #7a5a3a;background:#1e2521;padding:6px 8px;font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#8aad91;text-decoration:none" style-hover="border-color:#7bd88f;color:#7bd88f">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25"></circle><path d="M1.75 8h12.5M8 1.75v12.5"></path><path d="M8 1.75c2.2 2.4 2.2 9.85 0 12.5M8 1.75c-2.2 2.4-2.2 9.85 0 12.5"></path></svg>
+                  <span>中文</span>
+                  <span style="font-size:8px">▾</span>
+                </a>
+                <a href="#1a" style="display:flex;align-items:center;gap:6px;border-radius:2px;background:#3a7d44;padding:6px 12px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                  <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" aria-hidden="true"><path d="M8 1v8.293L5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.293V1H8Zm-6 10a.5.5 0 0 0 0 1h12a.5.5 0 0 0 0-1H2Z"></path></svg>
+                  下载
+                </a>
+              </div>
+            </div>
+          </header>
+
+          <!-- ── §1 Hero + §2 演示窗（parchment）── -->
+          <section data-screen-label="1a Hero + 演示窗" style="background:#faf5ea;padding:72px 24px 80px">
+            <div style="margin:0 auto;max-width:1024px;display:flex;flex-direction:column;align-items:center">
+              <span style="font-family:'Silkscreen',monospace;font-size:11px;letter-spacing:.3em;color:#7a5a3a">DASHBOARD</span>
+              <h1 style="margin:22px 0 0;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#3a7d44">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite;text-shadow:0 0 3px rgba(123,216,143,.85),0 0 10px rgba(123,216,143,.55),0 0 20px rgba(58,125,68,.3),2px 2px 0 rgba(58,125,68,.3)">你的 token 成绩单</span>
+              </h1>
+              <p style="margin:18px 0 0;max-width:560px;text-align:center;font-size:18px;line-height:1.5;font-weight:700;color:#1e2521">别人给你一张表，Token-Forest 给你一棵树——和一份看得懂的账单。</p>
+              <p style="margin:10px 0 0;max-width:540px;text-align:center;font-size:15px;line-height:1.7;color:#5a6b5e">Claude Code 与 Codex 的成长、用量与花费分析：本地计算、离线计价、绝不上传。</p>
+              <div style="margin-top:32px;display:flex;flex-wrap:wrap;justify-content:center;gap:16px">
+                <a href="#1a" style="display:inline-flex;align-items:center;gap:8px;border-radius:2px;background:#3a7d44;padding:12px 24px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                  <svg viewBox="0 0 14 14" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M7 1v7.293L4.854 6.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L7.5 8.293V1H7ZM1 11a.5.5 0 0 0 0 1h12a.5.5 0 0 0 0-1H1Z"></path></svg>
+                  下载 Token-Forest
+                </a>
+                <a href="#1a" style="display:inline-flex;align-items:center;gap:8px;border-radius:2px;background:#faf5ea;border:2px solid #1e2521;padding:10px 22px;font-family:'Silkscreen',monospace;font-size:11px;color:#1e2521;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"></path></svg>
+                  GitHub
+                </a>
+              </div>
+              <p style="margin:22px 0 0;font-size:13px;line-height:1.6;color:#5a6b5e">🔒 本地运行 · 读日志 · 不联网 · 不上传</p>
+
+              <!-- §2 羊皮纸成绩单演示窗 -->
+              <div onMouseEnter="{{ enterA }}" onMouseLeave="{{ leaveA }}" style="margin-top:48px;width:880px;max-width:100%;background:linear-gradient(180deg,#b07434 0%,#96591f 55%,#7c4a1e 100%);border-radius:10px;box-shadow:0 0 0 3px #1c1206,6px 6px 0 rgba(0,0,0,.3),inset 0 3px 0 rgba(255,222,160,.3),inset 0 -4px 0 rgba(35,18,4,.42)">
+                <!-- 标题栏 -->
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 14px 6px">
+                  <span style="display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#c08a45 0%,#a2692c 46%,#8a5620 100%);border:2px solid #241505;border-radius:7px;padding:4px 12px;box-shadow:inset 0 2px 0 rgba(255,226,170,.38),inset 0 -3px 0 rgba(40,20,5,.38),0 3px 0 rgba(0,0,0,.35)"><img src="assets/sprites/AppleTree_4.png" alt="" width="16" height="16" style="width:16px;height:16px;image-rendering:pixelated"><span style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;color:#39220b;text-shadow:0 1px 0 rgba(255,230,180,.55)">数据面板 · DASHBOARD</span></span>
+                  <span style="margin-left:auto;font-size:11px;color:#ffe9bd;text-shadow:0 1px 0 rgba(40,18,2,.8)">已更新 · 刚刚</span>
+                  <span style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(180deg,#bd873f 0%,#996127 52%,#84511f 100%);border:2px solid #241505;border-radius:7px;padding:5px 11px;box-shadow:inset 0 2px 0 rgba(255,226,170,.4),inset 0 -3px 0 rgba(46,22,4,.4),0 2px 0 #1c1206;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:10px;color:#ffeec9;text-shadow:0 1px 0 rgba(40,18,2,.75)">
+                    <span>↻</span>
+                    <span>刷新</span>
+                    
+                  </span>
+                </div>
+                <!-- tab 栏 -->
+                <div style="display:flex;gap:7px;padding:8px 14px 0;margin-bottom:-3px;position:relative;z-index:2;align-items:flex-end">
+                  <sc-if value="{{ a0 }}" hint-placeholder-val="{{ true }}"><button onClick="{{ tA0 }}" style="padding:8px 16px 11px;background:linear-gradient(180deg,#a5ecb0 0%,#7bd88f 46%,#4f9e63 100%);border:3px solid #123314;border-bottom:none;border-radius:9px 9px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;font-weight:700;color:#0e140c;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)">🌳 成长</button></sc-if>
+                  <sc-if value="{{ na0 }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tA0 }}" style="padding:7px 14px 8px;background:linear-gradient(180deg,#f0dc9e 0%,#e2c375 100%);border:3px solid #241505;border-bottom:none;border-radius:9px 9px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;color:#6b4a1e;cursor:pointer" style-hover="color:#33210d">🌳 成长</button></sc-if>
+                  <sc-if value="{{ a1 }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tA1 }}" style="padding:8px 16px 11px;background:linear-gradient(180deg,#a5ecb0 0%,#7bd88f 46%,#4f9e63 100%);border:3px solid #123314;border-bottom:none;border-radius:9px 9px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;font-weight:700;color:#0e140c;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)">📊 用量</button></sc-if>
+                  <sc-if value="{{ na1 }}" hint-placeholder-val="{{ true }}"><button onClick="{{ tA1 }}" style="padding:7px 14px 8px;background:linear-gradient(180deg,#f0dc9e 0%,#e2c375 100%);border:3px solid #241505;border-bottom:none;border-radius:9px 9px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;color:#6b4a1e;cursor:pointer" style-hover="color:#33210d">📊 用量</button></sc-if>
+                  <sc-if value="{{ a2 }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tA2 }}" style="padding:8px 16px 11px;background:linear-gradient(180deg,#a5ecb0 0%,#7bd88f 46%,#4f9e63 100%);border:3px solid #123314;border-bottom:none;border-radius:9px 9px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;font-weight:700;color:#0e140c;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)">💬 对话</button></sc-if>
+                  <sc-if value="{{ na2 }}" hint-placeholder-val="{{ true }}"><button onClick="{{ tA2 }}" style="padding:7px 14px 8px;background:linear-gradient(180deg,#f0dc9e 0%,#e2c375 100%);border:3px solid #241505;border-bottom:none;border-radius:9px 9px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;color:#6b4a1e;cursor:pointer" style-hover="color:#33210d">💬 对话</button></sc-if>
+                  <span style="margin-left:auto;align-self:center;padding-bottom:10px;font-family:'Silkscreen',monospace;font-size:9px;color:#ffe9bd;text-shadow:0 1px 0 rgba(40,18,2,.7)">AUTO ▸ hover 暂停</span>
+                </div>
+
+                <div style="margin:0 12px 12px;background:#f2dfae;border:3px solid #452508;border-radius:7px;box-shadow:inset 0 5px 12px rgba(122,82,24,.32),0 0 0 1px rgba(255,222,160,.16);overflow:hidden;position:relative">
+                <!-- tab 🌳 成长 -->
+                <sc-if value="{{ a0 }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:grid;grid-template-columns:340px 1fr;gap:14px;padding:16px;min-height:360px;animation:tab-in .35s ease-out both">
+                    <div style="display:flex;flex-direction:column;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                        <span style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">苹果树</span>
+                        <span style="padding:3px 9px;background:rgba(14,18,8,.78);border:2px solid #241505;border-radius:6px;font-family:'Silkscreen',monospace;font-size:10px;font-weight:700;color:#8fe8a0">Lv 6</span>
+                      </div>
+                      <div style="position:relative;flex:1;min-height:158px;margin:10px -14px 0;overflow:hidden;border-top:2px solid #452508;border-bottom:2px solid #452508;background:linear-gradient(180deg,#8fb8d0 0%,#c4dce8 60%,#e8d5a8 100%)">
+                        <img src="assets/sprites/Ground.png" alt="" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:26px;object-fit:cover;image-rendering:pixelated">
+                        <img src="assets/sprites/AppleTree_6.png" alt="" width="104" height="112" style="position:absolute;left:50%;bottom:14px;width:104px;margin-left:-52px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                      </div>
+                      <div style="margin-top:12px">
+                        <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#33210d"><span>阶段 VI · 成树</span><span>→ VII</span></div>
+                        <div style="margin-top:6px;height:18px;background:#e3cd8f;border:2px solid #452508;border-radius:6px;box-shadow:inset 0 2px 4px rgba(122,82,24,.4);overflow:hidden;padding:2px">
+                          <div style="width:68%;height:100%;background:linear-gradient(180deg,#a5ecb0 0%,#57a568 46%,#4f9e63 100%);box-shadow:inset 0 -3px 0 rgba(18,60,30,.5),inset 0 2px 0 rgba(255,255,255,.4);border-radius:3px;transform-origin:left;animation:grow-x .8s ease-out both"></div>
+                        </div>
+                        <div style="margin-top:6px;font-size:12px;color:rgba(51,33,13,.65)">距下一阶段还差 ≈ 8.4M tokens</div>
+                      </div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:14px">
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                        <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                          <div style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">已种植</div>
+                          <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26px;color:#33210d">41<span style="margin-left:8px;font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:400;color:rgba(51,33,13,.65)">天</span></div>
+                        </div>
+                        <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                          <div style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">累计能量</div>
+                          <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26px;color:#33210d">112.6M<span style="margin-left:8px;font-family:'Noto Sans SC',sans-serif;font-size:13px;font-weight:400;color:rgba(51,33,13,.65)">tokens</span></div>
+                        </div>
+                      </div>
+                      <div style="flex:1;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                        <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a"><span>成长曲线 · 累计</span><span>41 天</span></div>
+                        <svg width="100%" height="84" viewBox="0 0 460 84" preserveAspectRatio="none" aria-hidden="true" style="margin-top:8px;display:block">
+                          <line x1="0" y1="62" x2="460" y2="62" stroke="rgba(74,42,13,.12)" stroke-width="1"></line>
+                          <line x1="0" y1="40" x2="460" y2="40" stroke="rgba(74,42,13,.12)" stroke-width="1"></line>
+                          <line x1="0" y1="18" x2="460" y2="18" stroke="rgba(74,42,13,.12)" stroke-width="1"></line>
+                          <path d="M0 80 H24 V78 H48 V76 H72 V72 H96 V70 H120 V64 H144 V62 H168 V56 H192 V52 H216 V50 H240 V44 H264 V42 H288 V36 H312 V32 H336 V30 H360 V24 H384 V20 H408 V16 H432 V12 H460" fill="none" stroke="#57a568" stroke-width="3" shape-rendering="crispEdges"></path>
+                          <rect x="452" y="7" width="8" height="8" fill="#d9a83c"></rect>
+                        </svg>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:12px 14px">
+                        <span style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:12px;color:#33210d">🌳 这棵树至今</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:#33210d">≈ $128.40</span>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <!-- tab 📊 用量 -->
+                <sc-if value="{{ a1 }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:14px;padding:16px;min-height:360px;animation:tab-in .35s ease-out both">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                      <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                        <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a"><span>真实消耗 · 全部历史</span><span>内置价格表 · 2026-06</span></div>
+                        <div style="margin-top:12px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:26px;color:#33210d">≈ ${{ dollarsA }}</div>
+                        <div style="margin-top:14px;display:flex;height:18px;border:2px solid #452508;border-radius:6px;box-shadow:inset 0 2px 3px rgba(122,82,24,.35);overflow:hidden;background:#e3cd8f">
+                          <span style="width:38%;background:#2e7d3c;transform-origin:left;animation:grow-x .6s ease-out both"></span>
+                          <span style="width:34%;background:#d9a83c;transform-origin:left;animation:grow-x .6s ease-out .12s both"></span>
+                          <span style="width:18%;background:#8cc46a;transform-origin:left;animation:grow-x .6s ease-out .24s both"></span>
+                          <span style="width:10%;background:#a07850;transform-origin:left;animation:grow-x .6s ease-out .36s both"></span>
+                        </div>
+                        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:12px;color:rgba(51,33,13,.75)">
+                          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;background:#2e7d3c"></span>cache 读 · $48.70</span>
+                          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;background:#d9a83c"></span>output · $43.90</span>
+                          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;background:#8cc46a"></span>cache 写 · $22.90</span>
+                          <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;background:#a07850"></span>input · $12.90</span>
+                        </div>
+                      </div>
+                      <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                        <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a"><span>每日花费 · 近 30 天</span><span>日 / 周 / 月</span></div>
+                        <svg width="100%" height="104" viewBox="0 0 380 96" preserveAspectRatio="none" aria-hidden="true" style="margin-top:10px;display:block">
+                          <line x1="0" y1="72" x2="380" y2="72" stroke="rgba(74,42,13,.12)" stroke-width="1"></line>
+                          <line x1="0" y1="48" x2="380" y2="48" stroke="rgba(74,42,13,.12)" stroke-width="1"></line>
+                          <line x1="0" y1="24" x2="380" y2="24" stroke="rgba(74,42,13,.12)" stroke-width="1"></line>
+                          <path d="M0 78 H20 V72 H40 V75 H60 V64 H80 V68 H100 V56 H120 V61 H140 V48 H160 V54 H180 V42 H200 V47 H220 V34 H240 V40 H260 V28 H280 V33 H300 V22 H320 V27 H340 V16 H360 V20 H380" fill="none" stroke="#57a568" stroke-width="3" shape-rendering="crispEdges"></path>
+                          <rect x="372" y="15" width="8" height="8" fill="#d9a83c"></rect>
+                        </svg>
+                      </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px">
+                      <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                        <div style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">模型拆分 · Claude &amp; Codex</div>
+                        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+                          <span style="width:8px;height:8px;background:#e0885f"></span>
+                          <span style="width:150px;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#33210d">claude-sonnet-4-5</span>
+                          <span style="flex:1;height:10px;background:#e3cd8f;border:1px solid #4a2a0d"><span style="display:block;width:72%;height:100%;background:#e0885f;transform-origin:left;animation:grow-x .7s ease-out both"></span></span>
+                          <span style="width:110px;text-align:right;font-size:12px;color:rgba(51,33,13,.75)">61.2M · $89.10</span>
+                        </div>
+                        <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+                          <span style="width:8px;height:8px;background:#5cc2c9"></span>
+                          <span style="width:150px;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#33210d">gpt-5-codex</span>
+                          <span style="flex:1;height:10px;background:#e3cd8f;border:1px solid #4a2a0d"><span style="display:block;width:38%;height:100%;background:#5cc2c9;transform-origin:left;animation:grow-x .7s ease-out .15s both"></span></span>
+                          <span style="width:110px;text-align:right;font-size:12px;color:rgba(51,33,13,.75)">18.4M · $39.30</span>
+                        </div>
+                        <div style="margin-top:12px;border-top:1px solid rgba(74,42,13,.25);padding-top:10px;font-size:12px;color:rgba(51,33,13,.65)">burn rate · 近 7 日均 1.9M tokens/日 · ≈ $3.20/日</div>
+                      </div>
+                      <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:14px">
+                        <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a"><span>贡献热力图</span><span>26 周</span></div>
+                        <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:2px;width:232px">
+                          <sc-for list="{{ heatCells }}" as="cell" hint-placeholder-count="0"><span style="{{ cell.style }}"></span></sc-for>
+                        </div>
+                        <div style="margin-top:8px;display:flex;align-items:center;gap:3px;font-size:11px;color:rgba(51,33,13,.55)">少<span style="width:7px;height:7px;background:#eadcab"></span><span style="width:7px;height:7px;background:#b9d98b"></span><span style="width:7px;height:7px;background:#8cc46a"></span><span style="width:7px;height:7px;background:#57a94e"></span><span style="width:7px;height:7px;background:#2e7d3c"></span>多</div>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+
+                <!-- tab 💬 对话 -->
+                <sc-if value="{{ a2 }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;padding:16px;min-height:360px;animation:tab-in .35s ease-out both">
+                    <div style="flex:1;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:4px 14px 10px">
+                      <div style="display:grid;grid-template-columns:1fr 130px 70px 90px;gap:10px;padding:10px 0;font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.55)">
+                        <span>对话</span><span>项目</span><span>提问</span><span style="text-align:right">≈ $</span>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr 130px 70px 90px;gap:10px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:12px 0">
+                        <span style="display:flex;align-items:center;gap:8px;font-size:13px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:8px;height:8px;flex:none;background:#e0885f"></span>重构 tree-scene 的皮肤切换逻辑…</span>
+                        <span style="font-family:'Silkscreen',monospace;font-size:10px;color:rgba(51,33,13,.65)">token-forest</span>
+                        <span style="font-size:12px;color:rgba(51,33,13,.75)">14 问</span>
+                        <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#33210d">$3.84</span>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr 130px 70px 90px;gap:10px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:12px 0">
+                        <span style="display:flex;align-items:center;gap:8px;font-size:13px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:8px;height:8px;flex:none;background:#e0885f"></span>排查 Supabase 迁移失败的原因…</span>
+                        <span style="font-family:'Silkscreen',monospace;font-size:10px;color:rgba(51,33,13,.65)">tt-website</span>
+                        <span style="font-size:12px;color:rgba(51,33,13,.75)">6 问</span>
+                        <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#33210d">$1.27</span>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr 130px 70px 90px;gap:10px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:12px 0">
+                        <span style="display:flex;align-items:center;gap:8px;font-size:13px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:8px;height:8px;flex:none;background:#5cc2c9"></span>给 README 补一节安装说明…</span>
+                        <span style="font-family:'Silkscreen',monospace;font-size:10px;color:rgba(51,33,13,.65)">dotfiles</span>
+                        <span style="font-size:12px;color:rgba(51,33,13,.75)">3 问</span>
+                        <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#33210d">$0.42</span>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr 130px 70px 90px;gap:10px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:12px 0">
+                        <span style="display:flex;align-items:center;gap:8px;font-size:13px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:8px;height:8px;flex:none;background:#e0885f"></span>把排行榜分页的边界条件补上测试…</span>
+                        <span style="font-family:'Silkscreen',monospace;font-size:10px;color:rgba(51,33,13,.65)">token-forest</span>
+                        <span style="font-size:12px;color:rgba(51,33,13,.75)">9 问</span>
+                        <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;color:#33210d">$2.18</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 2px 0">
+                      <span style="font-size:12px;color:rgba(51,33,13,.6)">近 200 条 · 30 条 / 页</span>
+                      <span style="display:flex;align-items:center;gap:8px;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#33210d"><span style="display:flex;width:20px;height:20px;align-items:center;justify-content:center;border:2px solid #4a2a0d;background:#faedc8">◂</span>第 1 / 7 页<span style="display:flex;width:20px;height:20px;align-items:center;justify-content:center;border:2px solid #4a2a0d;background:#faedc8">▸</span></span>
+                    </div>
+                  </div>
+                </sc-if>
+                </div>
+              </div>
+              <p style="margin:14px 0 0;font-size:12px;color:#5a6b5e;opacity:.85">界面为演示 · 数字为虚构示例</p>
+            </div>
+          </section>
+
+          <!-- ── §3 三层导览（forest）── -->
+          <section data-screen-label="1a 三层导览" style="background:#1b2a22;padding:80px 24px">
+            <div style="margin:0 auto;max-width:1024px">
+              <h2 style="margin:0;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#7bd88f">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 1.4s;text-shadow:0 0 4px rgba(123,216,143,.9),0 0 12px rgba(123,216,143,.55),0 0 28px rgba(123,216,143,.35),3px 3px 0 rgba(0,0,0,.45)">数据面板里有什么</span>
+              </h2>
+              <p style="margin:12px 0 48px;text-align:center;font-size:15px;line-height:1.7;color:#8aad91">三层视图，同一套数——树、曲线、账单，任何两个数字都能对上。</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+                <div style="position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+                  <div style="padding-left:12px;font-size:22px;line-height:1">🌳</div>
+                  <div style="padding-left:12px;font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">成长</div>
+                  <p style="margin:0;padding-left:12px;font-size:13px;line-height:1.6;color:#8aad91">每棵树一份档案：阶段、种植天数、成长曲线，还有「这棵树至今 ≈ $X」。</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px;margin-top:auto;padding-top:8px">
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">树切换</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">阶段 · 种植天数</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">成长曲线</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">每树估值</span>
+                  </div>
+                </div>
+                <div style="position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#7a5a3a"></span>
+                  <div style="padding-left:12px;font-size:22px;line-height:1">📊</div>
+                  <div style="padding-left:12px;font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">用量</div>
+                  <p style="margin:0;padding-left:12px;font-size:13px;line-height:1.6;color:#8aad91">全历史统计：日/周/月曲线、Claude 与 Codex 各模型拆分、26 周热力图、burn rate、按项目分账。</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px;margin-top:auto;padding-top:8px">
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">日/周/月曲线</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">模型拆分</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">26 周热力图</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">burn rate</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">按项目</span>
+                  </div>
+                </div>
+                <div style="position:relative;overflow:hidden;display:flex;flex-direction:column;gap:8px;padding:20px;background:#243320;border:2px solid #3a7d44;border-radius:2px;box-shadow:0 2px 8px rgba(30,37,33,.12)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+                  <div style="padding-left:12px;font-size:22px;line-height:1">💬</div>
+                  <div style="padding-left:12px;font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#ede8da">对话</div>
+                  <p style="margin:0;padding-left:12px;font-size:13px;line-height:1.6;color:#8aad91">每次对话一行账单：标题、项目、提问数、四类 token 与估算花费。</p>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;padding-left:12px;margin-top:auto;padding-top:8px">
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">每对话一行</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">四类 token</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">≈ $ 估算</span>
+                    <span style="padding:3px 8px;border:1px solid rgba(123,216,143,.45);border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#8aad91">近 200 条分页</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── §4 亮点（parchment）── -->
+          <section data-screen-label="1a 亮点" style="background:#faf5ea;padding:80px 24px">
+            <div style="margin:0 auto;max-width:1024px">
+              <h2 style="margin:0 0 48px;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#3a7d44">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 2.8s;text-shadow:0 0 3px rgba(123,216,143,.85),0 0 10px rgba(123,216,143,.55),0 0 20px rgba(58,125,68,.3),2px 2px 0 rgba(58,125,68,.3)">为什么不一样</span>
+              </h2>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div style="position:relative;overflow:hidden;padding:20px 20px 20px 32px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+                  <div style="font-family:'Silkscreen',monospace;font-size:12px;color:#1e2521">养成叙事</div>
+                  <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">统计长在树上——数字不再是报表，是你养出来的东西。</p>
+                </div>
+                <div style="position:relative;overflow:hidden;padding:20px 20px 20px 32px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#c8943c"></span>
+                  <div style="font-family:'Silkscreen',monospace;font-size:12px;color:#1e2521">对话账单</div>
+                  <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">每次对话一行：干了什么、在哪个项目、花了多少，一眼看完。</p>
+                </div>
+                <div style="position:relative;overflow:hidden;padding:20px 20px 20px 32px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#c8943c"></span>
+                  <div style="font-family:'Silkscreen',monospace;font-size:12px;color:#1e2521">默认离线计价</div>
+                  <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">官方价格表内置随版本发布，运行时零联网——不是可选项，是唯一模式。</p>
+                </div>
+                <div style="position:relative;overflow:hidden;padding:20px 20px 20px 32px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3)" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="position:absolute;top:0;bottom:0;left:0;width:4px;background:#3a7d44"></span>
+                  <div style="font-family:'Silkscreen',monospace;font-size:12px;color:#1e2521">诚实口径</div>
+                  <p style="margin:8px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">四类 token 分开计价，cache 读按 0.1× 折算并写明来历，与官方限额同口径。</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── §5 口径与 FAQ（forest）── -->
+          <section data-screen-label="1a FAQ" class="faq" style="background:#1b2a22;padding:80px 24px">
+            <div style="margin:0 auto;max-width:768px">
+              <h2 style="margin:0;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#7bd88f">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 4.2s;text-shadow:0 0 4px rgba(123,216,143,.9),0 0 12px rgba(123,216,143,.55),0 0 28px rgba(123,216,143,.35),3px 3px 0 rgba(0,0,0,.45)">口径，说人话</span>
+              </h2>
+              <p style="margin:12px 0 40px;text-align:center;font-size:15px;line-height:1.7;color:#8aad91">关于数字怎么算，先说清楚。</p>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">为什么我的 cache 读有十亿级？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">这是 agent 的工作方式：每次工具调用都会重读整段会话前缀。所以它单价最低（约 input 的 0.1×），数据面板按 0.1× 计价并单独列出。</p>
+                </details>
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">花费数字准吗？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">是估算：本地用量 × 内置官方价格表（带更新日期），不是账单，不含订阅折扣。</p>
+                </details>
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">我的数据会上传吗？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">不会。数据面板只读用量数字、模型名、时间与会话标题等元数据，不读对话正文，全部本地展示。排行榜是另一个可选功能，开启后也只上传 token 总数和昵称。</p>
+                </details>
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">历史能追多久？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">首次打开会重解析全部本地日志（装 App 之前的也算），之后记入本地账本——CLI 日志 30 天被清理后，你的曲线还在。</p>
+                </details>
+              </div>
+              <p style="margin:28px 0 0;text-align:center;font-size:12px;line-height:1.8;color:rgba(138,173,145,.75)">只读用量数字、模型名、时间与会话标题等元数据，不读对话正文，绝不上传。<br>花费为估算值，基于内置价格表，非账单。</p>
+            </div>
+          </section>
+
+          <!-- ── §6 How it works + §7 尾部 CTA（parchment）── -->
+          <section data-screen-label="1a How + CTA" style="background:#faf5ea;padding:80px 24px">
+            <div style="margin:0 auto;max-width:1024px">
+              <h2 style="margin:0 0 48px;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#3a7d44">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 5.6s;text-shadow:0 0 3px rgba(123,216,143,.85),0 0 10px rgba(123,216,143,.55),0 0 20px rgba(58,125,68,.3),2px 2px 0 rgba(58,125,68,.3)">三步，打开数据面板</span>
+              </h2>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;align-items:start">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:24px;font-weight:700;color:#3a7d44">01</span>
+                  <span style="font-size:15px;font-weight:700;color:#1e2521">下载 Token-Forest</span>
+                  <p style="margin:0;font-size:13px;line-height:1.7;color:#5a6b5e">安装即种下一棵树，它开始随你的 token 消耗慢慢生长。</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:24px;font-weight:700;color:#3a7d44">02</span>
+                  <span style="font-size:15px;font-weight:700;color:#1e2521">照常写代码</span>
+                  <p style="margin:0;font-size:13px;line-height:1.7;color:#5a6b5e">正常使用 Claude Code / Codex，什么都不用配置，什么都不用改。</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:24px;font-weight:700;color:#3a7d44">03</span>
+                  <span style="font-size:15px;font-weight:700;color:#1e2521">右键树 → 打开数据面板</span>
+                  <p style="margin:0;font-size:13px;line-height:1.7;color:#5a6b5e">独立可缩放窗口打开，成长、用量、对话三层随时看。</p>
+                  <div style="position:relative;margin-top:6px;width:200px;background:#243320;border:2px solid #1e2521;border-radius:8px;box-shadow:3px 3px 0 rgba(0,0,0,.3);padding:4px">
+                    <div style="padding:7px 10px;border-radius:5px;background:rgba(58,125,68,.3);font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f">数据面板</div>
+                    <div style="padding:7px 10px;border-radius:5px;font-family:'Silkscreen',monospace;font-size:10px;color:#8aad91">隐藏</div>
+                    <div style="margin:4px 10px;border-top:1px solid rgba(122,90,58,.5)"></div>
+                    <div style="padding:7px 10px;border-radius:5px;font-family:'Silkscreen',monospace;font-size:10px;color:#8aad91">切换到胶囊</div>
+                    <div style="padding:7px 10px;border-radius:5px;display:flex;justify-content:space-between;font-family:'Silkscreen',monospace;font-size:10px;color:#8aad91"><span>排行榜</span><span>▸</span></div>
+                    <div style="padding:7px 10px;border-radius:5px;font-family:'Silkscreen',monospace;font-size:10px;color:#8aad91">退出 TokenForest</div>
+                    <span style="position:absolute;right:34px;top:10px">
+                      <svg viewBox="0 0 10 12" width="15" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 尾部 CTA -->
+              <div style="margin-top:72px;display:flex;flex-direction:column;align-items:center;border-top:1px solid rgba(122,90,58,.3);padding-top:56px">
+                <img src="assets/sprites/AppleTree_8.png" alt="" width="80" height="87" style="width:80px;image-rendering:pixelated;margin-bottom:20px">
+                <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px">
+                  <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid #3a7d44;border-radius:2px;font-family:'Silkscreen',monospace;font-size:10px;color:#3a7d44">🌳 全球 1,234 棵树</span>
+                  <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid #c8943c;border-radius:2px;font-family:'Silkscreen',monospace;font-size:10px;color:#c8943c">⚡ 累计 5.6B tokens</span>
+                </div>
+                <div style="margin-top:24px;display:flex;flex-wrap:wrap;justify-content:center;gap:16px">
+                  <a href="#1a" style="display:inline-flex;align-items:center;gap:10px;border-radius:2px;background:#3a7d44;padding:12px 24px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"></path></svg>
+                    Windows
+                  </a>
+                  <a href="#1a" style="display:inline-flex;align-items:center;gap:10px;border-radius:2px;background:#f3ede0;border:2px solid #1e2521;padding:10px 22px;font-family:'Silkscreen',monospace;font-size:11px;color:#1e2521;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="3" width="20" height="15" rx="1" stroke="currentColor" stroke-width="2"></rect><path d="M7 8l3 3-3 3M13 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="square"></path></svg>
+                    macOS
+                  </a>
+                </div>
+                <p style="margin:18px 0 0;font-size:13px;color:#5a6b5e">安装包正在打包，即将发布 — 到 <a href="#1a" style="color:#5a6b5e;text-decoration:underline;text-underline-offset:2px" style-hover="color:#3a7d44">GitHub</a> 点个 Star，第一时间知道。</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── Footer ── -->
+          <footer data-screen-label="1a Footer" style="border-top:2px solid #7a5a3a;background:#1e2521">
+            <div style="margin:0 auto;max-width:1024px;padding:40px 24px">
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:64px">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <img src="assets/sprites/AppleTree_1.png" alt="" width="20" height="20" style="width:20px;height:20px;image-rendering:pixelated">
+                    <span style="font-family:'Silkscreen',monospace;font-size:13px;color:#ede8da">Token-Forest</span>
+                  </div>
+                  <p style="margin:0;max-width:22ch;font-size:13px;line-height:1.6;color:#8aad91">把你的 AI token 消耗变成一棵会生长的像素树。</p>
+                  <p style="margin:0;font-size:11px;color:#8aad91">隐私第一 · 本地运行 · 不联网</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">产品</span>
+                  <nav style="display:flex;flex-direction:column;gap:8px">
+                    <a href="#1a" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">下载</a>
+                    <a href="#1a" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">数据面板</a>
+                    <a href="#1a" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">排行榜</a>
+                  </nav>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">项目</span>
+                  <nav style="display:flex;flex-direction:column;gap:8px">
+                    <a href="#1a" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">GitHub <span style="opacity:.5">↗</span></a>
+                    <a href="#1a" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">路线图</a>
+                  </nav>
+                </div>
+              </div>
+              <div style="margin-top:32px;border-top:1px solid rgba(122,90,58,.4);padding-top:24px;display:flex;align-items:center;justify-content:space-between">
+                <p style="margin:0;font-size:13px;color:#8aad91">© 2026 Token-Forest. 保留所有权利。</p>
+                <a href="#1a" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"></path></svg>
+                  在 GitHub 上关注
+                </a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════ OPTION 1B ═══════════════════════ -->
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>暗色分栏 hero · 导览横排行 · How 流水线 · 反向明暗节奏<span style="font:600 10px ui-monospace,Menlo,monospace;padding:2px 7px;background:#2e7d3c;color:#fff;border-radius:5px">✓ 已选定 · 存档</span></div>
+      <div class="dv-card" style="width:1440px">
+        <div style="width:1440px;background:#faf5ea;color:#1e2521;font-family:'Noto Sans SC',system-ui,sans-serif">
+
+          <!-- ── TopBar ── -->
+          <header data-screen-label="1b TopBar" style="border-bottom:2px solid #7a5a3a;background:rgba(30,37,33,.97)">
+            <div style="margin:0 auto;display:flex;height:56px;max-width:1024px;align-items:center;justify-content:space-between;gap:16px;padding:0 24px">
+              <a href="#1b" style="display:flex;align-items:center;gap:8px;text-decoration:none">
+                <img src="assets/logo.svg" alt="" width="24" height="24" style="width:24px;height:24px;image-rendering:pixelated">
+                <span style="font-family:'Silkscreen',monospace;font-size:14px;font-weight:700;line-height:1;color:#ede8da;text-shadow:1px 1px 0 rgba(0,0,0,.25)">Token-Forest</span>
+              </a>
+              <nav style="display:flex;align-items:center;gap:4px">
+                <a href="#1b" style="padding:6px 12px;border-radius:2px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">首页</a>
+                <a href="#1b" style="padding:6px 12px;border-radius:2px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">下载</a>
+                <a href="#1b" style="padding:6px 12px;border-radius:2px;font-size:13px;background:rgba(58,125,68,.2);color:#7bd88f;text-decoration:none">数据面板</a>
+                <a href="#1b" style="padding:6px 12px;border-radius:2px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">排行榜</a>
+                <a href="#1b" aria-label="GitHub" style="margin-left:8px;display:flex;padding:6px;border-radius:2px;color:#8aad91" style-hover="color:#7bd88f">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"></path></svg>
+                </a>
+              </nav>
+              <div style="display:flex;align-items:center;gap:16px">
+                <a href="Dashboard en.dc.html" title="切到 English 版设计稿" style="display:flex;align-items:center;gap:6px;border-radius:2px;border:1px solid #7a5a3a;background:#1e2521;padding:6px 8px;font-family:'Silkscreen',monospace;font-size:11px;line-height:1.4;color:#8aad91;text-decoration:none" style-hover="border-color:#7bd88f;color:#7bd88f">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="6.25"></circle><path d="M1.75 8h12.5M8 1.75v12.5"></path><path d="M8 1.75c2.2 2.4 2.2 9.85 0 12.5M8 1.75c-2.2 2.4-2.2 9.85 0 12.5"></path></svg>
+                  <span>中文</span>
+                  <span style="font-size:8px">▾</span>
+                </a>
+                <a href="#1b" style="display:flex;align-items:center;gap:6px;border-radius:2px;background:#3a7d44;padding:6px 12px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                  <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" aria-hidden="true"><path d="M8 1v8.293L5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 9.293V1H8Zm-6 10a.5.5 0 0 0 0 1h12a.5.5 0 0 0 0-1H2Z"></path></svg>
+                  下载
+                </a>
+              </div>
+            </div>
+          </header>
+
+          <!-- ── §1 Hero 暗色分栏（forest）── -->
+          <section data-screen-label="1b Hero 分栏" style="position:relative;overflow:hidden;background:#1b2a22;padding:72px 24px 80px">
+            <span style="position:absolute;top:10%;left:6%;color:#7bd88f;font-size:10px;animation:sparkle-pulse 2s ease-in-out infinite">✦</span>
+            <span style="position:absolute;top:22%;left:44%;color:#7bd88f;font-size:8px;animation:sparkle-pulse 2s ease-in-out .7s infinite">✦</span>
+            <span style="position:absolute;bottom:14%;left:3%;color:#7bd88f;font-size:7px;animation:sparkle-pulse 2s ease-in-out 1.3s infinite">✦</span>
+            <span style="position:absolute;top:8%;right:5%;color:#7bd88f;font-size:9px;animation:sparkle-pulse 2s ease-in-out 1s infinite">✦</span>
+            <div style="position:relative;margin:0 auto;max-width:1024px;display:grid;grid-template-columns:400px 1fr;gap:44px;align-items:center">
+              <div style="display:flex;flex-direction:column;align-items:flex-start">
+                <span style="font-family:'Silkscreen',monospace;font-size:11px;letter-spacing:.3em;color:#e8ba60">DASHBOARD</span>
+                <h1 style="margin:20px 0 0;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.3rem;line-height:1.3;color:#7bd88f">
+                  <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite;text-shadow:0 0 4px rgba(123,216,143,.9),0 0 12px rgba(123,216,143,.55),0 0 28px rgba(123,216,143,.35),3px 3px 0 rgba(0,0,0,.45)">你的 token<br>成绩单</span>
+                </h1>
+                <p style="margin:18px 0 0;font-size:17px;line-height:1.6;font-weight:700;color:#ede8da">别人给你一张表，Token-Forest 给你一棵树——和一份看得懂的账单。</p>
+                <p style="margin:10px 0 0;font-size:14px;line-height:1.7;color:#8aad91">Claude Code 与 Codex 的成长、用量与花费分析：本地计算、离线计价、绝不上传。</p>
+                <div style="margin-top:28px;display:flex;flex-wrap:wrap;gap:14px">
+                  <a href="#1b" style="display:inline-flex;align-items:center;gap:8px;border-radius:2px;background:#3a7d44;padding:12px 22px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                    <svg viewBox="0 0 14 14" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M7 1v7.293L4.854 6.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L7.5 8.293V1H7ZM1 11a.5.5 0 0 0 0 1h12a.5.5 0 0 0 0-1H1Z"></path></svg>
+                    下载 Token-Forest
+                  </a>
+                  <a href="#1b" style="display:inline-flex;align-items:center;gap:8px;border-radius:2px;background:#243320;border:2px solid #3a7d44;padding:10px 20px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"></path></svg>
+                    GitHub
+                  </a>
+                </div>
+                <p style="margin:20px 0 0;font-size:13px;color:#8aad91">🔒 本地运行 · 读日志 · 不联网 · 不上传</p>
+              </div>
+
+              <!-- 右列：演示窗（紧凑版）-->
+              <div>
+                <div onMouseEnter="{{ enterB }}" onMouseLeave="{{ leaveB }}" style="width:100%;background:linear-gradient(180deg,#b07434 0%,#96591f 55%,#7c4a1e 100%);border-radius:10px;box-shadow:0 0 0 3px #1c1206,6px 6px 0 rgba(0,0,0,.4),0 0 64px rgba(123,216,143,.14),inset 0 3px 0 rgba(255,222,160,.3),inset 0 -4px 0 rgba(35,18,4,.42)">
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px 6px">
+                    <span style="display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#c08a45 0%,#a2692c 46%,#8a5620 100%);border:2px solid #241505;border-radius:7px;padding:4px 12px;box-shadow:inset 0 2px 0 rgba(255,226,170,.38),inset 0 -3px 0 rgba(40,20,5,.38),0 3px 0 rgba(0,0,0,.35)"><img src="assets/sprites/AppleTree_4.png" alt="" width="16" height="16" style="width:16px;height:16px;image-rendering:pixelated"><span style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen',monospace;font-size:11px;font-weight:700;letter-spacing:.08em;color:#39220b;text-shadow:0 1px 0 rgba(255,230,180,.55)">数据面板 · DASHBOARD</span></span>
+                    <span style="margin-left:auto;font-size:11px;color:#ffe9bd;text-shadow:0 1px 0 rgba(40,18,2,.8)">已更新 · 刚刚</span>
+                    <span style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(180deg,#bd873f 0%,#996127 52%,#84511f 100%);border:2px solid #241505;border-radius:7px;padding:5px 11px;box-shadow:inset 0 2px 0 rgba(255,226,170,.4),inset 0 -3px 0 rgba(46,22,4,.4),0 2px 0 #1c1206;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:10px;color:#ffeec9;text-shadow:0 1px 0 rgba(40,18,2,.75)">
+                      <span>↻</span>
+                      <span>刷新</span>
+                      
+                    </span>
+                  </div>
+                  <div style="display:flex;gap:7px;padding:8px 14px 0;margin-bottom:-3px;position:relative;z-index:2;align-items:flex-end">
+                    <sc-if value="{{ b0 }}" hint-placeholder-val="{{ true }}"><button onClick="{{ tB0 }}" style="padding:7px 13px 10px;background:linear-gradient(180deg,#a5ecb0 0%,#7bd88f 46%,#4f9e63 100%);border:3px solid #123314;border-bottom:none;border-radius:8px 8px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11px;font-weight:700;color:#0e140c;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)">🌳 成长</button></sc-if>
+                    <sc-if value="{{ nb0 }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tB0 }}" style="padding:6px 12px 7px;background:linear-gradient(180deg,#f0dc9e 0%,#e2c375 100%);border:3px solid #241505;border-bottom:none;border-radius:8px 8px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11px;color:#6b4a1e;cursor:pointer" style-hover="color:#33210d">🌳 成长</button></sc-if>
+                    <sc-if value="{{ b1 }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tB1 }}" style="padding:7px 13px 10px;background:linear-gradient(180deg,#a5ecb0 0%,#7bd88f 46%,#4f9e63 100%);border:3px solid #123314;border-bottom:none;border-radius:8px 8px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11px;font-weight:700;color:#0e140c;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)">📊 用量</button></sc-if>
+                    <sc-if value="{{ nb1 }}" hint-placeholder-val="{{ true }}"><button onClick="{{ tB1 }}" style="padding:6px 12px 7px;background:linear-gradient(180deg,#f0dc9e 0%,#e2c375 100%);border:3px solid #241505;border-bottom:none;border-radius:8px 8px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11px;color:#6b4a1e;cursor:pointer" style-hover="color:#33210d">📊 用量</button></sc-if>
+                    <sc-if value="{{ b2 }}" hint-placeholder-val="{{ false }}"><button onClick="{{ tB2 }}" style="padding:7px 13px 10px;background:linear-gradient(180deg,#a5ecb0 0%,#7bd88f 46%,#4f9e63 100%);border:3px solid #123314;border-bottom:none;border-radius:8px 8px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11px;font-weight:700;color:#0e140c;cursor:pointer;box-shadow:inset 0 2px 0 rgba(255,255,255,.35)">💬 对话</button></sc-if>
+                    <sc-if value="{{ nb2 }}" hint-placeholder-val="{{ true }}"><button onClick="{{ tB2 }}" style="padding:6px 12px 7px;background:linear-gradient(180deg,#f0dc9e 0%,#e2c375 100%);border:3px solid #241505;border-bottom:none;border-radius:8px 8px 0 0;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11px;color:#6b4a1e;cursor:pointer" style-hover="color:#33210d">💬 对话</button></sc-if>
+                  </div>
+
+                  <div style="margin:0 10px 10px;background:#f2dfae;border:3px solid #452508;border-radius:7px;box-shadow:inset 0 5px 12px rgba(122,82,24,.32),0 0 0 1px rgba(255,222,160,.16);overflow:hidden;position:relative">
+                  <!-- tab 🌳 -->
+                  <sc-if value="{{ b0 }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:12px;padding:14px;min-height:396px;animation:tab-in .35s ease-out both">
+                      <div style="display:grid;grid-template-columns:150px 1fr;gap:12px;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:12px">
+                        <div style="position:relative;overflow:hidden;border:2px solid #452508;border-radius:7px;background:linear-gradient(180deg,#8fb8d0 0%,#c4dce8 60%,#e8d5a8 100%)">
+                          <img src="assets/sprites/Ground.png" alt="" style="position:absolute;left:0;right:0;bottom:0;width:100%;height:20px;object-fit:cover;image-rendering:pixelated">
+                          <img src="assets/sprites/AppleTree_6.png" alt="" width="88" height="95" style="position:absolute;left:50%;bottom:10px;width:88px;margin-left:-44px;image-rendering:pixelated;animation:tree-breathe 4.5s ease-in-out infinite alternate;transform-origin:bottom center">
+                        </div>
+                        <div style="display:flex;flex-direction:column;justify-content:center;gap:8px">
+                          <div style="display:flex;justify-content:space-between;align-items:center">
+                            <span style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">苹果树</span>
+                            <span style="padding:2px 8px;background:rgba(14,18,8,.78);border:2px solid #241505;border-radius:6px;font-family:'Silkscreen',monospace;font-size:10px;font-weight:700;color:#8fe8a0">Lv 6</span>
+                          </div>
+                          <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#33210d"><span>阶段 VI · 成树</span><span>→ VII</span></div>
+                          <div style="height:17px;background:#e3cd8f;border:2px solid #452508;border-radius:6px;box-shadow:inset 0 2px 4px rgba(122,82,24,.4);overflow:hidden;padding:2px"><div style="width:68%;height:100%;background:linear-gradient(180deg,#a5ecb0 0%,#57a568 46%,#4f9e63 100%);box-shadow:inset 0 -3px 0 rgba(18,60,30,.5),inset 0 2px 0 rgba(255,255,255,.4);border-radius:3px;transform-origin:left;animation:grow-x .8s ease-out both"></div></div>
+                          <div style="font-size:12px;color:rgba(51,33,13,.65)">距下一阶段还差 ≈ 8.4M tokens</div>
+                        </div>
+                      </div>
+                      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:12px">
+                          <div style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">已种植</div>
+                          <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:21px;color:#33210d">41<span style="margin-left:6px;font-family:'Noto Sans SC',sans-serif;font-size:12px;font-weight:400;color:rgba(51,33,13,.65)">天</span></div>
+                        </div>
+                        <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:12px">
+                          <div style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">累计能量</div>
+                          <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:21px;color:#33210d">112.6M</div>
+                        </div>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:11px 12px">
+                        <span style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#33210d">🌳 这棵树至今</span>
+                        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#33210d">≈ $128.40</span>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:8px;padding:0 2px">
+                        <span style="font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.55)">树种</span>
+                        <span style="display:flex;width:34px;height:34px;align-items:flex-end;justify-content:center;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35)"><img src="assets/sprites/AppleTree_6.png" alt="" width="24" height="26" style="width:24px;image-rendering:pixelated"></span>
+                        <span style="display:flex;width:34px;height:34px;align-items:flex-end;justify-content:center;background:#e3cd8f;border:2px solid rgba(74,42,13,.35);border-radius:2px;opacity:.8"><img src="assets/sprites/CherryTree_6.png" alt="" width="24" height="26" style="width:24px;image-rendering:pixelated"></span>
+                        <span style="position:relative;display:flex;width:34px;height:34px;align-items:flex-end;justify-content:center;background:#e3cd8f;border:2px solid rgba(74,42,13,.35);border-radius:2px;opacity:.65"><img src="assets/sprites/Cactus_6.png" alt="" width="24" height="26" style="width:24px;image-rendering:pixelated;filter:grayscale(.7)"><span style="position:absolute;top:-6px;right:-6px;font-size:10px">🔒</span></span>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <!-- tab 📊 -->
+                  <sc-if value="{{ b1 }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:12px;padding:14px;min-height:396px;animation:tab-in .35s ease-out both">
+                      <div style="background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:12px">
+                        <div style="display:flex;justify-content:space-between;font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a"><span>真实消耗 · 全部历史</span><span>价格表 2026-06</span></div>
+                        <div style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:#33210d">≈ ${{ dollarsB }}</div>
+                        <div style="margin-top:12px;display:flex;height:16px;border:2px solid #452508;border-radius:6px;box-shadow:inset 0 2px 3px rgba(122,82,24,.35);overflow:hidden;background:#e3cd8f">
+                          <span style="width:38%;background:#2e7d3c;transform-origin:left;animation:grow-x .6s ease-out both"></span>
+                          <span style="width:34%;background:#d9a83c;transform-origin:left;animation:grow-x .6s ease-out .12s both"></span>
+                          <span style="width:18%;background:#8cc46a;transform-origin:left;animation:grow-x .6s ease-out .24s both"></span>
+                          <span style="width:10%;background:#a07850;transform-origin:left;animation:grow-x .6s ease-out .36s both"></span>
+                        </div>
+                        <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;font-size:11px;color:rgba(51,33,13,.75)">
+                          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#2e7d3c"></span>cache 读 · $48.70</span>
+                          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#d9a83c"></span>output · $43.90</span>
+                          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#8cc46a"></span>cache 写 · $22.90</span>
+                          <span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#a07850"></span>input · $12.90</span>
+                        </div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:10px;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:10px 12px">
+                        <span style="width:7px;height:7px;background:#e0885f"></span>
+                        <span style="width:120px;font-family:'Silkscreen',monospace;font-size:9px;color:#33210d">claude-sonnet-4-5</span>
+                        <span style="flex:1;height:9px;background:#e3cd8f;border:1px solid #4a2a0d"><span style="display:block;width:72%;height:100%;background:#e0885f;transform-origin:left;animation:grow-x .7s ease-out both"></span></span>
+                        <span style="font-size:11px;color:rgba(51,33,13,.75)">$89.10</span>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:10px;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:10px 12px">
+                        <span style="width:7px;height:7px;background:#5cc2c9"></span>
+                        <span style="width:120px;font-family:'Silkscreen',monospace;font-size:9px;color:#33210d">gpt-5-codex</span>
+                        <span style="flex:1;height:9px;background:#e3cd8f;border:1px solid #4a2a0d"><span style="display:block;width:38%;height:100%;background:#5cc2c9;transform-origin:left;animation:grow-x .7s ease-out .15s both"></span></span>
+                        <span style="font-size:11px;color:rgba(51,33,13,.75)">$39.30</span>
+                      </div>
+                      <div style="display:flex;gap:12px;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:12px">
+                        <div style="flex:1">
+                          <div style="font-family:'Fusion Pixel 12px Proportional SC','Silkscreen','Noto Sans SC',sans-serif;font-size:11.5px;color:#7c5a2a">贡献热力图 · 26 周</div>
+                          <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:2px;width:232px">
+                            <sc-for list="{{ heatCells }}" as="cell" hint-placeholder-count="0"><span style="{{ cell.style }}"></span></sc-for>
+                          </div>
+                        </div>
+                        <div style="display:flex;flex-direction:column;justify-content:flex-end;gap:4px;font-size:11px;color:rgba(51,33,13,.65)">
+                          <span style="font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.55)">BURN RATE</span>
+                          <span>1.9M tokens / 日</span>
+                          <span>≈ $3.20 / 日</span>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <!-- tab 💬 -->
+                  <sc-if value="{{ b2 }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;padding:14px;min-height:396px;animation:tab-in .35s ease-out both">
+                      <div style="flex:1;background:#faedc8;border:2px solid #4a2a0d;border-radius:9px;box-shadow:inset 0 0 0 1px #e7cd92,inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(139,94,38,.35);padding:2px 12px 8px">
+                        <div style="display:grid;grid-template-columns:1fr 92px 48px 64px;gap:8px;padding:9px 0;font-family:'Silkscreen',monospace;font-size:8px;color:rgba(51,33,13,.55)">
+                          <span>对话</span><span>项目</span><span>提问</span><span style="text-align:right">≈ $</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 92px 48px 64px;gap:8px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:11px 0">
+                          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:7px;height:7px;flex:none;background:#e0885f"></span>重构 tree-scene 的皮肤切换逻辑…</span>
+                          <span style="font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.65)">token-forest</span>
+                          <span style="font-size:11px;color:rgba(51,33,13,.75)">14 问</span>
+                          <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#33210d">$3.84</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 92px 48px 64px;gap:8px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:11px 0">
+                          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:7px;height:7px;flex:none;background:#e0885f"></span>排查 Supabase 迁移失败的原因…</span>
+                          <span style="font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.65)">tt-website</span>
+                          <span style="font-size:11px;color:rgba(51,33,13,.75)">6 问</span>
+                          <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#33210d">$1.27</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 92px 48px 64px;gap:8px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:11px 0">
+                          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:7px;height:7px;flex:none;background:#5cc2c9"></span>给 README 补一节安装说明…</span>
+                          <span style="font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.65)">dotfiles</span>
+                          <span style="font-size:11px;color:rgba(51,33,13,.75)">3 问</span>
+                          <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#33210d">$0.42</span>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 92px 48px 64px;gap:8px;align-items:center;border-top:1px solid rgba(74,42,13,.25);padding:11px 0">
+                          <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:#33210d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="width:7px;height:7px;flex:none;background:#e0885f"></span>把排行榜分页的边界条件补上测试…</span>
+                          <span style="font-family:'Silkscreen',monospace;font-size:9px;color:rgba(51,33,13,.65)">token-forest</span>
+                          <span style="font-size:11px;color:rgba(51,33,13,.75)">9 问</span>
+                          <span style="text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:#33210d">$2.18</span>
+                        </div>
+                      </div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 2px 0">
+                        <span style="font-size:11px;color:rgba(51,33,13,.6)">近 200 条 · 30 条 / 页</span>
+                        <span style="display:flex;align-items:center;gap:8px;font-family:'Silkscreen',monospace;font-size:9px;color:#33210d"><span style="display:flex;width:18px;height:18px;align-items:center;justify-content:center;border:2px solid #4a2a0d;background:#faedc8">◂</span>第 1 / 7 页<span style="display:flex;width:18px;height:18px;align-items:center;justify-content:center;border:2px solid #4a2a0d;background:#faedc8">▸</span></span>
+                      </div>
+                    </div>
+                  </sc-if>
+                  </div>
+                </div>
+                <p style="margin:12px 0 0;text-align:center;font-size:12px;color:#8aad91;opacity:.85">界面为演示 · 数字为虚构示例 · hover 暂停轮播</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── §3 三层导览 横排行（parchment）── -->
+          <section data-screen-label="1b 三层导览" style="background:#faf5ea;padding:80px 24px">
+            <div style="margin:0 auto;max-width:1024px">
+              <h2 style="margin:0;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#3a7d44">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 1.4s;text-shadow:0 0 3px rgba(123,216,143,.85),0 0 10px rgba(123,216,143,.55),0 0 20px rgba(58,125,68,.3),2px 2px 0 rgba(58,125,68,.3)">数据面板里有什么</span>
+              </h2>
+              <p style="margin:12px 0 48px;text-align:center;font-size:15px;line-height:1.7;color:#5a6b5e">三层视图，同一套数——树、曲线、账单，任何两个数字都能对上。</p>
+              <div style="display:flex;flex-direction:column">
+                <div style="display:grid;grid-template-columns:72px 1fr 300px;gap:24px;align-items:center;border-top:2px solid #1e2521;padding:24px 8px">
+                  <span style="display:flex;width:64px;height:64px;align-items:center;justify-content:center;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3);font-size:26px">🌳</span>
+                  <div>
+                    <div style="font-family:'Silkscreen',monospace;font-size:13px;color:#1e2521">成长</div>
+                    <p style="margin:6px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">每棵树一份档案：阶段、种植天数、成长曲线，还有「这棵树至今 ≈ $X」。</p>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end">
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">树切换</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">阶段 · 种植天数</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">成长曲线</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">每树估值</span>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:72px 1fr 300px;gap:24px;align-items:center;border-top:2px solid #1e2521;padding:24px 8px">
+                  <span style="display:flex;width:64px;height:64px;align-items:center;justify-content:center;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3);font-size:26px">📊</span>
+                  <div>
+                    <div style="font-family:'Silkscreen',monospace;font-size:13px;color:#1e2521">用量</div>
+                    <p style="margin:6px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">全历史统计：日/周/月曲线、Claude 与 Codex 各模型拆分、26 周热力图、burn rate、按项目分账。</p>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end">
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">日/周/月曲线</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">模型拆分</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">26 周热力图</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">burn rate</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">按项目</span>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:72px 1fr 300px;gap:24px;align-items:center;border-top:2px solid #1e2521;border-bottom:2px solid #1e2521;padding:24px 8px">
+                  <span style="display:flex;width:64px;height:64px;align-items:center;justify-content:center;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3);font-size:26px">💬</span>
+                  <div>
+                    <div style="font-family:'Silkscreen',monospace;font-size:13px;color:#1e2521">对话</div>
+                    <p style="margin:6px 0 0;font-size:13px;line-height:1.7;color:#5a6b5e">每次对话一行账单：标题、项目、提问数、四类 token 与估算花费。</p>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end">
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">每对话一行</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">四类 token</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">≈ $ 估算</span>
+                    <span style="padding:3px 8px;border:1px solid #7a5a3a;border-radius:2px;font-family:'Silkscreen',monospace;font-size:9px;color:#7a5a3a">近 200 条分页</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── §4 亮点 一排四卡（forest）── -->
+          <section data-screen-label="1b 亮点" style="background:#1b2a22;padding:80px 24px">
+            <div style="margin:0 auto;max-width:1024px">
+              <h2 style="margin:0 0 48px;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#7bd88f">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 2.8s;text-shadow:0 0 4px rgba(123,216,143,.9),0 0 12px rgba(123,216,143,.55),0 0 28px rgba(123,216,143,.35),3px 3px 0 rgba(0,0,0,.45)">为什么不一样</span>
+              </h2>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px">
+                <div style="display:flex;flex-direction:column;gap:10px;padding:18px;background:#243320;border:2px solid #3a7d44;border-radius:2px" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="display:flex;width:34px;height:34px;align-items:flex-end;justify-content:center;background:rgba(58,125,68,.25);border:1px solid #3a7d44;border-radius:2px"><img src="assets/sprites/AppleTree_3.png" alt="" width="24" height="26" style="width:24px;image-rendering:pixelated"></span>
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">养成叙事</span>
+                  <p style="margin:0;font-size:12.5px;line-height:1.65;color:#8aad91">统计长在树上——数字不再是报表，是你养出来的东西。</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;padding:18px;background:#243320;border:2px solid #3a7d44;border-radius:2px" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="display:flex;width:34px;height:34px;align-items:center;justify-content:center;background:rgba(58,125,68,.25);border:1px solid #3a7d44;border-radius:2px;font-size:16px">💬</span>
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">对话账单</span>
+                  <p style="margin:0;font-size:12.5px;line-height:1.65;color:#8aad91">每次对话一行：干了什么、在哪个项目、花了多少，一眼看完。</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;padding:18px;background:#243320;border:2px solid #3a7d44;border-radius:2px" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="display:flex;width:34px;height:34px;align-items:center;justify-content:center;background:rgba(58,125,68,.25);border:1px solid #3a7d44;border-radius:2px;font-size:16px">🔌</span>
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">默认离线计价</span>
+                  <p style="margin:0;font-size:12.5px;line-height:1.65;color:#8aad91">官方价格表内置随版本发布，运行时零联网——不是可选项，是唯一模式。</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;padding:18px;background:#243320;border:2px solid #3a7d44;border-radius:2px" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)">
+                  <span style="display:flex;width:34px;height:34px;align-items:center;justify-content:center;background:rgba(58,125,68,.25);border:1px solid #3a7d44;border-radius:2px;font-size:16px">🧮</span>
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">诚实口径</span>
+                  <p style="margin:0;font-size:12.5px;line-height:1.65;color:#8aad91">四类 token 分开计价，cache 读按 0.1× 折算并写明来历，与官方限额同口径。</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── §5 How 流水线（parchment）── -->
+          <section data-screen-label="1b How" style="background:#faf5ea;padding:80px 24px">
+            <div style="margin:0 auto;max-width:1024px">
+              <h2 style="margin:0 0 48px;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#3a7d44">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 4.2s;text-shadow:0 0 3px rgba(123,216,143,.85),0 0 10px rgba(123,216,143,.55),0 0 20px rgba(58,125,68,.3),2px 2px 0 rgba(58,125,68,.3)">三步，打开数据面板</span>
+              </h2>
+              <div style="display:grid;grid-template-columns:1fr 28px 1fr 28px 1.2fr;gap:16px;align-items:stretch">
+                <div style="display:flex;flex-direction:column;gap:10px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3);padding:20px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:20px;font-weight:700;color:#3a7d44">01</span>
+                  <span style="font-size:15px;font-weight:700;color:#1e2521">下载 Token-Forest</span>
+                  <p style="margin:0;font-size:13px;line-height:1.7;color:#5a6b5e">安装即种下一棵树，它开始随你的 token 消耗慢慢生长。</p>
+                  <div style="margin-top:auto;display:flex;justify-content:center"><img src="assets/sprites/AppleTree_2.png" alt="" width="40" height="43" style="width:40px;image-rendering:pixelated"></div>
+                </div>
+                <span style="align-self:center;font-family:'Silkscreen',monospace;font-size:14px;color:#7a5a3a">▶</span>
+                <div style="display:flex;flex-direction:column;gap:10px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3);padding:20px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:20px;font-weight:700;color:#3a7d44">02</span>
+                  <span style="font-size:15px;font-weight:700;color:#1e2521">照常写代码</span>
+                  <p style="margin:0;font-size:13px;line-height:1.7;color:#5a6b5e">正常使用 Claude Code / Codex，什么都不用配置。</p>
+                  <div style="margin-top:auto;display:flex;justify-content:center;gap:6px;font-family:'Silkscreen',monospace;font-size:10px;color:#5a6b5e"><span>$ claude "fix a bug"</span><span style="animation:cursor-blink 1s steps(1) infinite">▌</span></div>
+                </div>
+                <span style="align-self:center;font-family:'Silkscreen',monospace;font-size:14px;color:#7a5a3a">▶</span>
+                <div style="display:flex;flex-direction:column;gap:10px;background:#f3ede0;border:2px solid #1e2521;border-radius:2px;box-shadow:2px 2px 0 rgba(0,0,0,.3);padding:20px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:20px;font-weight:700;color:#3a7d44">03</span>
+                  <span style="font-size:15px;font-weight:700;color:#1e2521">右键树 → 打开数据面板</span>
+                  <div style="position:relative;margin-top:4px;width:190px;background:#243320;border:2px solid #1e2521;border-radius:8px;box-shadow:3px 3px 0 rgba(0,0,0,.3);padding:4px">
+                    <div style="padding:6px 10px;border-radius:5px;background:rgba(58,125,68,.3);font-family:'Silkscreen',monospace;font-size:10px;color:#7bd88f">数据面板</div>
+                    <div style="padding:6px 10px;border-radius:5px;font-family:'Silkscreen',monospace;font-size:10px;color:#8aad91">隐藏</div>
+                    <div style="margin:4px 10px;border-top:1px solid rgba(122,90,58,.5)"></div>
+                    <div style="padding:6px 10px;border-radius:5px;font-family:'Silkscreen',monospace;font-size:10px;color:#8aad91">切换到胶囊</div>
+                    <span style="position:absolute;right:30px;top:8px">
+                      <svg viewBox="0 0 10 12" width="15" shape-rendering="crispEdges" aria-hidden="true"><g fill="#1e2521"><rect x="3" y="0" width="2" height="1"></rect><rect x="2" y="1" width="1" height="4"></rect><rect x="5" y="1" width="1" height="3"></rect><rect x="6" y="4" width="3" height="1"></rect><rect x="9" y="5" width="1" height="3"></rect><rect x="1" y="5" width="1" height="2"></rect><rect x="0" y="5" width="1" height="1"></rect><rect x="1" y="7" width="1" height="2"></rect><rect x="2" y="9" width="1" height="1"></rect><rect x="3" y="10" width="5" height="1"></rect><rect x="8" y="9" width="1" height="1"></rect></g><g fill="#faf5ea"><rect x="3" y="1" width="2" height="4"></rect><rect x="3" y="5" width="3" height="4"></rect><rect x="6" y="5" width="3" height="4"></rect><rect x="2" y="7" width="1" height="2"></rect><rect x="3" y="9" width="5" height="1"></rect></g></svg>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ── §6 FAQ（forest）── -->
+          <section data-screen-label="1b FAQ" class="faq" style="background:#1b2a22;padding:80px 24px">
+            <div style="margin:0 auto;max-width:768px">
+              <h2 style="margin:0;text-align:center;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#7bd88f">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 5.6s;text-shadow:0 0 4px rgba(123,216,143,.9),0 0 12px rgba(123,216,143,.55),0 0 28px rgba(123,216,143,.35),3px 3px 0 rgba(0,0,0,.45)">口径，说人话</span>
+              </h2>
+              <p style="margin:12px 0 40px;text-align:center;font-size:15px;line-height:1.7;color:#8aad91">关于数字怎么算，先说清楚。</p>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">为什么我的 cache 读有十亿级？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">这是 agent 的工作方式：每次工具调用都会重读整段会话前缀。所以它单价最低（约 input 的 0.1×），数据面板按 0.1× 计价并单独列出。</p>
+                </details>
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">花费数字准吗？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">是估算：本地用量 × 内置官方价格表（带更新日期），不是账单，不含订阅折扣。</p>
+                </details>
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">我的数据会上传吗？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">不会。数据面板只读用量数字、模型名、时间与会话标题等元数据，不读对话正文，全部本地展示。排行榜是另一个可选功能，开启后也只上传 token 总数和昵称。</p>
+                </details>
+                <details style="background:#243320;border:2px solid #3a7d44;border-radius:2px">
+                  <summary style="display:flex;align-items:center;gap:12px;padding:16px 18px">
+                    <span class="chev" style="display:inline-block;font-family:'Silkscreen',monospace;font-size:11px;color:#7bd88f;transition:transform .15s">▸</span>
+                    <span style="font-family:'Silkscreen',monospace;font-size:12px;line-height:1.5;color:#ede8da">历史能追多久？</span>
+                  </summary>
+                  <p style="margin:0;padding:14px 18px 18px 41px;font-size:13px;line-height:1.7;color:#8aad91">首次打开会重解析全部本地日志（装 App 之前的也算），之后记入本地账本——CLI 日志 30 天被清理后，你的曲线还在。</p>
+                </details>
+              </div>
+              <p style="margin:28px 0 0;text-align:center;font-size:12px;line-height:1.8;color:rgba(138,173,145,.75)">只读用量数字、模型名、时间与会话标题等元数据，不读对话正文，绝不上传。<br>花费为估算值，基于内置价格表，非账单。</p>
+            </div>
+          </section>
+
+          <!-- ── §7 尾部 CTA（parchment）── -->
+          <section data-screen-label="1b CTA" style="background:#faf5ea;padding:80px 24px">
+            <div style="margin:0 auto;max-width:768px;display:flex;flex-direction:column;align-items:center;text-align:center">
+              <img src="assets/sprites/AppleTree_8.png" alt="" width="80" height="87" style="width:80px;image-rendering:pixelated;margin-bottom:20px">
+              <h2 style="margin:0 0 12px;font-family:'Silkscreen',monospace;font-weight:700;font-size:2.4rem;line-height:1.25;color:#3a7d44">
+                <span style="display:inline-block;animation:neon-flicker 7s steps(1) infinite 7s;text-shadow:0 0 3px rgba(123,216,143,.85),0 0 10px rgba(123,216,143,.55),0 0 20px rgba(58,125,68,.3),2px 2px 0 rgba(58,125,68,.3)">立即开始种树</span>
+              </h2>
+              <p style="margin:0 0 24px;max-width:420px;font-size:15px;line-height:1.7;color:#5a6b5e">支持 Windows 与 macOS，免费使用。安装包正在打包，即将发布。</p>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px">
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid #3a7d44;border-radius:2px;font-family:'Silkscreen',monospace;font-size:10px;color:#3a7d44">🌳 全球 1,234 棵树</span>
+                <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid #c8943c;border-radius:2px;font-family:'Silkscreen',monospace;font-size:10px;color:#c8943c">⚡ 累计 5.6B tokens</span>
+              </div>
+              <div style="margin-top:24px;display:flex;flex-wrap:wrap;justify-content:center;gap:16px">
+                <a href="#1b" style="display:inline-flex;align-items:center;gap:10px;border-radius:2px;background:#3a7d44;padding:12px 24px;font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"></path></svg>
+                  Windows
+                </a>
+                <a href="#1b" style="display:inline-flex;align-items:center;gap:10px;border-radius:2px;background:#f3ede0;border:2px solid #1e2521;padding:10px 22px;font-family:'Silkscreen',monospace;font-size:11px;color:#1e2521;box-shadow:3px 3px 0 rgba(0,0,0,.3);text-decoration:none" style-hover="transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(0,0,0,.3)" style-active="transform:translate(2px,2px);box-shadow:none">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="3" width="20" height="15" rx="1" stroke="currentColor" stroke-width="2"></rect><path d="M7 8l3 3-3 3M13 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="square"></path></svg>
+                  macOS
+                </a>
+              </div>
+              <p style="margin:18px 0 0;font-size:13px;color:#5a6b5e">到 <a href="#1b" style="color:#5a6b5e;text-decoration:underline;text-underline-offset:2px" style-hover="color:#3a7d44">GitHub</a> 点个 Star，发布时第一时间收到通知。</p>
+            </div>
+          </section>
+
+          <!-- ── Footer ── -->
+          <footer data-screen-label="1b Footer" style="border-top:2px solid #7a5a3a;background:#1e2521">
+            <div style="margin:0 auto;max-width:1024px;padding:40px 24px">
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:64px">
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <img src="assets/sprites/AppleTree_1.png" alt="" width="20" height="20" style="width:20px;height:20px;image-rendering:pixelated">
+                    <span style="font-family:'Silkscreen',monospace;font-size:13px;color:#ede8da">Token-Forest</span>
+                  </div>
+                  <p style="margin:0;max-width:22ch;font-size:13px;line-height:1.6;color:#8aad91">把你的 AI token 消耗变成一棵会生长的像素树。</p>
+                  <p style="margin:0;font-size:11px;color:#8aad91">隐私第一 · 本地运行 · 不联网</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">产品</span>
+                  <nav style="display:flex;flex-direction:column;gap:8px">
+                    <a href="#1b" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">下载</a>
+                    <a href="#1b" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">数据面板</a>
+                    <a href="#1b" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">排行榜</a>
+                  </nav>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <span style="font-family:'Silkscreen',monospace;font-size:11px;color:#ede8da">项目</span>
+                  <nav style="display:flex;flex-direction:column;gap:8px">
+                    <a href="#1b" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">GitHub <span style="opacity:.5">↗</span></a>
+                    <a href="#1b" style="font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">路线图</a>
+                  </nav>
+                </div>
+              </div>
+              <div style="margin-top:32px;border-top:1px solid rgba(122,90,58,.4);padding-top:24px;display:flex;align-items:center;justify-content:space-between">
+                <p style="margin:0;font-size:13px;color:#8aad91">© 2026 Token-Forest. 保留所有权利。</p>
+                <a href="#1b" style="display:flex;align-items:center;gap:6px;font-size:13px;color:#8aad91;text-decoration:none" style-hover="color:#7bd88f">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2Z"></path></svg>
+                  在 GitHub 上关注
+                </a>
+              </div>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">下一步可以试："把 <a class="dv-oid" href="#1b">1b</a> 的暗色 hero 用到 <a class="dv-oid" href="#1a">1a</a>" · "FAQ 改成全部展开" · "出移动端 390 版" · "首页 Features 第 6 卡"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;autoRotate&quot;: { &quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;section&quot;: &quot;演示窗&quot; },
+  &quot;rotateSeconds&quot;: { &quot;editor&quot;: &quot;range&quot;, &quot;min&quot;: 2, &quot;max&quot;: 10, &quot;step&quot;: 1, &quot;default&quot;: 4, &quot;unit&quot;: &quot;s&quot;, &quot;section&quot;: &quot;演示窗&quot; }
+}">
+class Component extends DCLogic {
+  state = { tabA: 0, tabB: 0, pausedA: false, pausedB: false, dollarsA: "128.40", dollarsB: "128.40" };
+
+  componentDidMount() {
+    // Default-open the first FAQ item per variant — uncontrolled DOM state,
+    // so React re-renders never fight the user's own toggling.
+    setTimeout(() => {
+      document.querySelectorAll(".faq").forEach((sec) => {
+        const first = sec.querySelector("details");
+        if (first) first.open = true;
+      });
+    }, 0);
+    this._hold = this._hold || { A: 0, B: 0 };
+    this._anim = this._anim || {};
+    const secs = Math.min(10, Math.max(2, Number(this.props.rotateSeconds ?? 4))) * 1000;
+    this._timer = setInterval(() => {
+      if ((this.props.autoRotate ?? true) === false) return;
+      const now = Date.now();
+      this.setState((s) => {
+        const next = {};
+        if (!s.pausedA && now - this._hold.A > 12000) {
+          next.tabA = (s.tabA + 1) % 3;
+          if (next.tabA === 1) this._countUp("A");
+        }
+        if (!s.pausedB && now - this._hold.B > 12000) {
+          next.tabB = (s.tabB + 1) % 3;
+          if (next.tabB === 1) this._countUp("B");
+        }
+        return next;
+      });
+    }, secs);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._timer);
+    if (this._anim) { clearInterval(this._anim.A); clearInterval(this._anim.B); }
+  }
+
+  _countUp(v) {
+    this._anim = this._anim || {};
+    clearInterval(this._anim[v]);
+    const t0 = Date.now();
+    const dur = 900;
+    this._anim[v] = setInterval(() => {
+      const p = Math.min(1, (Date.now() - t0) / dur);
+      const val = 128.4 * (1 - Math.pow(1 - p, 3));
+      this.setState({ ["dollars" + v]: val.toFixed(2) });
+      if (p >= 1) clearInterval(this._anim[v]);
+    }, 40);
+  }
+
+  _setTab(v, i) {
+    this._hold = this._hold || { A: 0, B: 0 };
+    this._hold[v] = Date.now();
+    this.setState({ ["tab" + v]: i });
+    if (i === 1) this._countUp(v);
+  }
+
+  _heat() {
+    if (this._heatCells) return this._heatCells;
+    const ramp = ["#eadcab", "#b9d98b", "#8cc46a", "#57a94e", "#2e7d3c"];
+    const cells = [];
+    for (let w = 0; w < 26; w++) {
+      for (let d = 0; d < 7; d++) {
+        const a = Math.abs(Math.sin(w * 2.9 + d * 5.7));
+        const b = Math.abs(Math.sin(w * 0.83 + d * 1.7 + 2));
+        let lvl = Math.floor(a * b * 6.2);
+        if (d > 4 && lvl > 2) lvl -= 1;
+        if (lvl > 4) lvl = 4;
+        cells.push({ style: { width: "7px", height: "7px", background: ramp[lvl] } });
+      }
+    }
+    this._heatCells = cells;
+    return cells;
+  }
+
+  renderVals() {
+    const s = this.state;
+    return {
+      a0: s.tabA === 0, a1: s.tabA === 1, a2: s.tabA === 2,
+      na0: s.tabA !== 0, na1: s.tabA !== 1, na2: s.tabA !== 2,
+      b0: s.tabB === 0, b1: s.tabB === 1, b2: s.tabB === 2,
+      nb0: s.tabB !== 0, nb1: s.tabB !== 1, nb2: s.tabB !== 2,
+      dollarsA: s.dollarsA, dollarsB: s.dollarsB,
+      heatCells: this._heat(),
+      tA0: () => this._setTab("A", 0), tA1: () => this._setTab("A", 1), tA2: () => this._setTab("A", 2),
+      tB0: () => this._setTab("B", 0), tB1: () => this._setTab("B", 1), tB2: () => this._setTab("B", 2),
+      enterA: () => this.setState({ pausedA: true }), leaveA: () => this.setState({ pausedA: false }),
+      enterB: () => this.setState({ pausedB: true }), leaveB: () => this.setState({ pausedB: false })
+    };
+  }
+}
+</script>
+</body>
+</html>
