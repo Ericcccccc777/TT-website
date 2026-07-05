@@ -35,7 +35,7 @@
     "leaderboard": "Leaderboard",
     "roadmap": "Roadmap",
     "copyright": "© {year} Token-Forest. All rights reserved.",
-    "openSourceOnGithub": "Open source on GitHub"
+    "openSourceOnGithub": "Follow on GitHub"
   },
   "Hero": {
     "ariaLabel": "Hero section",
@@ -57,7 +57,10 @@
     "step03Title": "Your Tree Grows",
     "step03Body": "Accumulated tokens drive the tree through 8 growth stages, from a tiny seed to a fruit-laden apple tree. Fully local, no network needed.",
     "privacyStrong": "Privacy first",
-    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Completely offline — no data uploaded, no account needed, no internet required."
+    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Completely offline — no data uploaded, no account needed, no internet required.",
+    "uploadedZero": "Uploaded: 0 bytes",
+    "holdToGrow": "Press & hold to grow",
+    "tryBubbleAria": "Collect the demo bubble"
   },
   "Features": {
     "heading": "Features",
@@ -84,38 +87,32 @@
     "seasonsBadge": "Planned",
     "lbTitle": "Global Leaderboard",
     "lbBody": "Available now — turn it on in the desktop app settings. It only uploads your token total and a nickname, then you compare trees with players worldwide.",
-    "lbBadge": "Live now"
+    "lbBadge": "Live now",
+    "offlineOn": "Offline mode"
   },
   "TreeShowcase": {
     "heading": "Try Your Tree",
     "stageDotsAriaLabel": "Growth stages",
-    "stageBtn": "Stage {n}",
     "treeAlt": "Growth stage {stage} / 8",
     "skinStripAriaLabel": "Skin selection",
-    "decorationGroupAriaLabel": "Decoration toggles",
-    "caption": "Click stage buttons to change growth · Toggle decorations · Click chest to open",
+    "caption": "The tree grows on a loop · pick a species below",
     "comingSoon": "Coming Soon",
     "skinApple": "Apple Tree",
     "skinCherry": "Cherry Tree",
-    "decoFence": "Fence",
-    "decoBasket": "Basket",
-    "decoChest": "Chest",
-    "chestTeaserShop": "Coming soon: Fruit Shop",
-    "openChest": "Open chest",
-    "closeChest": "Close chest"
+    "skinCactus": "Cactus"
   },
   "Roadmap": {
     "heading": "Coming Next",
     "intro": "Your tree already grows with every token you spend — these unlock next:",
     "soon": "Coming soon",
-    "f1Label": "Fruit & Harvest",
-    "f1Desc": "Once your tree matures it bears fruit — click to harvest it.",
-    "f2Label": "Fruit Shop & Decor",
-    "f2Desc": "Spend harvested fruit on planters, string lights, hats, fences and more.",
+    "f1Label": "A mystery holiday species",
+    "f1Desc": "A fourth tree is quietly sprouting in our greenhouse — arriving for the holiday season.",
+    "f2Label": "Stats dashboard",
+    "f2Desc": "Days planted, growth history, per-model usage split, and a fully offline cost estimate.",
     "f3Label": "Day-Night & Seasons",
     "f3Desc": "Your tree shifts with real time and season: day, dusk, night, spring to winter.",
     "f4Label": "More Art & Surprises",
-    "f4Desc": "Frame animations, sound, more skins — polish is ongoing.",
+    "f4Desc": "Achievements, offline catch-up growth, more species and decorations — polish is ongoing.",
     "fullRoadmap": "See the full dev roadmap →"
   },
   "LeaderboardTeaser": {
@@ -128,13 +125,12 @@
     "rankHeader": "#",
     "usernameHeader": "Username",
     "tokensHeader": "Tokens",
-    "comingSoon": "Live now",
     "viewAll": "View Full Leaderboard"
   },
   "DownloadCta": {
     "heading": "Start Growing Your Tree",
-    "body": "Works on Windows · macOS · Linux. Free & open source — installed in one command.",
-    "openSource": "— free & open source"
+    "body": "For Windows & macOS, free to use. Installers are being packaged — coming soon.",
+    "openSource": "— free to use"
   },
   "LeaderboardPage": {
     "title": "Leaderboard",
@@ -154,10 +150,9 @@
     "treeModalStage": "Stage {n} / 8",
     "treeModalAlt": "{username}'s pixel tree",
     "treeModalClose": "Close",
-    "comingSoon": "Coming Soon",
     "howToHeading": "How to Join",
     "howTo01Title": "Download the App",
-    "howTo01Body": "Visit the download page and run setup.ps1 (Windows) or setup.sh (macOS / Linux) to install.",
+    "howTo01Body": "Get the Windows / macOS installer from the download page (coming soon) and double-click to install.",
     "howTo02Title": "Enable Leaderboard in Settings",
     "howTo02Body": "Open the Token-Forest settings panel, enable 'Join Global Leaderboard', and agree to share only your total token count and username.",
     "howTo03Title": "Set Your Username",
@@ -171,9 +166,9 @@
     "heroTreeAlt": "Fully grown Token-Forest apple tree",
     "heroHeading": "Start Growing Your Tree",
     "heroBody": "Every token you spend in Claude Code / Codex becomes a floating bubble on your desktop — click to collect and watch your pixel tree grow, blossom, and bear fruit.",
-    "windowsBtn": "setup.ps1",
-    "macLinuxBtn": "setup.sh",
-    "platformLine": "Windows · macOS · Linux — free & open source",
+    "windowsBtn": "Windows installer",
+    "macBtn": "macOS installer",
+    "platformLine": "Windows · macOS — installers are being packaged, coming soon",
     "whatIsHeading": "What is Token-Forest?",
     "petLabel": "Pixel Desktop Pet",
     "petBody": "A tiny plot of land hovering above your taskbar, home to a pixel tree that actually grows.",
@@ -181,22 +176,24 @@
     "visualBody": "Every token Claude Code / Codex spends appears as a numbered bubble on your desktop.",
     "privacyLabel": "Local · Privacy First",
     "privacyBody": "Reads local usage logs only. Fully offline — no data sent to any server.",
-    "windowsHeading": "Windows Quick Start",
-    "step01Title": "Download & Extract",
-    "step01Body": "Go to <link>GitHub Releases</link> and download the latest <code>Token-Forest-win.zip</code>, then extract to any folder.",
-    "step02Title": "Run the Install Script",
-    "step02Body": "Right-click and run as administrator, or execute in PowerShell:",
-    "step02Note": "The script automatically installs Python dependencies and creates a startup shortcut.",
-    "step03Title": "Launch Token-Forest",
-    "step03Body": "After installation, double-click the desktop shortcut or run from the extract folder:",
-    "step03Note": "When the tree appears above your taskbar, you're all set. Start coding and watch tokens bubble up.",
-    "macLinuxLabel": "macOS / Linux",
-    "macLinuxBody": "Extract, then run in terminal: <code>bash setup.sh</code>. Same startup process. Requires Python 3.10+.",
+    "windowsHeading": "Three steps once it ships",
+    "step01Title": "Download the installer",
+    "step01Body": "Once released, grab the Windows or macOS build from <link>GitHub Releases</link>.",
+    "step02Title": "Double-click to install",
+    "step02Body": "Follow the installer — no command line, no extra dependencies.",
+    "step03Title": "Launch and grow",
+    "step03Body": "Open Token-Forest and the sapling appears above your taskbar. Code as usual and watch tokens float up as bubbles.",
     "sysReqHeading": "System Requirements",
-    "sysReq0": "Windows 10 / 11 · macOS 12+ · Ubuntu 20.04+",
-    "sysReq1": "Python 3.10 or higher (the setup script will prompt if missing)",
-    "sysReq2": "Claude Code CLI or OpenAI Codex CLI (just needs usage logs generated)",
-    "sysReq3": "~50 MB disk space",
-    "githubBody": "Token-Forest is fully open source. Issues, PRs, and Stars are very welcome."
+    "sysReq0": "Windows 10 / 11 or macOS 12+",
+    "sysReq1": "Claude Code or OpenAI Codex CLI used on this machine (usage logs present)",
+    "sysReq2": "No account, no network — runs fully local",
+    "sysReq3": "Lightweight native widget — fast start, low footprint",
+    "githubBody": "Questions or ideas? Open an issue on GitHub — and star the repo to catch the installer release.",
+    "githubFollowBtn": "Follow on GitHub",
+    "betaLabel": "Final polish",
+    "betaBody": "The installers are getting their final packaging and signing. Star the GitHub repo to be first to know when they drop."
+  },
+  "ScrollHud": {
+    "backToTop": "Back to top"
   }
 }

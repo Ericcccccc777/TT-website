@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
+import { PixelCrown } from "@/components/pixel-crown";
 
 export const revalidate = 60;
 
@@ -41,8 +42,14 @@ function spriteStage(stageIndex: number): number {
 }
 
 /** Sprite filename prefix for a tree species; unknown species fall back to apple. */
+const TREE_PREFIX: Record<string, string> = {
+  apple: "AppleTree",
+  cherry: "CherryTree",
+  cactus: "Cactus",
+};
+
 function treeSpritePrefix(tree: string): string {
-  return tree === "cherry" ? "CherryTree" : "AppleTree";
+  return TREE_PREFIX[tree] ?? "AppleTree";
 }
 
 /**
@@ -89,15 +96,42 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
             label={t("globalTrees")}
             value={formatTokens(stats.totalTrees, locale)}
             unit={t("treeUnit")}
+            icon={
+              <span
+                className="animate-tree-breathe inline-block"
+                style={{ transformOrigin: "bottom center" }}
+                aria-hidden
+              >
+                <Image
+                  src="/sprites/AppleTree_5.png"
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="pixelated"
+                  style={{ width: 22, height: 22, objectFit: "contain", objectPosition: "50% 100%" }}
+                />
+              </span>
+            }
           />
           <div className="hidden h-8 w-px bg-leaf-deep/40 sm:block" aria-hidden />
           <StatChip
             label={t("totalTokens")}
             value={formatTokens(stats.totalTokens, locale)}
             unit={t("tokenUnit")}
+            icon={
+              <svg viewBox="0 0 10 10" width={18} shapeRendering="crispEdges" aria-hidden>
+                <g fill="#c8943c">
+                  <rect x="3" y="1" width="4" height="8" />
+                  <rect x="1" y="3" width="8" height="4" />
+                  <rect x="2" y="2" width="6" height="6" />
+                </g>
+                <rect x="3" y="3" width="2" height="2" fill="#e8ba60" />
+              </svg>
+            }
           />
         </div>
       </div>
+
 
       {/* ── Main content ── */}
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -137,6 +171,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
               width={64}
               height={64}
               className="pixelated mx-auto mb-4 opacity-60"
+              style={{ width: 64, height: 64, objectFit: "contain" }}
               aria-hidden
             />
             <p
@@ -163,7 +198,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
             >
               <table className="w-full border-collapse">
                 <colgroup>
-                  <col style={{ width: "3rem" }} />
+                  <col style={{ width: "3.5rem" }} />
                   <col />
                   <col />
                   <col />
@@ -197,11 +232,12 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                     const stage = spriteStage(entry.stage_index);
                     const treePrefix = treeSpritePrefix(entry.tree);
                     const region = regionInfo(entry.region, locale);
-                    const animDelay = `${i * 60}ms`;
+                    // cap the entrance stagger so deep rows don't wait seconds
+                    const animDelay = `${Math.min(i, 12) * 60}ms`;
                     return (
                       <tr
                         key={entry.id}
-                        className="border-t border-leaf-deep/20 bg-surface-card/60 backdrop-blur-sm"
+                        className="lb-row-light border-t border-leaf-deep/20 bg-surface-card/60"
                         style={{
                           animation: `row-slide-in 320ms ease both`,
                           animationDelay: animDelay,
@@ -210,11 +246,12 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                         }}
                       >
                         <td
-                          className="px-4 py-3 font-bold leading-none"
+                          className="whitespace-nowrap px-4 py-3 font-bold leading-none"
                           style={{
                             fontFamily: "var(--font-pixel)",
                             fontSize: "var(--text-caption)",
                             color: medalColor ?? "var(--color-text-muted-light)",
+                            boxShadow: medalColor ? `inset 3px 0 0 ${medalColor}` : undefined,
                           }}
                         >
                           {rank <= 3 ? `0${rank}` : rank}
@@ -231,6 +268,21 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                               closeLabel={t("treeModalClose")}
                             />
                             <span className="truncate text-text-forest">{entry.username}</span>
+                            {rank === 1 && (
+                              <span className="relative inline-flex shrink-0" aria-hidden>
+                                <PixelCrown />
+                                <span
+                                  className="absolute -right-2 -top-1 text-accent-gold"
+                                  style={{
+                                    fontSize: 7,
+                                    lineHeight: 1,
+                                    animation: "star-twinkle 3.6s ease-in-out infinite",
+                                  }}
+                                >
+                                  ✦
+                                </span>
+                              </span>
+                            )}
                             {region && (
                               <span
                                 role="img"
@@ -263,60 +315,6 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                     );
                   })}
 
-                  {/* Blurred YOUR TREE placeholder row */}
-                  <tr className="border-t border-leaf-deep/20 bg-surface-card/60">
-                    <td colSpan={4} className="relative overflow-hidden p-0">
-                      <div
-                        className="grid grid-cols-[3rem_1fr_auto_auto] items-center gap-x-4 px-4 py-3"
-                        style={{
-                          filter: "blur(4px)",
-                          fontFamily: "var(--font-body)",
-                          fontSize: "var(--text-body)",
-                        }}
-                      >
-                        <span
-                          className="text-text-muted-light"
-                          style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "var(--text-caption)",
-                          }}
-                        >
-                          {entries.length + 1}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-[2px] bg-leaf-deep/15" />
-                          <span className="text-text-forest">YOUR TREE</span>
-                        </div>
-                        <span
-                          className="hidden text-right text-accent-gold sm:block"
-                          style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "var(--text-caption)",
-                          }}
-                        >
-                          0
-                        </span>
-                        <span
-                          className="text-right text-text-muted-light"
-                          style={{ fontSize: "var(--text-small)" }}
-                        >
-                          —
-                        </span>
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span
-                          className="rounded-[2px] bg-surface-forest px-3 py-1 text-accent-gold"
-                          style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "var(--text-caption)",
-                            border: "2px solid var(--color-accent-gold)",
-                          }}
-                        >
-                          {t("comingSoon")}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
@@ -341,8 +339,12 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                 { num: "02", title: t("howTo02Title"), body: t("howTo02Body") },
                 { num: "03", title: t("howTo03Title"), body: t("howTo03Body") },
               ] as const
-            ).map((step) => (
-              <li key={step.num} className="flex gap-4">
+            ).map((step, i) => (
+              <li
+                key={step.num}
+                className="reveal flex gap-4"
+                style={{ "--reveal-delay": `${i * 100}ms` } as React.CSSProperties}
+              >
                 <span
                   className="shrink-0 text-accent-gold"
                   style={{ fontFamily: "var(--font-brand)", fontSize: "var(--text-counter)" }}
@@ -374,7 +376,17 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function StatChip({ label, value, unit }: { label: string; value: string; unit: string }) {
+function StatChip({
+  label,
+  value,
+  unit,
+  icon,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col items-center gap-1">
       <span
@@ -383,11 +395,14 @@ function StatChip({ label, value, unit }: { label: string; value: string; unit: 
       >
         {label}
       </span>
-      <span
-        className="text-leaf-deep"
-        style={{ fontFamily: "var(--font-brand)", fontSize: "var(--text-counter)" }}
-      >
-        {value}
+      <span className="flex items-center gap-2">
+        {icon}
+        <span
+          className="text-leaf-deep"
+          style={{ fontFamily: "var(--font-brand)", fontSize: "var(--text-counter)" }}
+        >
+          {value}
+        </span>
       </span>
       <span
         className="text-text-muted-light"

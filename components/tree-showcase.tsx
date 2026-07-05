@@ -1,26 +1,31 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { useInView } from "@/hooks/use-in-view";
+import { setTreeSkin, type TreeSkinId } from "@/hooks/use-tree-skin";
+import { TreeScene } from "@/components/tree-scene";
 
 // ── Real growth thresholds from garden.py ─────────────────────────────────────
 
-/** Cumulative token thresholds for each stage (index 0-7 = AppleTree_1..8). */
-const STAGES = [
-  { threshold: 0 }, // stage 1 — 幼枝   AppleTree_1
-  { threshold: 500_000 }, // stage 2 — 树苗   AppleTree_2
-  { threshold: 1_500_000 }, // stage 3 — 小树   AppleTree_3
-  { threshold: 4_000_000 }, // stage 4 — 成树   AppleTree_4
-  { threshold: 10_000_000 }, // stage 5 — 茂树   AppleTree_5
-  { threshold: 22_000_000 }, // stage 6 — 大树   AppleTree_6
-  { threshold: 45_000_000 }, // stage 7 — 繁茂   AppleTree_7
-  { threshold: 90_000_000 }, // stage 8 — 硕果累累 AppleTree_8
-] as const;
+/**
+ * Cumulative token thresholds per stage (index 0-7 = {Prefix}_1..8), per tree
+ * kind — mirrors garden.py STAGE_TOKENS. Later trees grow slower: max stage
+ * costs apple 90M / cherry 270M / cactus 360M.
+ */
+const STAGE_TOKENS: Record<string, number[]> = {
+  apple: [0, 500_000, 1_500_000, 4_000_000, 10_000_000, 22_000_000, 45_000_000, 90_000_000],
+  cherry: [0, 1_500_000, 4_500_000, 12_000_000, 30_000_000, 66_000_000, 135_000_000, 270_000_000],
+  cactus: [0, 2_000_000, 6_000_000, 16_000_000, 40_000_000, 88_000_000, 180_000_000, 360_000_000],
+};
 
-/** Roman numerals I..VIII for stage selector buttons. */
+/** Roman numerals I..VIII for the stage indicator. */
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"] as const;
+
+/** How long each growth stage is shown before the carousel advances. */
+const STAGE_ROTATE_MS = 3200;
 
 function formatTokenCount(n: number): string {
   if (n >= 1_000_000) {
@@ -43,76 +48,16 @@ export interface SkinDef {
   available: boolean;
 }
 
-export interface DecorationDef {
-  id: string;
-  src: string;
-  position: React.CSSProperties;
-  /** How to fit the sprite inside the decoration area. Default: "contain". */
-  objectFit?: "contain" | "cover";
-  mirrorX?: boolean;
-}
-
 const SKINS: SkinDef[] = [
   { id: "apple", src: "AppleTree", available: true },
   { id: "cherry", src: "CherryTree", available: true },
-  { id: "pine", src: null, available: false },
+  { id: "cactus", src: "Cactus", available: true },
   { id: "blossom", src: null, available: false },
 ];
 
-/**
- * Fence and Basket only — Chest is handled separately as an
- * interactive animated sprite-sheet widget.
- *
- * Sizing rationale (tree canvas = 320 × 320 px):
- *   AppleTree native = 759 × 823 → SCALE_K ≈ 0.389
- *   Fence (193 × 67) at natural scale → ~75 × 26 px (too small).
- *   We scale ~2× to make decorations clearly visible.
- *   Fence: full-width band with cover fill.
- *   Basket: right-aligned at 64 × 45 px.
- */
-const DECORATIONS: DecorationDef[] = [
-  {
-    id: "fence",
-    src: "/sprites/Fence.png",
-    // Full-width fence band at the tree base; objectFit: "cover" tiles horizontally.
-    position: { bottom: 0, left: 0, width: "100%", height: 54 },
-    objectFit: "cover",
-  },
-  {
-    id: "basket",
-    src: "/sprites/Basket.png",
-    // Basket: right side, 64 × 45 px (≈2× natural scale for visibility).
-    position: { bottom: 0, right: 12, width: 64, height: 45 },
-    objectFit: "contain",
-  },
-];
+// ── Stage indicator (Roman numerals — display only, the carousel drives it) ───
 
-// ── Chest sprite constants ─────────────────────────────────────────────────────
-// Chest-sheet.png: 436 × 102, 4 frames each 109 × 102 (left = closed, right = open).
-
-const CHEST_NATIVE_W = 109;
-const CHEST_NATIVE_H = 102;
-const CHEST_TOTAL_FRAMES = 4;
-const CHEST_DISPLAY_H = 84; // display height in px (≈ 2× natural scale)
-const CHEST_DISPLAY_W = Math.round((CHEST_NATIVE_W / CHEST_NATIVE_H) * CHEST_DISPLAY_H); // ≈ 90 px
-const CHEST_SHEET_DISPLAY_W = CHEST_DISPLAY_W * CHEST_TOTAL_FRAMES;
-const CHEST_FRAME_MS = 100; // ms per animation frame (matches Chest.json duration: 100)
-
-type ChestState = "closed" | "opening" | "open" | "closing";
-
-// ── Stage selector (Roman numerals) ───────────────────────────────────────────
-
-function StageDots({
-  active,
-  onChange,
-  ariaLabel,
-  stageBtnLabel,
-}: {
-  active: number;
-  onChange: (n: number) => void;
-  ariaLabel: string;
-  stageBtnLabel: (n: number) => string;
-}) {
+function StageDots({ active, ariaLabel }: { active: number; ariaLabel: string }) {
   return (
     <div
       className="mb-4 grid grid-cols-4 justify-items-center gap-2 sm:grid-cols-8"
@@ -122,12 +67,9 @@ function StageDots({
       {Array.from({ length: 8 }, (_, i) => {
         const isActive = active === i + 1;
         return (
-          <button
+          <span
             key={i}
-            onClick={() => onChange(i + 1)}
-            aria-label={stageBtnLabel(i + 1)}
-            aria-pressed={isActive}
-            className="flex items-center justify-center transition-[transform,box-shadow] duration-100 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light active:scale-95"
+            className="flex items-center justify-center transition-[background,border-color,box-shadow] duration-200"
             style={{
               width: 38,
               height: 44,
@@ -138,12 +80,10 @@ function StageDots({
               boxShadow: isActive
                 ? "2px 2px 0 rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)"
                 : "1px 1px 0 rgba(0,0,0,0.2)",
-              cursor: "pointer",
-              padding: 0,
             }}
+            aria-hidden
           >
             <span
-              aria-hidden
               style={{
                 fontFamily: "var(--font-pixel)",
                 fontSize: "0.5rem",
@@ -154,7 +94,7 @@ function StageDots({
             >
               {ROMAN[i]}
             </span>
-          </button>
+          </span>
         );
       })}
     </div>
@@ -163,12 +103,12 @@ function StageDots({
 
 // ── Progress bar (real token thresholds) ──────────────────────────────────────
 
-function ProgressBar({ stage }: { stage: number }) {
+function ProgressBar({ stage, thresholds }: { stage: number; thresholds: number[] }) {
   const stageIndex = stage - 1; // 0..7
-  const isMaxStage = stageIndex >= STAGES.length - 1;
+  const isMaxStage = stageIndex >= thresholds.length - 1;
 
-  const curThreshold = STAGES[stageIndex]?.threshold ?? 0;
-  const nextThreshold = isMaxStage ? null : STAGES[stageIndex + 1].threshold;
+  const curThreshold = thresholds[stageIndex] ?? 0;
+  const nextThreshold = isMaxStage ? null : thresholds[stageIndex + 1];
 
   // Demo value: 35% progress into the current stage so the bar is visually interesting.
   const demoTokens = isMaxStage
@@ -263,7 +203,7 @@ function SkinStrip({
                   onClick={() => onSelect(skin.id)}
                   aria-pressed={isActive}
                   aria-label={label}
-                  className="relative flex h-12 w-12 items-center justify-center transition-transform duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
+                  className="relative flex h-12 w-12 items-end justify-center overflow-hidden transition-transform duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
                   style={{
                     borderRadius: "var(--radius-pixel)",
                     border: isActive
@@ -272,15 +212,30 @@ function SkinStrip({
                     boxShadow: isActive ? "var(--shadow-pixel-gold)" : undefined,
                     transform: isActive ? "scale(1.08)" : undefined,
                     background: "var(--color-surface-card)",
+                    // breathing room so the tree's roots don't clip on the base edge
+                    paddingBottom: 4,
                     cursor: "pointer",
                   }}
                 >
+                  {/* Stage-5 sprite (the app's tab-icon stage), oversized and
+                      bottom-anchored so the transparent canvas margins crop
+                      away and the tree fills the button. Inline box: immune
+                      to the dev-time stylesheet-loading race. */}
                   <Image
-                    src={`/sprites/${skin.src}_4.png`}
+                    src={`/sprites/${skin.src}_5.png`}
                     alt={label}
-                    width={36}
-                    height={36}
-                    className="pixelated"
+                    width={54}
+                    height={54}
+                    className="pixelated shrink-0"
+                    style={{
+                      width: 54,
+                      height: 54,
+                      // the sprite intentionally overflows the 44px button window;
+                      // undo preflight's max-width:100% or it clamps width only
+                      maxWidth: "none",
+                      objectFit: "contain",
+                      objectPosition: "50% 100%",
+                    }}
                   />
                 </button>
               ) : (
@@ -325,205 +280,6 @@ function SkinStrip({
   );
 }
 
-// ── Decoration toggle button (fence / basket) ─────────────────────────────────
-
-function DecorationToggle({
-  deco,
-  label,
-  active,
-  onToggle,
-}: {
-  deco: DecorationDef;
-  label: string;
-  active: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      aria-pressed={active}
-      title={label}
-      className="flex min-h-[44px] items-center gap-1.5 px-2.5 py-2 transition-[transform,box-shadow] duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
-      style={{
-        fontFamily: "var(--font-pixel)",
-        fontSize: "var(--text-caption)",
-        background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
-        color: active ? "var(--color-text-cream)" : "var(--color-text-muted-light)",
-        boxShadow: active ? "none" : "var(--shadow-pixel)",
-        transform: active ? "translate(2px, 2px)" : undefined,
-        border: "1px solid var(--color-soil)",
-        borderRadius: 0,
-        cursor: "pointer",
-      }}
-    >
-      <Image
-        src={deco.src}
-        alt=""
-        width={16}
-        height={16}
-        className="pixelated shrink-0"
-        aria-hidden
-      />
-      {label}
-    </button>
-  );
-}
-
-// ── Chest toggle button (in decoration group) ─────────────────────────────────
-// Shows frame 0 (closed chest) as the icon preview.
-
-function ChestToggleButton({
-  label,
-  active,
-  onToggle,
-}: {
-  label: string;
-  active: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      onClick={onToggle}
-      aria-pressed={active}
-      title={label}
-      className="flex min-h-[44px] items-center gap-1.5 px-2.5 py-2 transition-[transform,box-shadow] duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light"
-      style={{
-        fontFamily: "var(--font-pixel)",
-        fontSize: "var(--text-caption)",
-        background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
-        color: active ? "var(--color-text-cream)" : "var(--color-text-muted-light)",
-        boxShadow: active ? "none" : "var(--shadow-pixel)",
-        transform: active ? "translate(2px, 2px)" : undefined,
-        border: "1px solid var(--color-soil)",
-        borderRadius: 0,
-        cursor: "pointer",
-      }}
-    >
-      {/* Chest closed frame (frame 0) from sprite sheet via background-image */}
-      <div
-        className="shrink-0"
-        style={{
-          width: 16,
-          height: 16,
-          backgroundImage: "url('/sprites/Chest-sheet.png')",
-          backgroundSize: `${16 * CHEST_TOTAL_FRAMES}px 16px`,
-          backgroundPosition: "0 0",
-          imageRendering: "pixelated",
-          flexShrink: 0,
-        }}
-        aria-hidden
-      />
-      {label}
-    </button>
-  );
-}
-
-// ── Animated Chest widget ─────────────────────────────────────────────────────
-
-function ChestWidget({
-  frame,
-  chestState,
-  onToggle,
-  teaserText,
-  openLabel,
-  closeLabel,
-  prefersReduced,
-}: {
-  frame: number;
-  chestState: ChestState;
-  onToggle: () => void;
-  teaserText: string;
-  openLabel: string;
-  closeLabel: string;
-  prefersReduced: boolean;
-}) {
-  const bgX = frame * CHEST_DISPLAY_W;
-  const isOpen = chestState === "open";
-
-  return (
-    <div
-      className="absolute flex flex-col items-start"
-      style={{ bottom: 0, left: 12, zIndex: 6 }}
-      aria-hidden={false}
-    >
-      {/* Speech bubble teaser — only visible when fully open */}
-      {isOpen && (
-        <div
-          className="relative mb-1 whitespace-nowrap px-2 py-1"
-          style={{
-            background: "var(--color-surface-panel)",
-            border: "2px solid var(--color-accent-gold)",
-            borderRadius: "var(--radius-pixel)",
-            fontFamily: "var(--font-pixel)",
-            fontSize: "0.5rem",
-            color: "var(--color-accent-gold)",
-            boxShadow: "var(--shadow-pixel-gold)",
-            animation: prefersReduced
-              ? "none"
-              : "chest-bubble-in 200ms cubic-bezier(0.34,1.56,0.64,1) forwards",
-          }}
-        >
-          {teaserText}
-          {/* Arrow pointing down toward chest */}
-          <span
-            className="absolute"
-            style={{
-              bottom: -7,
-              left: 10,
-              width: 0,
-              height: 0,
-              borderLeft: "4px solid transparent",
-              borderRight: "4px solid transparent",
-              borderTop: "7px solid var(--color-accent-gold)",
-            }}
-            aria-hidden
-          />
-          {/* Arrow fill (inner colour) */}
-          <span
-            className="absolute"
-            style={{
-              bottom: -4,
-              left: 12,
-              width: 0,
-              height: 0,
-              borderLeft: "2px solid transparent",
-              borderRight: "2px solid transparent",
-              borderTop: "4px solid var(--color-surface-panel)",
-            }}
-            aria-hidden
-          />
-        </div>
-      )}
-
-      {/* Chest sprite button */}
-      <button
-        onClick={onToggle}
-        aria-label={isOpen ? closeLabel : openLabel}
-        className="transition-[filter] duration-100 hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-leaf-light active:scale-95"
-        style={{
-          background: "none",
-          border: "none",
-          padding: 0,
-          cursor: "pointer",
-          display: "block",
-          animation: !prefersReduced && chestState === "closed" ? undefined : undefined,
-        }}
-      >
-        <div
-          style={{
-            width: CHEST_DISPLAY_W,
-            height: CHEST_DISPLAY_H,
-            backgroundImage: "url('/sprites/Chest-sheet.png')",
-            backgroundSize: `${CHEST_SHEET_DISPLAY_W}px ${CHEST_DISPLAY_H}px`,
-            backgroundPosition: `-${bgX}px 0`,
-            imageRendering: "pixelated",
-          }}
-        />
-      </button>
-    </div>
-  );
-}
-
 // ── Main TreeShowcase component ────────────────────────────────────────────────
 
 export function TreeShowcase() {
@@ -531,25 +287,16 @@ export function TreeShowcase() {
   const [stage, setStage] = useState(8);
   const [prevStage, setPrevStage] = useState<number | null>(null);
   const [activeSkin, setActiveSkin] = useState("apple");
-  // fence and basket via equipped Set; chest controlled separately
-  const [equipped, setEquipped] = useState<Set<string>>(new Set(["fence"]));
-  const [chestVisible, setChestVisible] = useState(false);
-  const [chestFrame, setChestFrame] = useState(0);
-  const [chestState, setChestState] = useState<ChestState>("closed");
   const [isShaking, setIsShaking] = useState(false);
   const [isFading, setIsFading] = useState(false);
   const prefersReduced = usePrefersReducedMotion();
-  const chestAnimRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // the auto-carousel only runs while the diorama is on screen
+  const [frameRef, inView] = useInView<HTMLDivElement>({ threshold: 0.25 });
 
   const skinLabels: Record<string, string> = {
     apple: t("skinApple"),
     cherry: t("skinCherry"),
-  };
-
-  const decoLabels: Record<string, string> = {
-    fence: t("decoFence"),
-    basket: t("decoBasket"),
-    chest: t("decoChest"),
+    cactus: t("skinCactus"),
   };
 
   // ── Stage / skin change with shake+fade animation ──────────────────────────
@@ -575,94 +322,38 @@ export function TreeShowcase() {
     [stage, prefersReduced],
   );
 
+  // Auto-carousel: the tree grows 1→8 on a loop while visible. changeStage's
+  // identity changes with `stage`, so this re-arms after every advance — each
+  // stage holds for STAGE_ROTATE_MS. Reduced motion keeps the static stage-8.
+  useEffect(() => {
+    if (!inView || prefersReduced) return;
+    const timer = setInterval(() => {
+      changeStage((stage % 8) + 1);
+    }, STAGE_ROTATE_MS);
+    return () => clearInterval(timer);
+  }, [inView, prefersReduced, stage, changeStage]);
+
   const changeSkin = useCallback(
     (id: string) => {
       if (id === activeSkin || !SKINS.find((s) => s.id === id)?.available) return;
-      if (prefersReduced) {
+      const applySkin = () => {
         setActiveSkin(id);
+        setTreeSkin(id as TreeSkinId); // keep the scroll HUD's sprite in sync
+      };
+      if (prefersReduced) {
+        applySkin();
         return;
       }
       setIsShaking(true);
       setTimeout(() => {
         setIsShaking(false);
         setIsFading(true);
-        setActiveSkin(id);
+        applySkin();
         setTimeout(() => setIsFading(false), 200);
       }, 150);
     },
     [activeSkin, prefersReduced],
   );
-
-  const toggleDeco = useCallback((id: string) => {
-    setEquipped((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  // ── Chest open/close with sprite-sheet animation ──────────────────────────
-  const toggleChest = useCallback(() => {
-    if (chestAnimRef.current) clearTimeout(chestAnimRef.current);
-
-    if (chestState === "closed" || chestState === "closing") {
-      setChestState("opening");
-      if (prefersReduced) {
-        setChestFrame(CHEST_TOTAL_FRAMES - 1);
-        setChestState("open");
-        return;
-      }
-      let frame = 0;
-      const advance = () => {
-        frame++;
-        if (frame >= CHEST_TOTAL_FRAMES - 1) {
-          setChestFrame(CHEST_TOTAL_FRAMES - 1);
-          setChestState("open");
-        } else {
-          setChestFrame(frame);
-          chestAnimRef.current = setTimeout(advance, CHEST_FRAME_MS);
-        }
-      };
-      chestAnimRef.current = setTimeout(advance, CHEST_FRAME_MS);
-    } else {
-      // open or opening → close
-      setChestState("closing");
-      if (prefersReduced) {
-        setChestFrame(0);
-        setChestState("closed");
-        return;
-      }
-      let frame = CHEST_TOTAL_FRAMES - 1;
-      const advance = () => {
-        frame--;
-        if (frame <= 0) {
-          setChestFrame(0);
-          setChestState("closed");
-        } else {
-          setChestFrame(frame);
-          chestAnimRef.current = setTimeout(advance, CHEST_FRAME_MS);
-        }
-      };
-      chestAnimRef.current = setTimeout(advance, CHEST_FRAME_MS);
-    }
-  }, [chestState, prefersReduced]);
-
-  // Reset chest animation when hidden
-  useEffect(() => {
-    if (!chestVisible) {
-      if (chestAnimRef.current) clearTimeout(chestAnimRef.current);
-      setChestFrame(0);
-      setChestState("closed");
-    }
-  }, [chestVisible]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (chestAnimRef.current) clearTimeout(chestAnimRef.current);
-    };
-  }, []);
 
   const activeSkinDef = SKINS.find((s) => s.id === activeSkin);
   const spriteBase = activeSkinDef?.src ?? "AppleTree";
@@ -671,7 +362,7 @@ export function TreeShowcase() {
 
   return (
     <section
-      className="bg-surface-parchment py-20"
+      className="scroll-mt-20 bg-surface-parchment py-20"
       id="showcase"
       aria-labelledby="showcase-heading"
     >
@@ -681,137 +372,87 @@ export function TreeShowcase() {
           className="mb-8 text-center text-leaf-deep"
           style={{
             fontFamily: "var(--font-pixel)",
-            fontSize: "var(--text-display)",
+            fontSize: "var(--text-neon)",
             lineHeight: 1.25,
             wordBreak: "break-word",
             overflowWrap: "anywhere",
           }}
         >
-          {t("heading")}
+          <span
+            className="neon-title neon-light"
+            style={{ "--neon-delay": "0.7s" } as React.CSSProperties}
+          >
+            {t("heading")}
+          </span>
         </h2>
 
-        {/* Stage selector — Roman numerals, ≥44px tap targets */}
-        <StageDots
-          active={stage}
-          onChange={changeStage}
-          ariaLabel={t("stageDotsAriaLabel")}
-          stageBtnLabel={(n) => t("stageBtn", { n })}
-        />
+        {/* Stage indicator — follows the carousel */}
+        <StageDots active={stage} ariaLabel={t("stageDotsAriaLabel")} />
 
-        {/* Progress bar — real token thresholds, h-4 thickness */}
-        <ProgressBar stage={stage} />
+        {/* Progress bar — real token thresholds for the active skin, h-4 thickness */}
+        <ProgressBar stage={stage} thresholds={STAGE_TOKENS[activeSkin] ?? STAGE_TOKENS.apple} />
 
-        {/* ── Tree + decorations canvas ── */}
-        <div className="relative mx-auto w-full max-w-[320px]">
-          <div className="relative w-full overflow-visible" style={{ aspectRatio: "1 / 1" }}>
-            {/* Tree sprite with shake + crossfade */}
-            <div
-              className={`animate-tree-breathe absolute inset-0 ${isShaking ? "animate-grow-shake" : ""}`}
-              style={{ transformOrigin: "bottom center" }}
-            >
-              {prevTreeSrc && (
+        {/* ── Cinematic diorama: widescreen themed backdrop, tree centred ── */}
+        <div
+          ref={frameRef}
+          className="relative mx-auto w-full max-w-[640px] overflow-hidden pt-5"
+          style={{
+            border: "var(--border-pixel)",
+            borderRadius: "var(--radius-pixel)",
+            boxShadow: "var(--shadow-pixel)",
+          }}
+        >
+          {/* Skin-themed scene behind tree + ground (crossfades on switch) */}
+          <TreeScene skin={activeSkin} prefersReduced={prefersReduced} />
+
+          {/* Tree column — canvas keeps its 320px geometry, centred in the frame */}
+          <div className="relative mx-auto w-full max-w-[320px]">
+            <div className="relative w-full overflow-visible" style={{ aspectRatio: "1 / 1" }}>
+              {/* Tree sprite with shake + crossfade */}
+              <div
+                className={`animate-tree-breathe absolute inset-0 ${isShaking ? "animate-grow-shake" : ""}`}
+                style={{ transformOrigin: "bottom center", zIndex: 2 }}
+              >
+                {prevTreeSrc && (
+                  <Image
+                    src={prevTreeSrc}
+                    alt=""
+                    fill
+                    sizes="320px"
+                    className="pixelated object-contain object-bottom"
+                    style={{
+                      opacity: isFading ? 0 : 1,
+                      transition: prefersReduced ? "none" : "opacity 350ms ease",
+                      zIndex: 1,
+                    }}
+                    aria-hidden
+                  />
+                )}
                 <Image
-                  src={prevTreeSrc}
-                  alt=""
+                  src={treeSrc}
+                  alt={t("treeAlt", { stage })}
                   fill
+                  sizes="320px"
                   className="pixelated object-contain object-bottom"
                   style={{
-                    opacity: isFading ? 0 : 1,
-                    transition: prefersReduced ? "none" : "opacity 350ms ease",
-                    zIndex: 1,
+                    opacity: prevTreeSrc ? (isFading ? 1 : 0) : 1,
+                    transition: prevTreeSrc && !prefersReduced ? "opacity 350ms ease" : "none",
+                    zIndex: 2,
                   }}
-                  aria-hidden
+                  priority={stage === 8}
                 />
-              )}
-              <Image
-                src={treeSrc}
-                alt={t("treeAlt", { stage })}
-                fill
-                className="pixelated object-contain object-bottom"
-                style={{
-                  opacity: prevTreeSrc ? (isFading ? 1 : 0) : 1,
-                  transition: prevTreeSrc && !prefersReduced ? "opacity 350ms ease" : "none",
-                  zIndex: 2,
-                }}
-                priority={stage === 8}
-              />
+              </div>
             </div>
-
-            {/* Fence and Basket decorations */}
-            {DECORATIONS.map((deco) => {
-              const on = equipped.has(deco.id);
-              return (
-                <div
-                  key={deco.id}
-                  className="pointer-events-none absolute"
-                  style={{
-                    ...deco.position,
-                    zIndex: 5,
-                    animation: on
-                      ? prefersReduced
-                        ? undefined
-                        : "decoration-enter 350ms cubic-bezier(0.34,1.56,0.64,1) forwards"
-                      : prefersReduced
-                        ? undefined
-                        : "decoration-exit 180ms ease forwards",
-                    opacity: on ? 1 : 0,
-                  }}
-                  aria-hidden
-                >
-                  {on && (
-                    <Image
-                      src={deco.src}
-                      alt=""
-                      fill
-                      className="pixelated"
-                      style={{ objectFit: deco.objectFit ?? "contain" }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Animated Chest widget */}
-            {chestVisible && (
-              <ChestWidget
-                frame={chestFrame}
-                chestState={chestState}
-                onToggle={toggleChest}
-                teaserText={t("chestTeaserShop")}
-                openLabel={t("openChest")}
-                closeLabel={t("closeChest")}
-                prefersReduced={prefersReduced}
-              />
-            )}
           </div>
 
-          {/* Ground strip */}
+          {/* Ground strip — full frame width */}
           <div className="relative h-10 w-full" aria-hidden>
-            <Image src="/sprites/Ground.png" alt="" fill className="pixelated object-cover" />
-          </div>
-        </div>
-
-        {/* Decoration toggle group (fence, basket, chest) */}
-        <div className="mt-4 flex justify-center">
-          <div
-            className="inline-flex divide-x overflow-hidden"
-            style={{ border: "var(--border-pixel)" }}
-            role="group"
-            aria-label={t("decorationGroupAriaLabel")}
-          >
-            {DECORATIONS.map((deco) => (
-              <DecorationToggle
-                key={deco.id}
-                deco={deco}
-                label={decoLabels[deco.id] ?? deco.id}
-                active={equipped.has(deco.id)}
-                onToggle={() => toggleDeco(deco.id)}
-              />
-            ))}
-            <ChestToggleButton
-              label={decoLabels["chest"] ?? t("decoChest")}
-              active={chestVisible}
-              onToggle={() => setChestVisible((v) => !v)}
+            <Image
+              src="/sprites/Ground.png"
+              alt=""
+              fill
+              sizes="640px"
+              className="pixelated object-cover"
             />
           </div>
         </div>

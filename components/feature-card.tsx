@@ -1,5 +1,7 @@
 // ── FeatureCard ────────────────────────────────────────────────────────────────
-// Pure display component — no client interactivity needed.
+// Pure display component — hover choreography is CSS-only (globals.css
+// §FEATURE CARD HOVER SUITE, gated behind (hover:hover) media), so this stays
+// a server component even with a live demo screen slotted in.
 
 interface FeatureCardProps {
   title: string;
@@ -8,6 +10,8 @@ interface FeatureCardProps {
   accentColor?: "leaf" | "soil";
   badge?: string; // e.g. "规划中" or "即将推出"
   badgeTone?: "soon" | "live"; // "live" = green (shipped); default gold (coming)
+  /** Optional live demo screen rendered above the title (see feature-demos.tsx). */
+  demo?: React.ReactNode;
   className?: string;
 }
 
@@ -19,7 +23,7 @@ function LeafCheckIcon() {
       viewBox="0 0 14 14"
       fill="none"
       aria-hidden
-      className="mt-0.5 shrink-0"
+      className="leaf-check mt-0.5 shrink-0"
     >
       <circle cx="7" cy="7" r="6.5" stroke="var(--color-leaf-light)" strokeWidth="1.5" />
       <path
@@ -39,6 +43,7 @@ export function FeatureCard({
   accentColor = "leaf",
   badge,
   badgeTone = "soon",
+  demo,
   className,
 }: FeatureCardProps) {
   const accent = accentColor === "soil" ? "var(--color-soil)" : "var(--color-leaf-deep)";
@@ -53,8 +58,26 @@ export function FeatureCard({
         boxShadow: "var(--shadow-card)",
       }}
     >
-      {/* Left accent stripe */}
-      <span className="absolute inset-y-0 left-0 w-1" style={{ background: accent }} aria-hidden />
+      {/* Left accent stripe — widens (transform only) on hover */}
+      <span
+        className="card-stripe absolute inset-y-0 left-0 w-1"
+        style={{ background: accent, transformOrigin: "left" }}
+        aria-hidden
+      />
+
+      {/* One-shot diagonal shine sweep on hover */}
+      <span
+        className="card-shine pointer-events-none absolute inset-y-0 w-1/3"
+        style={{
+          left: 0,
+          transform: "translateX(-150%) skewX(-18deg)",
+          background: "linear-gradient(90deg, transparent, rgb(255 255 255 / 7%), transparent)",
+        }}
+        aria-hidden
+      />
+
+      {/* Live demo screen */}
+      {demo && <div className="pl-3">{demo}</div>}
 
       {/* Title row */}
       <div className="flex items-center gap-2 pl-3">
@@ -70,7 +93,7 @@ export function FeatureCard({
         </span>
         {badge && (
           <span
-            className="ml-auto shrink-0 px-1.5 py-0.5"
+            className="ml-auto flex shrink-0 items-center gap-1 px-1.5 py-0.5"
             style={{
               fontFamily: "var(--font-pixel)",
               fontSize: "0.55rem",
@@ -82,6 +105,13 @@ export function FeatureCard({
               opacity: 0.85,
             }}
           >
+            {badgeTone === "live" && (
+              <span
+                className="live-dot inline-block h-[5px] w-[5px]"
+                style={{ background: "var(--color-leaf-light)" }}
+                aria-hidden
+              />
+            )}
             {badge}
           </span>
         )}
