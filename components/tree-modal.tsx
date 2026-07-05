@@ -1,8 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
+
+// Hydration-safe "am I on the client?" flag: false during SSR/hydration's
+// server snapshot, true on the client — replaces the setState-in-effect
+// mounted pattern without a cascading second render.
+const emptySubscribe = () => () => {};
+function useMounted() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 interface TreeModalButtonProps {
   /** Display name shown as the popup heading. */
@@ -37,9 +49,7 @@ export function TreeModalButton({
   closeLabel,
 }: TreeModalButtonProps) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   const close = useCallback(() => setOpen(false), []);
 

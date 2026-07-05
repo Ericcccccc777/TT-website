@@ -1966,3 +1966,223 @@ body {
     0 0 20px rgb(58 125 68 / 30%),
     2px 2px 0 rgb(58 125 68 / 30%);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DASHBOARD — /dashboard page + homepage demo screens
+   Parchment palette comes from the desktop app's v2a handoff
+   (Token-Forest design_handoff_dashboard_v2a) — deliberately NOT
+   site tokens: the mock reproduces the real app window.
+───────────────────────────────────────────────────────────── */
+:root {
+  --dash-wood-hi: #b07434;
+  --dash-wood-mid: #96591f;
+  --dash-wood-lo: #7c4a1e;
+  --dash-wood-edge: #1c1206;
+  --dash-tab-edge: #241505;
+  --dash-parchment: #f2dfae;
+  --dash-card: #faedc8;
+  --dash-slot: #e3cd8f;
+  --dash-line: #452508;
+  --dash-card-line: #4a2a0d;
+  --dash-card-inner: #e7cd92;
+  --dash-ink: #33210d;
+  --dash-ink-soft: #7c5a2a;
+  --dash-claude: #e0885f;
+  --dash-codex: #5cc2c9;
+  --dash-heat-0: #eadcab;
+  --dash-heat-1: #b9d98b;
+  --dash-heat-2: #8cc46a;
+  --dash-heat-3: #57a94e;
+  --dash-heat-4: #2e7d3c;
+}
+
+/* Parchment card inside the mock window */
+.dash-card {
+  background: var(--dash-card);
+  border: 2px solid var(--dash-card-line);
+  border-radius: 9px;
+  box-shadow:
+    inset 0 0 0 1px var(--dash-card-inner),
+    inset 0 2px 0 rgb(255 255 255 / 50%),
+    0 3px 0 rgb(139 94 38 / 35%);
+}
+
+/* Wooden window tabs (selected = green, idle = pale sandalwood) */
+.dash-tab {
+  padding: 6px 12px 7px;
+  background: linear-gradient(180deg, #f0dc9e 0%, #e2c375 100%);
+  border: 3px solid var(--dash-tab-edge);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  font-family: var(--font-pixel), var(--font-body);
+  font-size: 11px;
+  color: #6b4a1e;
+  cursor: pointer;
+}
+
+.dash-tab:hover {
+  color: var(--dash-ink);
+}
+
+.dash-tab.dash-tab-active {
+  padding: 7px 13px 10px;
+  background: linear-gradient(180deg, #a5ecb0 0%, #7bd88f 46%, #4f9e63 100%);
+  border-color: #123314;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 35%);
+  font-weight: 700;
+  color: #0e140c;
+}
+
+/* Tab content swap-in */
+@keyframes dash-tab-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Bars / segments growing from the left */
+@keyframes dash-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* FAQ accordion (native <details>) */
+.dash-faq summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.dash-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.dash-faq details[open] > summary {
+  border-bottom: 1px solid rgb(122 90 58 / 35%);
+}
+
+.dash-faq details[open] > summary .dash-faq-chev {
+  transform: rotate(90deg);
+}
+
+/* ── Homepage feature demos ─────────────────────────────────── */
+
+/* Right-click story (dashboard card, 8.5s loop):
+   menu pops → hand clicks → parchment mini window appears */
+@keyframes dash-demo-menu {
+  0%,
+  6% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  12%,
+  44% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  52%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes dash-demo-hand {
+  0%,
+  6% {
+    opacity: 0;
+  }
+
+  10%,
+  40% {
+    opacity: 1;
+  }
+
+  48%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes dash-demo-win {
+  0%,
+  46% {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  54%,
+  90% {
+    opacity: 1;
+    transform: none;
+  }
+
+  97%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Tree ⇄ capsule morph loop (capsule card, 10s loop) */
+@keyframes cap-swap-tree {
+  0%,
+  38% {
+    opacity: 1;
+    transform: none;
+  }
+
+  46%,
+  88% {
+    opacity: 0;
+    transform: scale(0.35) translateY(8px);
+  }
+
+  96%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cap-swap-pill {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+
+  48%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+
+  96%,
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes cap-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 4px 0 rgb(217 119 87 / 45%);
+  }
+
+  50% {
+    box-shadow: 0 0 9px 2px rgb(217 119 87 / 85%);
+  }
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   Press_Start_2P,
   Silkscreen,
+  JetBrains_Mono,
   Noto_Sans_SC,
   Noto_Sans_JP,
   Noto_Sans_KR,
@@ -27,6 +28,15 @@ const silkscreen = Silkscreen({
   weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-pixel",
+  display: "swap",
+});
+
+// JetBrains Mono: numeric readouts in the dashboard mock — matches the
+// desktop app's v2a handoff, which sets all numbers in JetBrains Mono.
+const jetBrainsMono = JetBrains_Mono({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -119,7 +129,7 @@ export default async function LocaleLayout({
   return (
     <html
       lang={locale}
-      className={`${pressStart2P.variable} ${silkscreen.variable} ${bodyFontVariable}`}
+      className={`${pressStart2P.variable} ${silkscreen.variable} ${jetBrainsMono.variable} ${bodyFontVariable}`}
     >
       <body className="flex min-h-screen flex-col bg-surface-parchment font-body text-[var(--color-text-forest)] antialiased">
         <NextIntlClientProvider messages={messages} locale={locale}>

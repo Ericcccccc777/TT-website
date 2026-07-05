@@ -3,6 +3,8 @@
 // §FEATURE CARD HOVER SUITE, gated behind (hover:hover) media), so this stays
 // a server component even with a live demo screen slotted in.
 
+import { Link } from "@/i18n/navigation";
+
 interface FeatureCardProps {
   title: string;
   body?: string;
@@ -12,6 +14,12 @@ interface FeatureCardProps {
   badgeTone?: "soon" | "live"; // "live" = green (shipped); default gold (coming)
   /** Optional live demo screen rendered above the title (see feature-demos.tsx). */
   demo?: React.ReactNode;
+  /** Small outlined tags under the content (e.g. the dashboard's three layers). */
+  chips?: string[];
+  /** Makes the whole card a link (hover suite still applies). */
+  href?: string;
+  /** Trailing "learn more →" affordance, shown on the chips row. */
+  moreLabel?: string;
   className?: string;
 }
 
@@ -44,20 +52,23 @@ export function FeatureCard({
   badge,
   badgeTone = "soon",
   demo,
+  chips,
+  href,
+  moreLabel,
   className,
 }: FeatureCardProps) {
   const accent = accentColor === "soil" ? "var(--color-soil)" : "var(--color-leaf-deep)";
 
-  return (
-    <div
-      className={`group relative flex flex-col gap-2 overflow-hidden p-5 transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg${className ? ` ${className}` : ""}`}
-      style={{
-        background: "var(--color-surface-panel)",
-        border: "2px solid var(--color-leaf-deep)",
-        borderRadius: "var(--radius-pixel)",
-        boxShadow: "var(--shadow-card)",
-      }}
-    >
+  const rootClassName = `group relative flex flex-col gap-2 overflow-hidden p-5 transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg${className ? ` ${className}` : ""}`;
+  const rootStyle: React.CSSProperties = {
+    background: "var(--color-surface-panel)",
+    border: "2px solid var(--color-leaf-deep)",
+    borderRadius: "var(--radius-pixel)",
+    boxShadow: "var(--shadow-card)",
+  };
+
+  const content = (
+    <>
       {/* Left accent stripe — widens (transform only) on hover */}
       <span
         className="card-stripe absolute inset-y-0 left-0 w-1"
@@ -149,6 +160,48 @@ export function FeatureCard({
           {body}
         </p>
       ) : null}
+
+      {/* Chips + "learn more" affordance */}
+      {((chips && chips.length > 0) || moreLabel) && (
+        <div className="mt-0.5 flex flex-wrap items-center gap-1.5 pl-3">
+          {chips?.map((chip) => (
+            <span
+              key={chip}
+              className="rounded-[2px] px-2 py-[3px]"
+              style={{
+                border: "1px solid rgb(123 216 143 / 45%)",
+                fontFamily: "var(--font-pixel), var(--font-body)",
+                fontSize: 9,
+                color: "var(--color-text-muted-dark)",
+              }}
+            >
+              {chip}
+            </span>
+          ))}
+          {moreLabel && (
+            <span
+              className="ml-auto self-center text-leaf-light underline-offset-[3px] group-hover:underline"
+              style={{ fontFamily: "var(--font-pixel), var(--font-body)", fontSize: 10 }}
+            >
+              {moreLabel}
+            </span>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={rootClassName} style={rootStyle}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={rootClassName} style={rootStyle}>
+      {content}
     </div>
   );
 }
