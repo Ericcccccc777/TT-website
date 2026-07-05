@@ -30,6 +30,7 @@ export function TreeScene({ skin, prefersReduced }: { skin: string; prefersReduc
       <AppleScene active={skin === "apple"} prefersReduced={prefersReduced} />
       <CherryScene active={skin === "cherry"} prefersReduced={prefersReduced} />
       <CactusScene active={skin === "cactus"} prefersReduced={prefersReduced} />
+      <ChristmasScene active={skin === "christmas"} prefersReduced={prefersReduced} />
     </div>
   );
 }
@@ -514,6 +515,121 @@ function CherryScene({ active, prefersReduced }: SceneProps) {
               >
                 <PixelPetal {...PETAL_TONES[p.tone]} />
               </div>
+            </div>
+          </div>
+        ))}
+    </SceneLayer>
+  );
+}
+
+// ── Christmas: winter night ─────────────────────────────────────────────────────
+
+/** Small pixel snowflake (reuses the petal fall/drift keyframes). */
+function PixelSnow({ size }: { size: number }) {
+  return (
+    <svg viewBox="0 0 5 5" width={size} height={size} shapeRendering="crispEdges" aria-hidden>
+      <g fill="#ffffff">
+        <rect x="2" y="0" width="1" height="5" />
+        <rect x="0" y="2" width="5" height="1" />
+        <rect x="1" y="1" width="1" height="1" />
+        <rect x="3" y="1" width="1" height="1" />
+        <rect x="1" y="3" width="1" height="1" />
+        <rect x="3" y="3" width="1" height="1" />
+      </g>
+    </svg>
+  );
+}
+
+/** Pale full moon with a couple of craters. */
+function PixelMoon({ size }: { size: number }) {
+  return (
+    <svg viewBox="0 0 12 12" width={size} height={size} shapeRendering="crispEdges" aria-hidden>
+      <g fill="#f2f0e0">
+        <rect x="3" y="1" width="6" height="10" />
+        <rect x="1" y="3" width="10" height="6" />
+        <rect x="2" y="2" width="8" height="8" />
+      </g>
+      <g fill="#dcd8c0">
+        <rect x="4" y="3" width="2" height="2" />
+        <rect x="7" y="6" width="2" height="2" />
+      </g>
+    </svg>
+  );
+}
+
+const SNOW = [
+  { left: "5%", size: 5, fall: 9, delay: -1, driftV: 1 },
+  { left: "13%", size: 4, fall: 12, delay: -5, driftV: 2 },
+  { left: "22%", size: 6, fall: 10, delay: -3, driftV: 3 },
+  { left: "31%", size: 4, fall: 13, delay: -8, driftV: 1 },
+  { left: "40%", size: 5, fall: 9.5, delay: -2, driftV: 2 },
+  { left: "49%", size: 4, fall: 11.5, delay: -6, driftV: 3 },
+  { left: "58%", size: 6, fall: 10.5, delay: -4, driftV: 1 },
+  { left: "67%", size: 4, fall: 12.5, delay: -9, driftV: 2 },
+  { left: "76%", size: 5, fall: 9, delay: -1.5, driftV: 3 },
+  { left: "85%", size: 4, fall: 13, delay: -7, driftV: 1 },
+  { left: "92%", size: 6, fall: 10, delay: -3.5, driftV: 2 },
+] as const;
+
+const STARS = [
+  { top: 22, left: "14%", o: 0.9 },
+  { top: 40, left: "30%", o: 0.55 },
+  { top: 30, left: "52%", o: 0.8 },
+  { top: 54, left: "70%", o: 0.5 },
+  { top: 18, left: "82%", o: 0.7 },
+] as const;
+
+function ChristmasScene({ active, prefersReduced }: SceneProps) {
+  return (
+    <SceneLayer
+      active={active}
+      sky="linear-gradient(180deg, #26365a 0%, #45608a 55%, #8ba7c4 100%)"
+    >
+      {/* moon top-right */}
+      <div className="absolute" style={{ top: 18, right: "8%" }}>
+        <PixelMoon size={30} />
+      </div>
+      {/* static stars (visible under reduced motion too) */}
+      {STARS.map((s) => (
+        <span
+          key={s.left}
+          className="absolute"
+          style={{
+            top: s.top,
+            left: s.left,
+            width: 2,
+            height: 2,
+            background: "#eef2ff",
+            opacity: s.o,
+          }}
+          aria-hidden
+        />
+      ))}
+      {/* settled snow along the horizon */}
+      <div
+        className="absolute inset-x-0"
+        style={{ bottom: GROUND_H - 4, height: 8, background: "rgb(238 244 255 / 55%)" }}
+        aria-hidden
+      />
+      {/* falling snow — reuses the petal fall (Y) + drift (X) keyframes */}
+      {!prefersReduced &&
+        SNOW.map((s) => (
+          <div
+            key={s.left}
+            className="absolute"
+            style={{
+              top: 0,
+              left: s.left,
+              animation: `scene-petal-fall ${s.fall}s linear infinite`,
+              animationDelay: `${s.delay}s`,
+            }}
+          >
+            <div
+              style={{
+                animation: `scene-petal-drift-${s.driftV} ${(s.fall * 0.66).toFixed(1)}s ease-in-out infinite`,
+              }}
+            >
+              <PixelSnow size={s.size} />
             </div>
           </div>
         ))}

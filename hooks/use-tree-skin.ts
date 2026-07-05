@@ -8,7 +8,7 @@ import { useSyncExternalStore } from "react";
  * The showcase writes via setTreeSkin(); the HUD reads via useTreeSkin().
  */
 
-export type TreeSkinId = "apple" | "cherry" | "cactus";
+export type TreeSkinId = "apple" | "cherry" | "cactus" | "christmas";
 
 let current: TreeSkinId = "apple";
 const listeners = new Set<() => void>();

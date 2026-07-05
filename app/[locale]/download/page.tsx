@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { Locale } from "@/i18n/routing";
+import { localizedMetadata } from "@/lib/seo";
+import { BreadcrumbJsonLd, SoftwareAppJsonLd } from "@/components/json-ld";
 
 const GITHUB_REPO = "https://github.com/Ericcccccc777/Token-Forest-P";
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
@@ -11,18 +14,25 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  const title = t("downloadTitle");
-  return { title, openGraph: { title }, twitter: { title } };
+  return localizedMetadata("/download", locale as Locale);
 }
 
 export default async function DownloadPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("DownloadPage");
+  const tnav = await getTranslations("TopBar");
 
   return (
     <div className="min-h-screen bg-surface-parchment">
+      <SoftwareAppJsonLd locale={locale as Locale} />
+      <BreadcrumbJsonLd
+        locale={locale as Locale}
+        items={[
+          { name: tnav("home"), path: "/" },
+          { name: tnav("download"), path: "/download" },
+        ]}
+      />
       {/* ── Hero strip ── */}
       <div className="bg-day-sky">
         <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-16 text-center">
@@ -323,4 +333,3 @@ function QuickstartStep({
     </div>
   );
 }
-

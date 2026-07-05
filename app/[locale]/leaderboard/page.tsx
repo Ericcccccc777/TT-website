@@ -4,6 +4,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
 import { PixelCrown } from "@/components/pixel-crown";
+import type { Locale } from "@/i18n/routing";
+import { localizedMetadata } from "@/lib/seo";
+import { BreadcrumbJsonLd } from "@/components/json-ld";
 
 export const revalidate = 60;
 
@@ -13,9 +16,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  const title = t("leaderboardTitle");
-  return { title, openGraph: { title }, twitter: { title } };
+  return localizedMetadata("/leaderboard", locale as Locale);
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -24,6 +25,14 @@ type TFunc = Awaited<ReturnType<typeof getTranslations<"LeaderboardPage">>>;
 
 function formatTokens(n: number, locale: string): string {
   return n.toLocaleString(locale);
+}
+
+/** Compact token count (e.g. 90M / 9000万) — fits the narrow per-tree cards. */
+function compactTokens(n: number, locale: string): string {
+  return new Intl.NumberFormat(locale, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(n);
 }
 
 function relativeTime(iso: string, t: TFunc): string {
@@ -46,6 +55,7 @@ const TREE_PREFIX: Record<string, string> = {
   apple: "AppleTree",
   cherry: "CherryTree",
   cactus: "Cactus",
+  christmas: "ChristmasTree",
 };
 
 function treeSpritePrefix(tree: string): string {
@@ -82,13 +92,32 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, [{ entries, error }, stats]] = await Promise.all([
+  const [t, tnav, ts, [{ entries, error }, stats]] = await Promise.all([
     getTranslations("LeaderboardPage"),
+    getTranslations("TopBar"),
+    getTranslations("TreeShowcase"),
     Promise.all([getLeaderboard(), getGlobalStats()]),
   ]);
 
+  // Localised species names (reused from the homepage showcase), for the tree popup.
+  const speciesLabel = (kind: string): string =>
+    kind === "cherry"
+      ? ts("skinCherry")
+      : kind === "cactus"
+        ? ts("skinCactus")
+        : kind === "christmas"
+          ? ts("skinChristmas")
+          : ts("skinApple");
+
   return (
     <div className="min-h-screen bg-surface-parchment text-text-forest">
+      <BreadcrumbJsonLd
+        locale={locale as Locale}
+        items={[
+          { name: tnav("home"), path: "/" },
+          { name: tnav("leaderboard"), path: "/leaderboard" },
+        ]}
+      />
       {/* ── Global stats banner ── */}
       <div className="border-b-2 border-leaf-deep bg-surface-card">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-2 px-6 py-6 sm:flex-row sm:justify-around">
@@ -108,7 +137,12 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                   width={22}
                   height={22}
                   className="pixelated"
-                  style={{ width: 22, height: 22, objectFit: "contain", objectPosition: "50% 100%" }}
+                  style={{
+                    width: 22,
+                    height: 22,
+                    objectFit: "contain",
+                    objectPosition: "50% 100%",
+                  }}
                 />
               </span>
             }
@@ -131,7 +165,6 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
           />
         </div>
       </div>
-
 
       {/* ── Main content ── */}
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -229,8 +262,18 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                   {entries.map((entry, i) => {
                     const rank = i + 1;
                     const medalColor = MEDAL[rank];
-                    const stage = spriteStage(entry.stage_index);
-                    const treePrefix = treeSpritePrefix(entry.tree);
+                    // The user's trees for the popup — main (current) tree first.
+                    const treeViews = entry.trees.map((tv) => {
+                      const sStage = spriteStage(tv.stage_index);
+                      return {
+                        prefix: treeSpritePrefix(tv.kind),
+                        stage: sStage,
+                        speciesLabel: speciesLabel(tv.kind),
+                        tokensLabel: compactTokens(tv.tokens, locale),
+                        stageLabel: t("treeModalStage", { n: sStage }),
+                        alt: t("treeModalAlt", { username: entry.username }),
+                      };
+                    });
                     const region = regionInfo(entry.region, locale);
                     // cap the entrance stagger so deep rows don't wait seconds
                     const animDelay = `${Math.min(i, 12) * 60}ms`;
@@ -260,12 +303,15 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                           <div className="flex min-w-0 items-center gap-2">
                             <TreeModalButton
                               username={entry.username}
-                              treePrefix={treePrefix}
-                              stage={stage}
+                              trees={treeViews}
                               triggerLabel={t("treeViewAria", { username: entry.username })}
-                              stageLabel={t("treeModalStage", { n: stage })}
-                              treeAlt={t("treeModalAlt", { username: entry.username })}
                               closeLabel={t("treeModalClose")}
+                              tokensUnit={t("tokenUnit")}
+                              mainLabel={t("treeModalMain")}
+                              totalLabel={t("treeModalTotal")}
+                              totalTokensLabel={formatTokens(entry.score, locale)}
+                              prevLabel={t("treeModalPrev")}
+                              nextLabel={t("treeModalNext")}
                             />
                             <span className="truncate text-text-forest">{entry.username}</span>
                             {rank === 1 && (
@@ -314,7 +360,6 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                       </tr>
                     );
                   })}
-
                 </tbody>
               </table>
             </div>

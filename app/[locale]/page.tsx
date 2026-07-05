@@ -19,8 +19,21 @@ import { ScrollTreeHud } from "@/components/scroll-tree-hud";
 import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
 import { getGlobalStats } from "@/lib/leaderboard";
+import type { Metadata } from "next";
+import type { Locale } from "@/i18n/routing";
+import { localizedMetadata } from "@/lib/seo";
+import { HomeJsonLd } from "@/components/json-ld";
 
 export const revalidate = 60;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return localizedMetadata("/", locale as Locale);
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -90,6 +103,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
+      <HomeJsonLd locale={locale as Locale} />
+
       {/* Film grain overlay */}
       <div className="grain-overlay" aria-hidden>
         <svg width="100%" height="100%">
@@ -128,9 +143,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               lineHeight: 1.25,
             }}
           >
-            <span className="neon-title neon-light" style={{ "--neon-delay": "0s" } as React.CSSProperties}>
-            {t("heading")}
-          </span>
+            <span
+              className="neon-title neon-light"
+              style={{ "--neon-delay": "0s" } as React.CSSProperties}
+            >
+              {t("heading")}
+            </span>
           </h2>
 
           <HowSteps
@@ -164,9 +182,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               lineHeight: 1.25,
             }}
           >
-            <span className="neon-title neon-dark" style={{ "--neon-delay": "1.4s" } as React.CSSProperties}>
-            {tf("heading")}
-          </span>
+            <span
+              className="neon-title neon-dark"
+              style={{ "--neon-delay": "1.4s" } as React.CSSProperties}
+            >
+              {tf("heading")}
+            </span>
           </h2>
           <InViewGate className="grid gap-5 sm:grid-cols-2">
             {FEATURES.map((f, i) => (
@@ -217,9 +238,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               overflowWrap: "anywhere",
             }}
           >
-            <span className="neon-title neon-dark" style={{ "--neon-delay": "2.8s" } as React.CSSProperties}>
-            {tlt("heading")}
-          </span>
+            <span
+              className="neon-title neon-dark"
+              style={{ "--neon-delay": "2.8s" } as React.CSSProperties}
+            >
+              {tlt("heading")}
+            </span>
           </h2>
           <p
             className="reveal mb-10 text-center"
@@ -364,9 +388,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               lineHeight: 1.25,
             }}
           >
-            <span className="neon-title neon-light" style={{ "--neon-delay": "4.2s" } as React.CSSProperties}>
-            {tdl("heading")}
-          </span>
+            <span
+              className="neon-title neon-light"
+              style={{ "--neon-delay": "4.2s" } as React.CSSProperties}
+            >
+              {tdl("heading")}
+            </span>
           </h2>
           <p
             className="reveal mx-auto mb-8 max-w-md"
