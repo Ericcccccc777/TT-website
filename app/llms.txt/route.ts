@@ -17,7 +17,7 @@ export function GET() {
 
 ## Key features
 - 8 growth stages, from seed to a fruitful canopy (progress persists across sessions)
-- 3 tree species: Apple, Cherry Blossom, Cactus (a 4th festive species is coming)
+- 4 tree species: Apple, Cherry Blossom, Cactus, and a festive Christmas tree
 - Real-time token bubbles, color-coded by source (Claude Code = orange, Codex = blue-purple)
 - Capsule mini-mode, an opt-in global leaderboard, and an offline cost-estimate dashboard
 - 4 UI languages: English, 中文, 日本語, 한국어

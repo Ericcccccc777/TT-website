@@ -20,7 +20,7 @@ type JsonObject = Record<string, unknown>;
 const FEATURE_LIST = [
   "Real-time token bubbles from Claude Code & Codex",
   "8 growth stages, from seed to fruitful canopy",
-  "3 tree species: Apple, Cherry Blossom, Cactus",
+  "4 tree species: Apple, Cherry Blossom, Cactus, and a festive Christmas tree",
   "Capsule mini-mode",
   "Opt-in global leaderboard",
   "Offline cost estimate dashboard",

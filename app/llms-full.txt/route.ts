@@ -23,7 +23,7 @@ Token Forest sits above your taskbar and turns AI token usage into a living pixe
 Token Forest has 8 growth stages driven purely by tokens spent, and progress persists across sessions: Sprout, Sapling, Young Tree, Grown Tree, Lush Tree, Big Tree, Flourishing, and Fruitful.
 
 ## Tree species
-Three species ship today — Apple, Cherry Blossom, and Cactus — each with themed decorations. A fourth festive species is coming.
+Four species ship today — Apple, Cherry Blossom, Cactus, and a festive Christmas tree — each with themed decorations.
 
 ## Token bubbles
 Each conversation produces a floating, color-coded token bubble above the tree (Claude Code = orange, Codex = blue-purple).
