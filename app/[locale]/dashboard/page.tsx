@@ -89,9 +89,9 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       key="tree"
       src="/sprites/AppleTree_3.png"
       alt=""
-      width={24}
-      height={26}
-      className="pixelated w-6"
+      width={31}
+      height={34}
+      className="pixelated w-[31px]"
       aria-hidden
     />,
     "💬",
@@ -107,7 +107,12 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       <div className="grain-overlay" aria-hidden>
         <svg width="100%" height="100%">
           <filter id="grain-dash">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency="0.65"
+              numOctaves="3"
+              stitchTiles="stitch"
+            />
             <feColorMatrix type="saturate" values="0" />
           </filter>
           <rect width="100%" height="100%" filter="url(#grain-dash)" />
@@ -154,16 +159,27 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <div className="flex flex-col items-start">
             <span
               className="reveal font-pixel"
-              style={{ fontSize: 11, letterSpacing: "0.3em", color: "var(--color-accent-gold-light)" }}
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.3em",
+                color: "var(--color-accent-gold-light)",
+              }}
             >
               DASHBOARD
             </span>
             <h1
               id="dash-hero-heading"
               className="reveal mt-5"
-              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-neon)", lineHeight: 1.3 }}
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-neon)",
+                lineHeight: 1.3,
+              }}
             >
-              <span className="neon-title neon-dark" style={{ "--neon-delay": "0s" } as React.CSSProperties}>
+              <span
+                className="neon-title neon-dark"
+                style={{ "--neon-delay": "0s" } as React.CSSProperties}
+              >
                 {t("heading")}
               </span>
             </h1>
@@ -241,7 +257,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </div>
 
           {/* Right: interactive mock window */}
-          <InViewGate className="reveal min-w-0" >
+          <InViewGate className="reveal min-w-0">
             <DashboardMock />
           </InViewGate>
         </div>
@@ -253,9 +269,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <h2
             id="dash-layers-heading"
             className="reveal text-center"
-            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-neon)", lineHeight: 1.25 }}
+            style={{
+              fontFamily: "var(--font-pixel)",
+              fontSize: "var(--text-neon)",
+              lineHeight: 1.25,
+            }}
           >
-            <span className="neon-title neon-light" style={{ "--neon-delay": "1.4s" } as React.CSSProperties}>
+            <span
+              className="neon-title neon-light"
+              style={{ "--neon-delay": "1.4s" } as React.CSSProperties}
+            >
               {t("layersHeading")}
             </span>
           </h2>
@@ -339,9 +362,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <h2
             id="dash-why-heading"
             className="reveal mb-12 text-center"
-            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-neon)", lineHeight: 1.25 }}
+            style={{
+              fontFamily: "var(--font-pixel)",
+              fontSize: "var(--text-neon)",
+              lineHeight: 1.25,
+            }}
           >
-            <span className="neon-title neon-dark" style={{ "--neon-delay": "2.8s" } as React.CSSProperties}>
+            <span
+              className="neon-title neon-dark"
+              style={{ "--neon-delay": "2.8s" } as React.CSSProperties}
+            >
               {t("whyHeading")}
             </span>
           </h2>
@@ -358,11 +388,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 }
               >
                 <span
-                  className="flex h-[34px] w-[34px] items-end justify-center rounded-[2px]"
+                  className="flex h-[34px] w-[34px] items-center justify-center rounded-[2px]"
                   style={{
                     background: "rgb(58 125 68 / 25%)",
                     border: "1px solid var(--color-leaf-deep)",
-                    ...(i > 0 ? { alignItems: "center", fontSize: 16 } : {}),
+                    ...(i > 0 ? { fontSize: 16 } : {}),
                   }}
                   aria-hidden
                 >
@@ -393,9 +423,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <h2
             id="dash-how-heading"
             className="reveal mb-12 text-center"
-            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-neon)", lineHeight: 1.25 }}
+            style={{
+              fontFamily: "var(--font-pixel)",
+              fontSize: "var(--text-neon)",
+              lineHeight: 1.25,
+            }}
           >
-            <span className="neon-title neon-light" style={{ "--neon-delay": "4.2s" } as React.CSSProperties}>
+            <span
+              className="neon-title neon-light"
+              style={{ "--neon-delay": "4.2s" } as React.CSSProperties}
+            >
               {t("howHeading")}
             </span>
           </h2>
@@ -411,7 +448,11 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
               </span>
               <span
                 className="font-bold"
-                style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "var(--color-text-forest)" }}
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: 15,
+                  color: "var(--color-text-forest)",
+                }}
               >
                 {t("how0Title")}
               </span>
@@ -444,21 +485,31 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             >
               ▶
             </span>
-            <span className="reveal text-center font-pixel text-soil md:hidden" style={{ fontSize: 14 }} aria-hidden>
+            <span
+              className="reveal text-center font-pixel text-soil md:hidden"
+              style={{ fontSize: 14 }}
+              aria-hidden
+            >
               ▼
             </span>
 
             {/* 02 */}
             <div
               className="reveal flex flex-col gap-2.5 rounded-[2px] bg-surface-card p-5 shadow-pixel-sm"
-              style={{ "--reveal-delay": "80ms", border: "var(--border-pixel)" } as React.CSSProperties}
+              style={
+                { "--reveal-delay": "80ms", border: "var(--border-pixel)" } as React.CSSProperties
+              }
             >
               <span className="font-pixel font-bold text-leaf-deep" style={{ fontSize: 20 }}>
                 02
               </span>
               <span
                 className="font-bold"
-                style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "var(--color-text-forest)" }}
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: 15,
+                  color: "var(--color-text-forest)",
+                }}
               >
                 {t("how1Title")}
               </span>
@@ -489,21 +540,31 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
             >
               ▶
             </span>
-            <span className="reveal text-center font-pixel text-soil md:hidden" style={{ fontSize: 14 }} aria-hidden>
+            <span
+              className="reveal text-center font-pixel text-soil md:hidden"
+              style={{ fontSize: 14 }}
+              aria-hidden
+            >
               ▼
             </span>
 
             {/* 03 — right-click menu mock */}
             <div
               className="reveal flex flex-col gap-2.5 rounded-[2px] bg-surface-card p-5 shadow-pixel-sm"
-              style={{ "--reveal-delay": "160ms", border: "var(--border-pixel)" } as React.CSSProperties}
+              style={
+                { "--reveal-delay": "160ms", border: "var(--border-pixel)" } as React.CSSProperties
+              }
             >
               <span className="font-pixel font-bold text-leaf-deep" style={{ fontSize: 20 }}>
                 03
               </span>
               <span
                 className="font-bold"
-                style={{ fontFamily: "var(--font-body)", fontSize: 15, color: "var(--color-text-forest)" }}
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: 15,
+                  color: "var(--color-text-forest)",
+                }}
               >
                 {t("how2Title")}
               </span>
@@ -534,7 +595,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                 >
                   {t("menuHide")}
                 </div>
-                <div className="mx-2.5 my-1" style={{ borderTop: "1px solid rgb(122 90 58 / 50%)" }} />
+                <div
+                  className="mx-2.5 my-1"
+                  style={{ borderTop: "1px solid rgb(122 90 58 / 50%)" }}
+                />
                 <div
                   className="px-2.5 py-1.5"
                   style={{ fontFamily: PX, fontSize: 10, color: "var(--color-text-muted-dark)" }}
@@ -556,9 +620,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <h2
             id="dash-faq-heading"
             className="reveal text-center"
-            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-neon)", lineHeight: 1.25 }}
+            style={{
+              fontFamily: "var(--font-pixel)",
+              fontSize: "var(--text-neon)",
+              lineHeight: 1.25,
+            }}
           >
-            <span className="neon-title neon-dark" style={{ "--neon-delay": "5.6s" } as React.CSSProperties}>
+            <span
+              className="neon-title neon-dark"
+              style={{ "--neon-delay": "5.6s" } as React.CSSProperties}
+            >
               {t("faqHeading")}
             </span>
           </h2>
@@ -597,7 +668,14 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
                   >
                     ▸
                   </span>
-                  <span style={{ fontFamily: PX, fontSize: 12, lineHeight: 1.5, color: "var(--color-text-cream)" }}>
+                  <span
+                    style={{
+                      fontFamily: PX,
+                      fontSize: 12,
+                      lineHeight: 1.5,
+                      color: "var(--color-text-cream)",
+                    }}
+                  >
                     {item.q}
                   </span>
                 </summary>
@@ -646,9 +724,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           <h2
             id="dash-cta-heading"
             className="reveal mb-3"
-            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-neon)", lineHeight: 1.25 }}
+            style={{
+              fontFamily: "var(--font-pixel)",
+              fontSize: "var(--text-neon)",
+              lineHeight: 1.25,
+            }}
           >
-            <span className="neon-title neon-light" style={{ "--neon-delay": "7s" } as React.CSSProperties}>
+            <span
+              className="neon-title neon-light"
+              style={{ "--neon-delay": "7s" } as React.CSSProperties}
+            >
               {t("ctaHeading")}
             </span>
           </h2>
@@ -716,8 +801,21 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
               }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <rect x="2" y="3" width="20" height="15" rx="1" stroke="currentColor" strokeWidth="2" />
-                <path d="M7 8l3 3-3 3M13 14h4" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+                <rect
+                  x="2"
+                  y="3"
+                  width="20"
+                  height="15"
+                  rx="1"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M7 8l3 3-3 3M13 14h4"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="square"
+                />
               </svg>
               macOS
             </Link>

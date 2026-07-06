@@ -40,10 +40,34 @@ const HEAT_LEVELS: number[] = (() => {
 })();
 
 const CHAT_ROWS = [
-  { titleKey: "mockChat0", project: "token-forest", dot: "var(--dash-claude)", prompts: 14, cost: "$3.84" },
-  { titleKey: "mockChat1", project: "tt-website", dot: "var(--dash-claude)", prompts: 6, cost: "$1.27" },
-  { titleKey: "mockChat2", project: "dotfiles", dot: "var(--dash-codex)", prompts: 3, cost: "$0.42" },
-  { titleKey: "mockChat3", project: "token-forest", dot: "var(--dash-claude)", prompts: 9, cost: "$2.18" },
+  {
+    titleKey: "mockChat0",
+    project: "token-forest",
+    dot: "var(--dash-claude)",
+    prompts: 14,
+    cost: "$3.84",
+  },
+  {
+    titleKey: "mockChat1",
+    project: "tt-website",
+    dot: "var(--dash-claude)",
+    prompts: 6,
+    cost: "$1.27",
+  },
+  {
+    titleKey: "mockChat2",
+    project: "dotfiles",
+    dot: "var(--dash-codex)",
+    prompts: 3,
+    cost: "$0.42",
+  },
+  {
+    titleKey: "mockChat3",
+    project: "token-forest",
+    dot: "var(--dash-claude)",
+    prompts: 9,
+    cost: "$2.18",
+  },
 ] as const;
 
 // 4-type cost split: [width %, color, legend key]
@@ -257,7 +281,7 @@ export function DashboardMock() {
             <div
               key="growth"
               role="tabpanel"
-              className="flex min-h-[396px] flex-col gap-3 p-3.5"
+              className="flex min-h-[420px] flex-col gap-3 p-3.5"
               style={{ animation: "dash-tab-in 0.35s ease-out both" }}
             >
               <MockCard className="grid grid-cols-[110px_1fr] gap-3 p-3 sm:grid-cols-[150px_1fr]">
@@ -336,7 +360,8 @@ export function DashboardMock() {
                       style={{
                         width: "68%",
                         height: "100%",
-                        background: "linear-gradient(180deg, #a5ecb0 0%, #57a568 46%, #4f9e63 100%)",
+                        background:
+                          "linear-gradient(180deg, #a5ecb0 0%, #57a568 46%, #4f9e63 100%)",
                         boxShadow:
                           "inset 0 -3px 0 rgb(18 60 30 / 50%), inset 0 2px 0 rgb(255 255 255 / 40%)",
                         borderRadius: 3,
@@ -345,7 +370,9 @@ export function DashboardMock() {
                       }}
                     />
                   </div>
-                  <div style={{ fontSize: 12, color: "rgb(51 33 13 / 65%)" }}>{t("mockToNext")}</div>
+                  <div style={{ fontSize: 12, color: "rgb(51 33 13 / 65%)" }}>
+                    {t("mockToNext")}
+                  </div>
                 </div>
               </MockCard>
 
@@ -356,7 +383,12 @@ export function DashboardMock() {
                   </div>
                   <div
                     className="mt-2"
-                    style={{ fontFamily: MONO, fontWeight: 700, fontSize: 21, color: "var(--dash-ink)" }}
+                    style={{
+                      fontFamily: MONO,
+                      fontWeight: 700,
+                      fontSize: 21,
+                      color: "var(--dash-ink)",
+                    }}
                   >
                     41
                     <span
@@ -378,7 +410,12 @@ export function DashboardMock() {
                   </div>
                   <div
                     className="mt-2"
-                    style={{ fontFamily: MONO, fontWeight: 700, fontSize: 21, color: "var(--dash-ink)" }}
+                    style={{
+                      fontFamily: MONO,
+                      fontWeight: 700,
+                      fontSize: 21,
+                      color: "var(--dash-ink)",
+                    }}
                   >
                     112.6M
                   </div>
@@ -389,7 +426,14 @@ export function DashboardMock() {
                 <span style={{ fontFamily: PX, fontSize: 11.5, color: "var(--dash-ink)" }}>
                   {t("mockTreeSoFar")}
                 </span>
-                <span style={{ fontFamily: MONO, fontWeight: 700, fontSize: 14, color: "var(--dash-ink)" }}>
+                <span
+                  style={{
+                    fontFamily: MONO,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "var(--dash-ink)",
+                  }}
+                >
                   ≈ $128.40
                 </span>
               </MockCard>
@@ -442,7 +486,11 @@ export function DashboardMock() {
                     className="pixelated w-6 grayscale-[0.7]"
                     aria-hidden
                   />
-                  <span className="absolute -right-1.5 -top-1.5" style={{ fontSize: 10 }} aria-hidden>
+                  <span
+                    className="absolute -right-1.5 -top-1.5"
+                    style={{ fontSize: 10 }}
+                    aria-hidden
+                  >
                     🔒
                   </span>
                 </span>
@@ -455,7 +503,7 @@ export function DashboardMock() {
             <div
               key="usage"
               role="tabpanel"
-              className="flex min-h-[396px] flex-col gap-3 p-3.5"
+              className="flex min-h-[420px] flex-col gap-3 p-3.5"
               style={{ animation: "dash-tab-in 0.35s ease-out both" }}
             >
               <MockCard className="p-3">
@@ -468,7 +516,12 @@ export function DashboardMock() {
                 </div>
                 <div
                   className="mt-2.5"
-                  style={{ fontFamily: MONO, fontWeight: 700, fontSize: 22, color: "var(--dash-ink)" }}
+                  style={{
+                    fontFamily: MONO,
+                    fontWeight: 700,
+                    fontSize: 22,
+                    color: "var(--dash-ink)",
+                  }}
                 >
                   ≈ ${dollars}
                 </div>
@@ -509,7 +562,10 @@ export function DashboardMock() {
 
               {/* Per-model bars */}
               <MockCard className="flex items-center gap-2.5 px-3 py-2.5">
-                <span className="h-[7px] w-[7px] shrink-0" style={{ background: "var(--dash-claude)" }} />
+                <span
+                  className="h-[7px] w-[7px] shrink-0"
+                  style={{ background: "var(--dash-claude)" }}
+                />
                 <span
                   className="w-[104px] sm:w-[120px]"
                   style={{ fontFamily: PX, fontSize: 9, color: "var(--dash-ink)" }}
@@ -518,7 +574,10 @@ export function DashboardMock() {
                 </span>
                 <span
                   className="h-[9px] flex-1"
-                  style={{ background: "var(--dash-slot)", border: "1px solid var(--dash-card-line)" }}
+                  style={{
+                    background: "var(--dash-slot)",
+                    border: "1px solid var(--dash-card-line)",
+                  }}
                 >
                   <span
                     className="block h-full"
@@ -533,7 +592,10 @@ export function DashboardMock() {
                 <span style={{ fontSize: 11, color: "rgb(51 33 13 / 75%)" }}>$89.10</span>
               </MockCard>
               <MockCard className="flex items-center gap-2.5 px-3 py-2.5">
-                <span className="h-[7px] w-[7px] shrink-0" style={{ background: "var(--dash-codex)" }} />
+                <span
+                  className="h-[7px] w-[7px] shrink-0"
+                  style={{ background: "var(--dash-codex)" }}
+                />
                 <span
                   className="w-[104px] sm:w-[120px]"
                   style={{ fontFamily: PX, fontSize: 9, color: "var(--dash-ink)" }}
@@ -542,7 +604,10 @@ export function DashboardMock() {
                 </span>
                 <span
                   className="h-[9px] flex-1"
-                  style={{ background: "var(--dash-slot)", border: "1px solid var(--dash-card-line)" }}
+                  style={{
+                    background: "var(--dash-slot)",
+                    border: "1px solid var(--dash-card-line)",
+                  }}
                 >
                   <span
                     className="block h-full"
@@ -599,7 +664,7 @@ export function DashboardMock() {
             <div
               key="chats"
               role="tabpanel"
-              className="flex min-h-[396px] flex-col p-3.5"
+              className="flex min-h-[420px] flex-col p-3.5"
               style={{ animation: "dash-tab-in 0.35s ease-out both" }}
             >
               <MockCard className="flex-1 px-3 pb-2 pt-0.5">
@@ -638,7 +703,12 @@ export function DashboardMock() {
                     </span>
                     <span
                       className="text-right"
-                      style={{ fontFamily: MONO, fontWeight: 700, fontSize: 10, color: "var(--dash-ink)" }}
+                      style={{
+                        fontFamily: MONO,
+                        fontWeight: 700,
+                        fontSize: 10,
+                        color: "var(--dash-ink)",
+                      }}
                     >
                       {row.cost}
                     </span>
@@ -646,14 +716,19 @@ export function DashboardMock() {
                 ))}
               </MockCard>
               <div className="flex items-center justify-between px-0.5 pt-2.5">
-                <span style={{ fontSize: 11, color: "rgb(51 33 13 / 60%)" }}>{t("mockPageInfo")}</span>
+                <span style={{ fontSize: 11, color: "rgb(51 33 13 / 60%)" }}>
+                  {t("mockPageInfo")}
+                </span>
                 <span
                   className="flex items-center gap-2"
                   style={{ fontFamily: PX, fontSize: 9, color: "var(--dash-ink)" }}
                 >
                   <span
                     className="flex h-[18px] w-[18px] items-center justify-center"
-                    style={{ border: "2px solid var(--dash-card-line)", background: "var(--dash-card)" }}
+                    style={{
+                      border: "2px solid var(--dash-card-line)",
+                      background: "var(--dash-card)",
+                    }}
                     aria-hidden
                   >
                     ◂
@@ -661,7 +736,10 @@ export function DashboardMock() {
                   {t("mockPageNum")}
                   <span
                     className="flex h-[18px] w-[18px] items-center justify-center"
-                    style={{ border: "2px solid var(--dash-card-line)", background: "var(--dash-card)" }}
+                    style={{
+                      border: "2px solid var(--dash-card-line)",
+                      background: "var(--dash-card)",
+                    }}
                     aria-hidden
                   >
                     ▸

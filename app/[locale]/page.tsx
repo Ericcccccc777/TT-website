@@ -193,6 +193,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
+                className="h-full"
                 style={{ "--reveal-delay": `${(i % 2) * 80}ms` } as React.CSSProperties}
               >
                 <FeatureCard

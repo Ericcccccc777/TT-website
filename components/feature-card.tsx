@@ -59,7 +59,7 @@ export function FeatureCard({
 }: FeatureCardProps) {
   const accent = accentColor === "soil" ? "var(--color-soil)" : "var(--color-leaf-deep)";
 
-  const rootClassName = `group relative flex flex-col gap-2 overflow-hidden p-5 transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg${className ? ` ${className}` : ""}`;
+  const rootClassName = `group relative flex h-full flex-col gap-2 overflow-hidden p-5 transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg${className ? ` ${className}` : ""}`;
   const rootStyle: React.CSSProperties = {
     background: "var(--color-surface-panel)",
     border: "2px solid var(--color-leaf-deep)",
