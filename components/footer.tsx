@@ -107,6 +107,20 @@ export async function Footer() {
             <p className="font-body text-small text-[var(--color-text-muted-dark)]">
               {t("copyright", { year: currentYear })}
             </p>
+            <nav className="flex items-center gap-4" aria-label={t("legalNavAriaLabel")}>
+              <Link
+                href="/privacy"
+                className="font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light"
+              >
+                {t("privacy")}
+              </Link>
+              <Link
+                href="/security"
+                className="font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light"
+              >
+                {t("security")}
+              </Link>
+            </nav>
             <a
               href={GITHUB_URL}
               target="_blank"

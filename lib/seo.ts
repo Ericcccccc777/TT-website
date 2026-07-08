@@ -153,6 +153,47 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
         "Windows와 macOS에서 Token Forest를 다운로드하세요. Claude Code와 Codex 토큰 사용량으로 픽셀 나무를 키우는 무료 데스크톱 펫 — 로컬, 오프라인, 프라이버시 우선. 설치 프로그램을 준비 중입니다.",
     },
   },
+  "/privacy": {
+    en: {
+      title: "Privacy Notice — Token Forest",
+      description:
+        "Exactly what Token Forest reads, stores and (only if you opt in) uploads. Local-first, no telemetry; the optional leaderboard is off by default and fully disclosed.",
+    },
+    zh: {
+      title: "隐私声明 — Token Forest",
+      description:
+        "Token Forest 会读取什么、保存什么、以及仅在你主动开启后上传什么。本地优先、无遥测;可选排行榜默认关闭并完整披露字段。",
+    },
+    ja: {
+      title: "プライバシー通知 — Token Forest",
+      description:
+        "Token Forest が読み取り・保存し、オプトイン時のみアップロードする内容の完全な説明。ローカル優先・テレメトリなし。",
+    },
+    ko: {
+      title: "개인정보 보호정책 — Token Forest",
+      description:
+        "Token Forest가 읽고 저장하며, 옵트인 시에만 업로드하는 내용의 전체 설명. 로컬 우선·텔레메트리 없음.",
+    },
+  },
+  "/security": {
+    en: {
+      title: "Security Policy — Token Forest",
+      description:
+        "How to privately report a Token Forest vulnerability, what is in scope, and how we respond and publish fixes.",
+    },
+    zh: {
+      title: "安全政策 — Token Forest",
+      description: "如何私下报告 Token Forest 安全漏洞、报告范围,以及我们的响应与修复发布流程。",
+    },
+    ja: {
+      title: "セキュリティポリシー — Token Forest",
+      description: "Token Forest の脆弱性を非公開で報告する方法、対象範囲、対応と修正の公開手順。",
+    },
+    ko: {
+      title: "보안 정책 — Token Forest",
+      description: "Token Forest 취약점을 비공개로 보고하는 방법, 보고 범위, 대응 및 수정 공개 절차.",
+    },
+  },
   "/leaderboard": {
     en: {
       title: "Token Forest Global Leaderboard",

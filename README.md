@@ -1,6 +1,6 @@
 # Token-Forest — Website
 
-The official site for **[Token-Forest](https://github.com/YimingRen111/Token-Forest)** 🌳 — a pixel-art desktop pet that grows a tree from the AI tokens you spend with Claude Code / Codex.
+The official site for **[Token-Forest](https://github.com/Ericcccccc777/Token-Forest-P)** 🌳 — a pixel-art desktop pet that grows a tree from the AI tokens you spend with Claude Code / Codex. (The linked repo is the public product home & downloads; the app itself is proprietary.)
 
 Pages: project intro, download, and a global **leaderboard** that ranks players by the "tree tokens" they've collected.
 
