@@ -7,6 +7,9 @@ import { DashboardMock } from "@/components/dashboard-mock";
 import { InViewGate } from "@/components/in-view-gate";
 import { PixelHand } from "@/components/pixel-hand";
 import { getGlobalStats } from "@/lib/leaderboard";
+import type { Locale } from "@/i18n/routing";
+import { localizedMetadata } from "@/lib/seo";
+import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/json-ld";
 
 const GITHUB_REPO = "https://github.com/Ericcccccc777/Token-Forest-P";
 
@@ -18,15 +21,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Metadata" });
-  const title = t("dashboardTitle");
-  const description = t("dashboardDescription");
-  return {
-    title,
-    description,
-    openGraph: { title, description },
-    twitter: { title, description },
-  };
+  return localizedMetadata("/dashboard", locale as Locale);
 }
 
 // Pixel label font: Silkscreen for latin, body font for CJK glyphs.
@@ -44,9 +39,10 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, th, stats] = await Promise.all([
+  const [t, th, tnav, stats] = await Promise.all([
     getTranslations("DashboardPage"),
     getTranslations("Hero"),
+    getTranslations("TopBar"),
     getGlobalStats(),
   ]);
 
@@ -103,6 +99,16 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   return (
     <>
+      <BreadcrumbJsonLd
+        locale={locale as Locale}
+        items={[
+          { name: tnav("home"), path: "/" },
+          { name: tnav("dashboard"), path: "/dashboard" },
+        ]}
+      />
+      {/* FAQPage: the visible Q&A below IS this schema (same FAQ array). */}
+      <FaqJsonLd items={FAQ.map((f) => ({ question: f.q, answer: f.a }))} />
+
       {/* Film grain overlay (site-wide pattern) */}
       <div className="grain-overlay" aria-hidden>
         <svg width="100%" height="100%">
