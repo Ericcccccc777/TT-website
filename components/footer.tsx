@@ -28,7 +28,7 @@ export async function Footer() {
   return (
     <footer className="border-t-2 bg-surface-ui" style={{ borderTopColor: "var(--color-soil)" }}>
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-        <div className="grid grid-cols-2 gap-10 sm:grid-cols-[1fr_auto_auto_auto] sm:gap-8 lg:gap-16">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-[1fr_auto_auto_auto] sm:gap-8 lg:gap-16">
           {/* ── Brand column ── */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2.5">
