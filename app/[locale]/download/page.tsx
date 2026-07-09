@@ -7,6 +7,11 @@ import { BreadcrumbJsonLd, SoftwareAppJsonLd } from "@/components/json-ld";
 
 const GITHUB_REPO = "https://github.com/Ericcccccc777/Token-Forest-P";
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
+// 平台安装包直链:始终指向最新 Release 的同名资产。
+// 资产由 Token-Forest 本体仓的 GitHub Actions 打包(TokenForest-windows.zip / TokenForest-macos.dmg),
+// 手动上传到本仓(Token-Forest-P)的 Release。文件名须与此处一致。
+const DL_WINDOWS = `${GITHUB_RELEASES}/latest/download/TokenForest-windows.zip`;
+const DL_MACOS = `${GITHUB_RELEASES}/latest/download/TokenForest-macos.dmg`;
 
 export async function generateMetadata({
   params,
@@ -67,32 +72,22 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
             {t("heroBody")}
           </p>
 
-          {/* OS chips (installers are being packaged) + GitHub follow CTA */}
+          {/* Windows / macOS 安装包直链 + GitHub follow CTA */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <span
-              className="inline-flex cursor-default items-center gap-2.5 rounded-[2px] px-5 py-3"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "var(--text-caption)",
-                background: "var(--color-surface-card)",
-                border: "2px dashed color-mix(in srgb, var(--color-soil) 60%, transparent)",
-                color: "var(--color-text-muted-light)",
-              }}
+            <a
+              href={DL_WINDOWS}
+              className="inline-flex items-center gap-2.5 rounded-[2px] bg-leaf-deep px-5 py-3 text-text-cream shadow-pixel transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                 <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801" />
               </svg>
               {t("windowsBtn")}
-            </span>
-            <span
-              className="inline-flex cursor-default items-center gap-2.5 rounded-[2px] px-5 py-3"
-              style={{
-                fontFamily: "var(--font-pixel)",
-                fontSize: "var(--text-caption)",
-                background: "var(--color-surface-card)",
-                border: "2px dashed color-mix(in srgb, var(--color-soil) 60%, transparent)",
-                color: "var(--color-text-muted-light)",
-              }}
+            </a>
+            <a
+              href={DL_MACOS}
+              className="inline-flex items-center gap-2.5 rounded-[2px] bg-leaf-deep px-5 py-3 text-text-cream shadow-pixel transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <rect
@@ -112,7 +107,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
                 />
               </svg>
               {t("macBtn")}
-            </span>
+            </a>
             <a
               href={GITHUB_REPO}
               target="_blank"
