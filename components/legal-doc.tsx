@@ -112,10 +112,11 @@ function LegalBlockView({ block }: { block: LegalBlock }) {
   if ("code" in block) {
     return (
       <pre
-        className="overflow-x-auto rounded-[2px] bg-surface-card px-4 py-3 text-text-muted-light"
+        className="overflow-x-auto rounded-[2px] bg-surface-card px-4 py-3 text-text-forest"
         style={{
-          fontFamily: "var(--font-pixel)",
+          fontFamily: "var(--font-body)",
           fontSize: "var(--text-small)",
+          fontWeight: 700,
           lineHeight: 1.8,
           border: "var(--border-pixel)",
         }}
@@ -147,7 +148,11 @@ function LegalBlockView({ block }: { block: LegalBlock }) {
           {block.table.rows.map((row, ri) => (
             <tr key={ri}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-3 py-2 align-top" style={{ border: "1px solid var(--color-soil)" }}>
+                <td
+                  key={ci}
+                  className="px-3 py-2 align-top"
+                  style={{ border: "1px solid var(--color-soil)" }}
+                >
                   {cell}
                 </td>
               ))}
