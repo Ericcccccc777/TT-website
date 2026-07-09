@@ -1,14 +1,14 @@
 {
   "Metadata": {
-    "homeTitle": "Token-Forest — 让你的 token 长成一棵树",
-    "homeDescription": "Token-Forest 是一款桌面宠物应用：你用 Claude Code 和 Codex 写代码时花费的 token，会在桌面上变成飘动的气泡。点击收集它们，让你的像素小树一步步成长，一直到开花结果。本地优先、无遥测——可选排行榜默认关闭。",
-    "leaderboardTitle": "排行榜 — Token-Forest",
-    "dashboardTitle": "数据面板 — Token-Forest",
+    "homeTitle": "Token Forest — 让你的 token 长成一棵树",
+    "homeDescription": "Token Forest 是一款桌面宠物应用：你用 Claude Code 和 Codex 写代码时花费的 token，会在桌面上变成飘动的气泡。点击收集它们，让你的像素小树一步步成长，一直到开花结果。本地优先、无遥测——可选排行榜默认关闭。",
+    "leaderboardTitle": "排行榜 — Token Forest",
+    "dashboardTitle": "数据面板 — Token Forest",
     "dashboardDescription": "你的 token 成绩单：成长、用量与花费分析——本地计算、离线计价、绝不上传。",
-    "downloadTitle": "下载 — Token-Forest"
+    "downloadTitle": "下载 — Token Forest"
   },
   "TopBar": {
-    "logoAriaLabel": "Token-Forest 首页",
+    "logoAriaLabel": "Token Forest 首页",
     "mainNavAriaLabel": "主导航",
     "mobileNavAriaLabel": "移动端导航",
     "home": "首页",
@@ -48,7 +48,7 @@
   },
   "Hero": {
     "ariaLabel": "英雄区域",
-    "treeAlt": "Token-Forest 成熟像素苹果树",
+    "treeAlt": "Token Forest 成熟像素苹果树",
     "tagline": "让你消耗的 AI token，长成一棵树",
     "body": "Claude Code / Codex 的每次 token 消耗都会变成飘动气泡——点击收集，看着你的像素小树慢慢长大。",
     "downloadBtn": "下载",
@@ -66,7 +66,7 @@
     "step03Title": "树慢慢长大",
     "step03Body": "累积的 token 推动树经历 8 个成长阶段，从一粒种子到硕果累累的苹果树。核心功能完全本地，无需联网。",
     "privacyStrong": "隐私第一",
-    "privacyBody": "Token-Forest 只读取你本机的 Claude Code / Codex 使用日志。核心功能完全离线——无需账号、无遥测、默认不上传任何数据。可选排行榜保持关闭，直到你主动开启并确认同意弹窗。",
+    "privacyBody": "Token Forest 只读取你本机的 Claude Code / Codex 使用日志。核心功能完全离线——无需账号、无遥测、默认不上传任何数据。可选排行榜保持关闭，直到你主动开启并确认同意弹窗。",
     "uploadedZero": "默认不上传",
     "holdToGrow": "按住，让树长大",
     "tryBubbleAria": "点击收集演示气泡"
@@ -112,9 +112,9 @@
   },
   "DashboardPage": {
     "heading": "你的 token 成绩单",
-    "tagline": "别人给你一张表，Token-Forest 给你一棵树——和一份看得懂的账单。",
+    "tagline": "别人给你一张表，Token Forest 给你一棵树——和一份看得懂的账单。",
     "sub": "Claude Code 与 Codex 的成长、用量与花费分析：本地计算、离线计价、绝不上传。",
-    "ctaDownload": "下载 Token-Forest",
+    "ctaDownload": "下载 Token Forest",
     "mockTitle": "数据面板 · DASHBOARD",
     "mockUpdated": "已更新 · 刚刚",
     "mockRefresh": "刷新",
@@ -192,7 +192,7 @@
     "faqNote0": "只使用用量数字、模型名、时间与会话标题等元数据；对话正文绝不保存、绝不上传。",
     "faqNote1": "花费为估算值，基于内置价格表，非账单。",
     "howHeading": "三步，打开数据面板",
-    "how0Title": "下载 Token-Forest",
+    "how0Title": "下载 Token Forest",
     "how0Body": "安装即种下一棵树，它开始随你的 token 消耗慢慢生长。",
     "how1Title": "照常写代码",
     "how1Body": "正常使用 Claude Code / Codex，什么都不用配置。",
@@ -285,13 +285,13 @@
     "relativeDays": "{n} 天前"
   },
   "DownloadPage": {
-    "heroTreeAlt": "Token-Forest 成熟苹果树",
+    "heroTreeAlt": "Token Forest 成熟苹果树",
     "heroHeading": "立即开始种树",
     "heroBody": "把你在 Claude Code / Codex 上花出去的每一个 token，变成桌面上飘动的气泡——点击收集，看着你的像素小树一步步长大，直到开花结果。",
     "windowsBtn": "Windows 安装包",
     "macBtn": "macOS 安装包",
     "platformLine": "Windows · macOS — 安装包正在打包，即将发布",
-    "whatIsHeading": "Token-Forest 是什么",
+    "whatIsHeading": "Token Forest 是什么",
     "petLabel": "像素桌面宠物",
     "petBody": "悬浮在任务栏上方的一小块土地，一棵会生长的像素树。",
     "visualLabel": "Token 可视化",
@@ -304,7 +304,7 @@
     "step02Title": "双击安装",
     "step02Body": "跟随安装向导完成——无需命令行，无需任何额外依赖。",
     "step03Title": "启动，开始种树",
-    "step03Body": "打开 Token-Forest，小树出现在任务栏上方；照常写代码，看 token 变成气泡飘起来。",
+    "step03Body": "打开 Token Forest，小树出现在任务栏上方；照常写代码，看 token 变成气泡飘起来。",
     "sysReqHeading": "系统要求",
     "sysReq0": "Windows 10 / 11 或 macOS 12+",
     "sysReq1": "本机使用过 Claude Code 或 OpenAI Codex CLI（已产生使用日志）",

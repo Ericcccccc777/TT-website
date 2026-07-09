@@ -360,7 +360,7 @@ export function TopBar() {
             className="hidden font-pixel text-[14px] font-bold leading-none text-[var(--color-text-cream)] sm:block"
             style={{ textShadow: "1px 1px 0 rgb(0 0 0 / 25%)" }}
           >
-            Token-Forest
+            Token Forest
           </span>
         </Link>
 

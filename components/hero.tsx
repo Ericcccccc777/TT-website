@@ -155,7 +155,7 @@ export function Hero() {
             textShadow: "var(--shadow-pixel-leaf)",
           }}
         >
-          Token-Forest
+          Token Forest
         </h1>
 
         {/* Tagline */}

@@ -42,9 +42,9 @@ export async function Footer() {
               />
               <span
                 className="font-pixel text-small text-[var(--color-text-cream)]"
-                aria-label="Token-Forest"
+                aria-label="Token Forest"
               >
-                Token-Forest
+                Token Forest
               </span>
             </div>
             <p className="max-w-[22ch] font-body text-small leading-relaxed text-[var(--color-text-muted-dark)]">

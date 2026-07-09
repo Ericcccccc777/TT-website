@@ -1,14 +1,14 @@
 {
   "Metadata": {
-    "homeTitle": "Token-Forest — トークンを木に育てよう",
-    "homeDescription": "Token-Forest はデスクトップペットアプリ：Claude Code や Codex で使ったトークンが泡に。タップして集め、ピクセルツリーを育てよう。ローカル優先・テレメトリなし——ランキングはオプトイン(既定でオフ)。",
-    "leaderboardTitle": "ランキング — Token-Forest",
-    "dashboardTitle": "ダッシュボード — Token-Forest",
+    "homeTitle": "Token Forest — トークンを木に育てよう",
+    "homeDescription": "Token Forest はデスクトップペットアプリ：Claude Code や Codex で使ったトークンが泡に。タップして集め、ピクセルツリーを育てよう。ローカル優先・テレメトリなし——ランキングはオプトイン(既定でオフ)。",
+    "leaderboardTitle": "ランキング — Token Forest",
+    "dashboardTitle": "ダッシュボード — Token Forest",
     "dashboardDescription": "あなたのトークン成績表：成長・使用量・コストをローカルで計算。オフライン価格表、アップロードなし。",
-    "downloadTitle": "ダウンロード — Token-Forest"
+    "downloadTitle": "ダウンロード — Token Forest"
   },
   "TopBar": {
-    "logoAriaLabel": "Token-Forest ホームページ",
+    "logoAriaLabel": "Token Forest ホームページ",
     "mainNavAriaLabel": "メインナビゲーション",
     "mobileNavAriaLabel": "モバイルナビゲーション",
     "home": "ホーム",
@@ -48,7 +48,7 @@
   },
   "Hero": {
     "ariaLabel": "ヒーローセクション",
-    "treeAlt": "Token-Forest 成熟したピクセルアップルツリー",
+    "treeAlt": "Token Forest 成熟したピクセルアップルツリー",
     "tagline": "使ったAIトークンを、一本の木に育てよう",
     "body": "Claude Code / Codex のトークン消費が泡になって漂う——タップして集め、ピクセルツリーがゆっくり成長するのを見守ろう。",
     "downloadBtn": "ダウンロード",
@@ -66,7 +66,7 @@
     "step03Title": "ツリーがゆっくり育つ",
     "step03Body": "蓄積したトークンがツリーを 8 つの成長ステージを経て進化させます。小さな種からリンゴが実るまで。コア機能は完全ローカル、ネット不要。",
     "privacyStrong": "プライバシー優先",
-    "privacyBody": "Token-Forest はローカルの Claude Code / Codex 使用ログのみを読み込みます。コア機能は完全オフライン——アカウント不要、テレメトリなし、既定では何もアップロードしません。オプションのランキングは、有効化して同意ダイアログを確認するまでオフのままです。",
+    "privacyBody": "Token Forest はローカルの Claude Code / Codex 使用ログのみを読み込みます。コア機能は完全オフライン——アカウント不要、テレメトリなし、既定では何もアップロードしません。オプションのランキングは、有効化して同意ダイアログを確認するまでオフのままです。",
     "uploadedZero": "既定でアップロードなし",
     "holdToGrow": "長押しで育てる",
     "tryBubbleAria": "デモバブルを集める"
@@ -112,9 +112,9 @@
   },
   "DashboardPage": {
     "heading": "あなたのトークン成績表",
-    "tagline": "他のツールは表を出す。Token-Forest は木を育てる——読める明細書つきで。",
+    "tagline": "他のツールは表を出す。Token Forest は木を育てる——読める明細書つきで。",
     "sub": "Claude Code と Codex の成長・使用量・コスト分析。ローカル計算、オフライン価格、絶対にアップロードしない。",
-    "ctaDownload": "Token-Forest をダウンロード",
+    "ctaDownload": "Token Forest をダウンロード",
     "mockTitle": "ダッシュボード · DASHBOARD",
     "mockUpdated": "更新 · たった今",
     "mockRefresh": "更新",
@@ -192,7 +192,7 @@
     "faqNote0": "使うのはトークン数・モデル名・時刻・会話タイトルなどのメタデータのみ。本文は保存もアップロードもされません。",
     "faqNote1": "コストは同梱価格表による推定値で、請求書ではありません。",
     "howHeading": "3 ステップでダッシュボード",
-    "how0Title": "Token-Forest をダウンロード",
+    "how0Title": "Token Forest をダウンロード",
     "how0Body": "インストールすると木が植えられ、トークン消費とともに育ち始めます。",
     "how1Title": "いつも通りコードを書く",
     "how1Body": "Claude Code / Codex をそのまま使うだけ。設定も変更も不要。",
@@ -285,13 +285,13 @@
     "relativeDays": "{n}日前"
   },
   "DownloadPage": {
-    "heroTreeAlt": "完全に成長した Token-Forest アップルツリー",
+    "heroTreeAlt": "完全に成長した Token Forest アップルツリー",
     "heroHeading": "ツリーを育て始めよう",
     "heroBody": "Claude Code / Codex で使ったトークンが一つ一つ泡になってデスクトップに浮かび上がる——タップして集め、ピクセルツリーが成長し花咲き実るのを見守ろう。",
     "windowsBtn": "Windows インストーラー",
     "macBtn": "macOS インストーラー",
     "platformLine": "Windows · macOS — インストーラーはまもなく公開",
-    "whatIsHeading": "Token-Forest とは？",
+    "whatIsHeading": "Token Forest とは？",
     "petLabel": "ピクセルデスクトップペット",
     "petBody": "タスクバーの上に浮かぶ小さな土地に、本当に育つピクセルツリーが住んでいます。",
     "visualLabel": "トークン可視化",
@@ -304,7 +304,7 @@
     "step02Title": "ダブルクリックでインストール",
     "step02Body": "インストーラーに従うだけ——コマンドラインも追加依存も不要です。",
     "step03Title": "起動して育てはじめる",
-    "step03Body": "Token-Forest を開くとタスクバーの上に小さな木が現れます。いつも通りコードを書けば、token が気泡になって浮かびます。",
+    "step03Body": "Token Forest を開くとタスクバーの上に小さな木が現れます。いつも通りコードを書けば、token が気泡になって浮かびます。",
     "sysReqHeading": "システム要件",
     "sysReq0": "Windows 10 / 11 または macOS 12+",
     "sysReq1": "このマシンで Claude Code か OpenAI Codex CLI を使用済み（使用ログあり）",

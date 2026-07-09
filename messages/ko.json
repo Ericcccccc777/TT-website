@@ -1,14 +1,14 @@
 {
   "Metadata": {
-    "homeTitle": "Token-Forest — 토큰을 나무로 키우세요",
-    "homeDescription": "Token-Forest는 데스크톱 펫 앱: Claude Code나 Codex로 사용한 토큰이 거품이 됩니다. 탭해서 모으고 픽셀 나무를 씨앗부터 열매까지 키우세요. 로컬 우선, 텔레메트리 없음——리더보드는 옵트인(기본 꺼짐).",
-    "leaderboardTitle": "리더보드 — Token-Forest",
-    "dashboardTitle": "대시보드 — Token-Forest",
+    "homeTitle": "Token Forest — 토큰을 나무로 키우세요",
+    "homeDescription": "Token Forest는 데스크톱 펫 앱: Claude Code나 Codex로 사용한 토큰이 거품이 됩니다. 탭해서 모으고 픽셀 나무를 씨앗부터 열매까지 키우세요. 로컬 우선, 텔레메트리 없음——리더보드는 옵트인(기본 꺼짐).",
+    "leaderboardTitle": "리더보드 — Token Forest",
+    "dashboardTitle": "대시보드 — Token Forest",
     "dashboardDescription": "나의 토큰 성적표: 성장·사용량·비용을 로컬에서 계산. 오프라인 가격표, 업로드 없음.",
-    "downloadTitle": "다운로드 — Token-Forest"
+    "downloadTitle": "다운로드 — Token Forest"
   },
   "TopBar": {
-    "logoAriaLabel": "Token-Forest 홈",
+    "logoAriaLabel": "Token Forest 홈",
     "mainNavAriaLabel": "주 내비게이션",
     "mobileNavAriaLabel": "모바일 내비게이션",
     "home": "홈",
@@ -48,7 +48,7 @@
   },
   "Hero": {
     "ariaLabel": "히어로 섹션",
-    "treeAlt": "Token-Forest 완전히 자란 픽셀 사과나무",
+    "treeAlt": "Token Forest 완전히 자란 픽셀 사과나무",
     "tagline": "사용한 AI 토큰을 나무로 키워보세요",
     "body": "Claude Code / Codex의 토큰 소비가 떠다니는 거품이 됩니다——탭해서 모으고 픽셀 나무가 천천히 자라는 걸 지켜보세요.",
     "downloadBtn": "다운로드",
@@ -66,7 +66,7 @@
     "step03Title": "나무가 천천히 자랍니다",
     "step03Body": "축적된 토큰이 나무를 8단계 성장 과정을 거쳐 발전시킵니다. 작은 씨앗부터 열매 맺는 사과나무까지. 핵심 기능은 완전 로컬, 네트워크 불필요.",
     "privacyStrong": "프라이버시 우선",
-    "privacyBody": "Token-Forest는 로컬 Claude Code / Codex 사용 로그만 읽습니다. 핵심 기능은 완전 오프라인——계정 불필요, 텔레메트리 없음, 기본적으로 아무것도 업로드하지 않습니다. 선택 기능인 리더보드는 직접 켜고 동의 대화상자를 확인하기 전까지 꺼져 있습니다.",
+    "privacyBody": "Token Forest는 로컬 Claude Code / Codex 사용 로그만 읽습니다. 핵심 기능은 완전 오프라인——계정 불필요, 텔레메트리 없음, 기본적으로 아무것도 업로드하지 않습니다. 선택 기능인 리더보드는 직접 켜고 동의 대화상자를 확인하기 전까지 꺼져 있습니다.",
     "uploadedZero": "기본적으로 업로드 없음",
     "holdToGrow": "길게 눌러 키우기",
     "tryBubbleAria": "데모 버블 수집"
@@ -112,9 +112,9 @@
   },
   "DashboardPage": {
     "heading": "나의 토큰 성적표",
-    "tagline": "다른 도구는 표를 출력합니다. Token-Forest는 나무를 키우죠 — 읽기 쉬운 명세서와 함께.",
+    "tagline": "다른 도구는 표를 출력합니다. Token Forest는 나무를 키우죠 — 읽기 쉬운 명세서와 함께.",
     "sub": "Claude Code와 Codex의 성장·사용량·비용 분석. 로컬 계산, 오프라인 가격, 절대 업로드하지 않음.",
-    "ctaDownload": "Token-Forest 다운로드",
+    "ctaDownload": "Token Forest 다운로드",
     "mockTitle": "대시보드 · DASHBOARD",
     "mockUpdated": "업데이트 · 방금",
     "mockRefresh": "새로고침",
@@ -192,7 +192,7 @@
     "faqNote0": "토큰 수·모델명·시간·대화 제목 등 메타데이터만 사용하며, 본문은 저장도 업로드도 하지 않습니다.",
     "faqNote1": "비용은 내장 가격표 기반 추정치이며 청구서가 아닙니다.",
     "howHeading": "세 단계로 여는 대시보드",
-    "how0Title": "Token-Forest 다운로드",
+    "how0Title": "Token Forest 다운로드",
     "how0Body": "설치하면 나무가 심어지고, 토큰 소비와 함께 자라기 시작합니다.",
     "how1Title": "평소처럼 코딩",
     "how1Body": "Claude Code / Codex를 그대로 쓰면 됩니다. 설정도 변경도 필요 없음.",
@@ -285,13 +285,13 @@
     "relativeDays": "{n}일 전"
   },
   "DownloadPage": {
-    "heroTreeAlt": "완전히 자란 Token-Forest 사과나무",
+    "heroTreeAlt": "완전히 자란 Token Forest 사과나무",
     "heroHeading": "나무 키우기 시작",
     "heroBody": "Claude Code / Codex에서 사용한 모든 토큰이 데스크톱에 떠다니는 거품이 됩니다——탭해서 모으고 픽셀 나무가 자라고 꽃피고 열매 맺는 걸 지켜보세요.",
     "windowsBtn": "Windows 설치 파일",
     "macBtn": "macOS 설치 파일",
     "platformLine": "Windows · macOS — 설치 파일 곧 공개",
-    "whatIsHeading": "Token-Forest란?",
+    "whatIsHeading": "Token Forest란?",
     "petLabel": "픽셀 데스크톱 펫",
     "petBody": "작업 표시줄 위에 떠 있는 작은 땅, 실제로 자라는 픽셀 나무가 있는 곳.",
     "visualLabel": "토큰 시각화",
@@ -304,7 +304,7 @@
     "step02Title": "더블 클릭으로 설치",
     "step02Body": "설치 마법사를 따르면 끝——명령줄도 추가 의존성도 필요 없습니다.",
     "step03Title": "실행하고 키우기",
-    "step03Body": "Token-Forest를 열면 작업 표시줄 위에 작은 나무가 나타납니다. 평소처럼 코딩하면 token이 버블로 떠오릅니다.",
+    "step03Body": "Token Forest를 열면 작업 표시줄 위에 작은 나무가 나타납니다. 평소처럼 코딩하면 token이 버블로 떠오릅니다.",
     "sysReqHeading": "시스템 요구 사항",
     "sysReq0": "Windows 10 / 11 또는 macOS 12+",
     "sysReq1": "이 컴퓨터에서 Claude Code 또는 OpenAI Codex CLI 사용(사용 로그 존재)",

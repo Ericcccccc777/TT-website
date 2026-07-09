@@ -1,14 +1,14 @@
 {
   "Metadata": {
-    "homeTitle": "Token-Forest — Let Your Tokens Grow Into a Tree",
-    "homeDescription": "Token-Forest is a desktop pet app: every token you spend with Claude Code or Codex becomes a floating bubble. Click to collect them and grow your pixel tree from seed to fruit-bearing apple tree. Local-first, no telemetry — the optional leaderboard is off by default.",
-    "leaderboardTitle": "Leaderboard — Token-Forest",
-    "dashboardTitle": "Dashboard — Token-Forest",
+    "homeTitle": "Token Forest — Let Your Tokens Grow Into a Tree",
+    "homeDescription": "Token Forest is a desktop pet app: every token you spend with Claude Code or Codex becomes a floating bubble. Click to collect them and grow your pixel tree from seed to fruit-bearing apple tree. Local-first, no telemetry — the optional leaderboard is off by default.",
+    "leaderboardTitle": "Leaderboard — Token Forest",
+    "dashboardTitle": "Dashboard — Token Forest",
     "dashboardDescription": "Your token report card: growth, usage and cost — computed locally, priced offline, never uploaded.",
-    "downloadTitle": "Download — Token-Forest"
+    "downloadTitle": "Download — Token Forest"
   },
   "TopBar": {
-    "logoAriaLabel": "Token-Forest Home",
+    "logoAriaLabel": "Token Forest Home",
     "mainNavAriaLabel": "Main navigation",
     "mobileNavAriaLabel": "Mobile navigation",
     "home": "Home",
@@ -48,7 +48,7 @@
   },
   "Hero": {
     "ariaLabel": "Hero section",
-    "treeAlt": "Token-Forest fully grown pixel apple tree",
+    "treeAlt": "Token Forest fully grown pixel apple tree",
     "tagline": "Let your AI tokens grow into a tree",
     "body": "Every token spent in Claude Code / Codex becomes a floating bubble — click to collect and watch your pixel tree slowly grow.",
     "downloadBtn": "Download",
@@ -66,7 +66,7 @@
     "step03Title": "Your Tree Grows",
     "step03Body": "Accumulated tokens drive the tree through 8 growth stages, from a tiny seed to a fruit-laden apple tree. Core features are fully local — no network needed.",
     "privacyStrong": "Privacy first",
-    "privacyBody": "Token-Forest only reads your local Claude Code / Codex usage logs. Core features run fully offline — no account, no telemetry, nothing uploaded by default. The optional leaderboard stays off until you enable it and confirm its consent dialog.",
+    "privacyBody": "Token Forest only reads your local Claude Code / Codex usage logs. Core features run fully offline — no account, no telemetry, nothing uploaded by default. The optional leaderboard stays off until you enable it and confirm its consent dialog.",
     "uploadedZero": "No uploads by default",
     "holdToGrow": "Press & hold to grow",
     "tryBubbleAria": "Collect the demo bubble"
@@ -112,9 +112,9 @@
   },
   "DashboardPage": {
     "heading": "Your token report card",
-    "tagline": "Other tools print a table. Token-Forest grows a tree — and keeps the receipts.",
+    "tagline": "Other tools print a table. Token Forest grows a tree — and keeps the receipts.",
     "sub": "Growth, usage and cost analytics for Claude Code & Codex — computed locally, priced offline, never uploaded.",
-    "ctaDownload": "Download Token-Forest",
+    "ctaDownload": "Download Token Forest",
     "mockTitle": "DASHBOARD",
     "mockUpdated": "Updated · just now",
     "mockRefresh": "Refresh",
@@ -192,7 +192,7 @@
     "faqNote0": "Uses only metadata — token counts, model names, timestamps, session titles. Conversation content is never stored or uploaded.",
     "faqNote1": "Costs are estimates from a bundled price table, not a bill.",
     "howHeading": "Three steps to the dashboard",
-    "how0Title": "Download Token-Forest",
+    "how0Title": "Download Token Forest",
     "how0Body": "Install and a tree is planted — it starts growing with every token you spend.",
     "how1Title": "Code as usual",
     "how1Body": "Keep using Claude Code / Codex. Nothing to configure, nothing to change.",
@@ -285,13 +285,13 @@
     "relativeDays": "{n}d ago"
   },
   "DownloadPage": {
-    "heroTreeAlt": "Fully grown Token-Forest apple tree",
+    "heroTreeAlt": "Fully grown Token Forest apple tree",
     "heroHeading": "Start Growing Your Tree",
     "heroBody": "Every token you spend in Claude Code / Codex becomes a floating bubble on your desktop — click to collect and watch your pixel tree grow, blossom, and bear fruit.",
     "windowsBtn": "Windows installer",
     "macBtn": "macOS installer",
     "platformLine": "Windows · macOS — installers are being packaged, coming soon",
-    "whatIsHeading": "What is Token-Forest?",
+    "whatIsHeading": "What is Token Forest?",
     "petLabel": "Pixel Desktop Pet",
     "petBody": "A tiny plot of land hovering above your taskbar, home to a pixel tree that actually grows.",
     "visualLabel": "Token Visualizer",
@@ -304,7 +304,7 @@
     "step02Title": "Double-click to install",
     "step02Body": "Follow the installer — no command line, no extra dependencies.",
     "step03Title": "Launch and grow",
-    "step03Body": "Open Token-Forest and the sapling appears above your taskbar. Code as usual and watch tokens float up as bubbles.",
+    "step03Body": "Open Token Forest and the sapling appears above your taskbar. Code as usual and watch tokens float up as bubbles.",
     "sysReqHeading": "System Requirements",
     "sysReq0": "Windows 10 / 11 or macOS 12+",
     "sysReq1": "Claude Code or OpenAI Codex CLI used on this machine (usage logs present)",
