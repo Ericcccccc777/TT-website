@@ -5,7 +5,7 @@ import { localizedMetadata } from "@/lib/seo";
 import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 
 // Canonical EULA text. English is authoritative; the zh/ja/ko docs are
-// faithful translations. Keep in sync with any future Token-Forest-P/EULA.md.
+// faithful translations. Keep in sync with any future Poietic-TokenForest/EULA.md.
 
 const EN: LegalDoc = {
   title: "Token Forest End User License Agreement (EULA)",

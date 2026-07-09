@@ -4,10 +4,10 @@ import type { Locale } from "@/i18n/routing";
 import { localizedMetadata } from "@/lib/seo";
 import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 
-// Mirror of Token-Forest-P/SECURITY.md (same version). Edit the canonical
+// Mirror of Poietic-TokenForest/SECURITY.md (same version). Edit the canonical
 // file first, then mirror here — see docs/trust/PRIVACY_ARCHITECTURE.md.
 
-const GITHUB_SECURITY = "https://github.com/Ericcccccc777/Token-Forest-P/security";
+const GITHUB_SECURITY = "https://github.com/Ericcccccc777/Poietic-TokenForest/security";
 
 const EN: LegalDoc = {
   title: "Token Forest Security Policy",

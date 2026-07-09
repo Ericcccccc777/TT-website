@@ -315,7 +315,7 @@ function LocaleSwitcher() {
 
 // ── TopBar ─────────────────────────────────────────────────────────────────
 
-const GITHUB_URL = "https://github.com/Ericcccccc777/Token-Forest-P";
+const GITHUB_URL = "https://github.com/Ericcccccc777/Poietic-TokenForest";
 
 export function TopBar() {
   const t = useTranslations("TopBar");

@@ -4,7 +4,7 @@ import type { Locale } from "@/i18n/routing";
 import { localizedMetadata } from "@/lib/seo";
 import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 
-// Canonical policy text — mirror of Token-Forest-P/PRIVACY.md, same version.
+// Canonical policy text — mirror of Poietic-TokenForest/PRIVACY.md, same version.
 // Do not edit wording here directly; update the canonical file first.
 
 const EN: LegalDoc = {

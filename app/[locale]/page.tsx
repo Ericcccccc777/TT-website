@@ -474,7 +474,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             }}
           >
             <a
-              href="https://github.com/Ericcccccc777/Token-Forest-P"
+              href="https://github.com/Ericcccccc777/Poietic-TokenForest"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-leaf-deep"

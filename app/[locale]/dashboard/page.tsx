@@ -11,7 +11,7 @@ import type { Locale } from "@/i18n/routing";
 import { localizedMetadata } from "@/lib/seo";
 import { BreadcrumbJsonLd, FaqJsonLd } from "@/components/json-ld";
 
-const GITHUB_REPO = "https://github.com/Ericcccccc777/Token-Forest-P";
+const GITHUB_REPO = "https://github.com/Ericcccccc777/Poietic-TokenForest";
 
 export const revalidate = 60;
 

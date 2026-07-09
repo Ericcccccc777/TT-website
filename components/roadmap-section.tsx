@@ -7,7 +7,7 @@ import { useInView } from "@/hooks/use-in-view";
 import { ShootingStars } from "@/components/shooting-stars";
 
 // The full, dev-facing roadmap lives on GitHub; this section is the player-facing teaser.
-const GITHUB_ROADMAP = "https://github.com/Ericcccccc777/Token-Forest-P/blob/main/docs/ROADMAP.md";
+const GITHUB_ROADMAP = "https://github.com/Ericcccccc777/Poietic-TokenForest/blob/main/docs/ROADMAP.md";
 
 /**
  * §roadmap "树的未来" — a star chart of the future:

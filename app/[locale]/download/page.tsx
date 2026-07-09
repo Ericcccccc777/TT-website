@@ -5,11 +5,11 @@ import type { Locale } from "@/i18n/routing";
 import { localizedMetadata } from "@/lib/seo";
 import { BreadcrumbJsonLd, SoftwareAppJsonLd } from "@/components/json-ld";
 
-const GITHUB_REPO = "https://github.com/Ericcccccc777/Token-Forest-P";
+const GITHUB_REPO = "https://github.com/Ericcccccc777/Poietic-TokenForest";
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 // 平台安装包直链:始终指向最新 Release 的同名资产。
 // 资产由 Token-Forest 本体仓的 GitHub Actions 打包(TokenForest-windows.zip / TokenForest-macos.dmg),
-// 手动上传到本仓(Token-Forest-P)的 Release。文件名须与此处一致。
+// 手动上传到本仓(Poietic-TokenForest)的 Release。文件名须与此处一致。
 const DL_WINDOWS = `${GITHUB_RELEASES}/latest/download/TokenForest-windows.zip`;
 const DL_MACOS = `${GITHUB_RELEASES}/latest/download/TokenForest-macos.dmg`;
 

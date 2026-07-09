@@ -20,7 +20,7 @@ export const SITE_NAME = "Token Forest";
 /** Aliases so the hyphen wordmark + one-word forms resolve to one entity. */
 export const SITE_ALTERNATE_NAMES = ["Token-Forest", "TokenForest"] as const;
 /** The only real external identifier we can cite as sameAs. */
-export const GITHUB_URL = "https://github.com/Ericcccccc777/Token-Forest-P";
+export const GITHUB_URL = "https://github.com/Ericcccccc777/Poietic-TokenForest";
 
 /** next-intl uses short locale codes; map them to BCP-47 for hreflang keys. */
 export const BCP47: Record<Locale, string> = {
