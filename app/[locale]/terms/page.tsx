@@ -17,7 +17,7 @@ const EN: LegalDoc = {
     {
       blocks: [
         {
-          p: "This End User License Agreement (“Agreement”) is a binding contract between you (“you”) and Poietic Studio (“we”, “us”, or the “Licensor”) for the Token Forest software (the “Software”). Please read it carefully before installing or using the Software. By downloading, installing, accessing, or using the Software, you confirm that you have read, understood, and agree to be bound by this Agreement. If you do not agree, do not install or use the Software, and delete all copies you have obtained. If you accept this Agreement on behalf of an organization, you represent that you have authority to bind that organization.",
+          p: "This End User License Agreement (“Agreement”) is a binding contract between you (“you”) and the developers of Token Forest, operating under the name “Poietic Studio” (“we”, “us”, or the “Licensor”), for the Token Forest software (the “Software”). Poietic Studio is a trading name used by the developers and is not, at present, a separate registered legal entity; the Licensor under this Agreement is the individual developer(s) who operate it. Please read this Agreement carefully before installing or using the Software. By downloading, installing, accessing, or using the Software, you confirm that you have read, understood, and agree to be bound by this Agreement. If you do not agree, do not install or use the Software, and delete all copies you have obtained. If you accept this Agreement on behalf of an organization, you represent that you have authority to bind that organization.",
         },
       ],
     },
@@ -133,7 +133,7 @@ const EN: LegalDoc = {
           p: "To the maximum extent permitted by applicable law, the Software and the Leaderboard Service are provided “as is” and “as available”, without warranty of any kind, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, title, and non-infringement. The Licensor does not warrant that the Software will be error-free or uninterrupted, that its results are accurate or reliable, or that all defects will be corrected.",
         },
         {
-          p: "Any cost or spend estimates shown by the Software are approximate figures based on a bundled price table, not a bill or financial record, and must not be relied upon as the sole basis for any decision. Some jurisdictions do not allow the exclusion of implied warranties, so some of the above exclusions may not apply to you; in that case you may have statutory rights that this Agreement does not seek to limit.",
+          p: "Any cost or spend estimates shown by the Software are approximate figures based on a bundled price table, not a bill or financial record, and must not be relied upon as the sole basis for any decision. Some jurisdictions do not allow the exclusion of implied warranties, so some of the above exclusions may not apply to you; in that case you may have statutory rights that this Agreement does not seek to limit. In particular, nothing in this Agreement excludes, restricts, or modifies any consumer guarantee, right, or remedy you may have under the Australian Consumer Law or other applicable law that cannot lawfully be excluded.",
         },
       ],
     },
@@ -168,7 +168,7 @@ const EN: LegalDoc = {
       h: "14. Governing law and disputes",
       blocks: [
         {
-          p: "This Agreement is governed by and construed under the laws of the jurisdiction in which the Licensor is established (to be finalized before the first public release), without regard to conflict-of-laws rules. Any dispute arising out of or relating to this Agreement will be subject to the exclusive jurisdiction of the competent courts of that place. This does not affect any non-waivable rights you have under the mandatory law of your place of residence as a consumer.",
+          p: "This Agreement is governed by and construed under the laws of New South Wales, Australia, without regard to conflict-of-laws rules. The courts of New South Wales, Australia have exclusive jurisdiction over any dispute arising out of or relating to this Agreement. Nothing in this section affects any non-waivable rights you have as a consumer under the mandatory law of your place of residence, including the Australian Consumer Law where it applies.",
         },
       ],
     },
@@ -209,7 +209,7 @@ const EN: LegalDoc = {
       h: "18. Contact",
       blocks: [
         {
-          code: "Publisher: Poietic Studio (full legal entity details to be added before the first public release)\nGeneral/legal: contact@tokenforest.com.au\nPrivacy:  see the Privacy Notice\nSecurity: see the Security Policy\nWebsite:  https://www.tokenforest.com.au",
+          code: "Publisher: Poietic Studio — trading name of the developers of Token Forest (New South Wales, Australia)\nGeneral/legal: contact@tokenforest.com.au\nPrivacy:  see the Privacy Notice\nSecurity: see the Security Policy\nWebsite:  https://www.tokenforest.com.au",
         },
       ],
     },
@@ -226,7 +226,7 @@ const ZH: LegalDoc = {
     {
       blocks: [
         {
-          p: "本最终用户许可协议(“本协议”)是您(“您”)与 Poietic Studio(“我们”或“许可方”)之间就 Token Forest 软件(“本软件”)订立的具有法律约束力的协议。请在安装或使用前仔细阅读。一旦您下载、安装、访问或以任何方式使用本软件,即表示您已阅读、理解并同意受本协议约束;若您不同意,请勿安装或使用,并删除已获取的所有副本。若您代表某一组织接受本协议,您声明您有权使该组织受本协议约束。",
+          p: "本最终用户许可协议(“本协议”)是您(“您”)与 Token Forest 的开发者(以“Poietic Studio”之名运营,以下称“我们”或“许可方”)之间就 Token Forest 软件(“本软件”)订立的具有法律约束力的协议。“Poietic Studio”是开发者使用的字号,目前并非独立注册的法律实体;本协议项下的许可方为运营该项目的开发者个人。请在安装或使用前仔细阅读本协议。一旦您下载、安装、访问或以任何方式使用本软件,即表示您已阅读、理解并同意受本协议约束;若您不同意,请勿安装或使用,并删除已获取的所有副本。若您代表某一组织接受本协议,您声明您有权使该组织受本协议约束。",
         },
       ],
     },
@@ -342,7 +342,7 @@ const ZH: LegalDoc = {
           p: "在适用法律允许的最大范围内,本软件与排行榜服务均按“现状”及“可用状态”提供,不附带任何明示或默示的保证,包括但不限于对适销性、特定用途适用性、所有权及不侵权的默示保证。许可方不保证本软件无错误或不中断运行、其结果准确可靠,或所有缺陷都将被修正。",
         },
         {
-          p: "本软件所显示的成本/花费估算,仅为基于内置价格表的近似值,并非账单或财务凭据,不应作为任何决策的唯一依据。部分司法辖区不允许排除默示保证,故上述部分排除可能不适用于您;在此情形下,您可能享有本协议无意限制的法定权利。",
+          p: "本软件所显示的成本/花费估算,仅为基于内置价格表的近似值,并非账单或财务凭据,不应作为任何决策的唯一依据。部分司法辖区不允许排除默示保证,故上述部分排除可能不适用于您;在此情形下,您可能享有本协议无意限制的法定权利。特别地,本协议中的任何内容均不排除、限制或变更您依《澳大利亚消费者法》或其他适用法律所享有的、依法不得排除的任何消费者保障、权利或救济。",
         },
       ],
     },
@@ -377,7 +377,7 @@ const ZH: LegalDoc = {
       h: "14. 适用法律与争议解决",
       blocks: [
         {
-          p: "本协议受许可方注册地所在司法辖区的法律管辖并据其解释(将在首个公开版本前最终确定),不适用其法律冲突规则。因本协议引起或与之相关的任何争议,应提交该地有管辖权的法院专属管辖。前述约定不影响您作为消费者依住所地强制性法律所享有的任何不可放弃的权利。",
+          p: "本协议受澳大利亚新南威尔士州法律管辖并据其解释,不适用其法律冲突规则。因本协议引起或与之相关的任何争议,由澳大利亚新南威尔士州法院专属管辖。前述约定不影响您作为消费者依住所地强制性法律所享有的任何不可放弃的权利,包括在适用时的《澳大利亚消费者法》。",
         },
       ],
     },
@@ -418,7 +418,7 @@ const ZH: LegalDoc = {
       h: "18. 联系我们",
       blocks: [
         {
-          code: "发布者:Poietic Studio(完整法定主体信息将在首个公开版本前补充)\n一般/法务:contact@tokenforest.com.au\n隐私:  见《隐私声明》\n安全:  见《安全政策》\n官网:  https://www.tokenforest.com.au",
+          code: "发布者:Poietic Studio —— Token Forest 开发者使用的字号(澳大利亚新南威尔士州)\n一般/法务:contact@tokenforest.com.au\n隐私:  见《隐私声明》\n安全:  见《安全政策》\n官网:  https://www.tokenforest.com.au",
         },
       ],
     },
@@ -435,7 +435,7 @@ const JA: LegalDoc = {
     {
       blocks: [
         {
-          p: "本エンドユーザーライセンス契約(以下「本契約」)は、あなた(以下「あなた」)と Poietic Studio(以下「当社」または「許諾者」)との間で、Token Forest ソフトウェア(以下「本ソフトウェア」)について締結される、法的拘束力のある契約です。インストールまたは使用の前に、よくお読みください。本ソフトウェアをダウンロード、インストール、アクセス、または使用することにより、あなたは本契約を読み、理解し、これに拘束されることに同意したものとみなされます。同意されない場合は、本ソフトウェアをインストール・使用せず、取得したすべての複製を削除してください。組織を代表して本契約に同意する場合、あなたはその組織を拘束する権限を有することを表明します。",
+          p: "本エンドユーザーライセンス契約(以下「本契約」)は、あなた(以下「あなた」)と、Token Forest の開発者(「Poietic Studio」の名称で運営。以下「当社」または「許諾者」)との間で、Token Forest ソフトウェア(以下「本ソフトウェア」)について締結される、法的拘束力のある契約です。「Poietic Studio」は開発者が用いる商号であり、現時点では独立して登記された法人ではありません。本契約における許諾者は、これを運営する個人の開発者です。インストールまたは使用の前に、本契約をよくお読みください。本ソフトウェアをダウンロード、インストール、アクセス、または使用することにより、あなたは本契約を読み、理解し、これに拘束されることに同意したものとみなされます。同意されない場合は、本ソフトウェアをインストール・使用せず、取得したすべての複製を削除してください。組織を代表して本契約に同意する場合、あなたはその組織を拘束する権限を有することを表明します。",
         },
       ],
     },
@@ -551,7 +551,7 @@ const JA: LegalDoc = {
           p: "適用法により認められる最大限の範囲で、本ソフトウェアおよびリーダーボードサービスは「現状有姿(as is)」かつ「提供可能な状態(as available)」で提供され、明示黙示を問わず、商品性、特定目的への適合性、権原および非侵害の黙示の保証を含め、いかなる種類の保証も伴いません。許諾者は、本ソフトウェアが無欠陥または無中断であること、その結果が正確または信頼できること、またはすべての欠陥が修正されることを保証しません。",
         },
         {
-          p: "本ソフトウェアが表示する費用・支出の見積もりは、同梱の価格表に基づく概算であり、請求書や財務記録ではなく、いかなる判断の唯一の根拠としても依拠してはなりません。一部の法域では黙示の保証の排除が認められないため、上記の排除の一部があなたに適用されない場合があります。その場合、あなたは本契約が制限しようとしない法定の権利を有することがあります。",
+          p: "本ソフトウェアが表示する費用・支出の見積もりは、同梱の価格表に基づく概算であり、請求書や財務記録ではなく、いかなる判断の唯一の根拠としても依拠してはなりません。一部の法域では黙示の保証の排除が認められないため、上記の排除の一部があなたに適用されない場合があります。その場合、あなたは本契約が制限しようとしない法定の権利を有することがあります。特に、本契約のいかなる規定も、オーストラリア消費者法その他の適用法により法的に排除できない消費者保証、権利または救済を、排除・制限・変更するものではありません。",
         },
       ],
     },
@@ -586,7 +586,7 @@ const JA: LegalDoc = {
       h: "14. 準拠法および紛争解決",
       blocks: [
         {
-          p: "本契約は、許諾者が設立された法域の法(最初の公開リリース前に最終確定)に準拠し、これに従って解釈されるものとし、法の抵触に関する規則は適用されません。本契約に起因または関連する紛争は、当該地の管轄裁判所の専属管轄に服します。これは、消費者としてのあなたの居住地の強行法により放棄できない権利には影響しません。",
+          p: "本契約は、オーストラリア・ニューサウスウェールズ州の法に準拠し、これに従って解釈されるものとし、法の抵触に関する規則は適用されません。本契約に起因または関連する紛争は、オーストラリア・ニューサウスウェールズ州の裁判所の専属管轄に服します。本条は、消費者としてのあなたの居住地の強行法(適用される場合はオーストラリア消費者法を含む)により放棄できない権利には影響しません。",
         },
       ],
     },
@@ -627,7 +627,7 @@ const JA: LegalDoc = {
       h: "18. お問い合わせ",
       blocks: [
         {
-          code: "発行者:Poietic Studio(完全な法人情報は最初の公開リリース前に追加予定)\n一般/法務:contact@tokenforest.com.au\nプライバシー:プライバシー通知を参照\nセキュリティ:セキュリティポリシーを参照\nウェブサイト:https://www.tokenforest.com.au",
+          code: "発行者:Poietic Studio —— Token Forest の開発者が用いる商号(オーストラリア・ニューサウスウェールズ州)\n一般/法務:contact@tokenforest.com.au\nプライバシー:プライバシー通知を参照\nセキュリティ:セキュリティポリシーを参照\nウェブサイト:https://www.tokenforest.com.au",
         },
       ],
     },
@@ -644,7 +644,7 @@ const KO: LegalDoc = {
     {
       blocks: [
         {
-          p: "본 최종 사용자 라이선스 계약(이하 “본 계약”)은 귀하(이하 “귀하”)와 Poietic Studio(이하 “당사” 또는 “라이선서”) 사이에 Token Forest 소프트웨어(이하 “본 소프트웨어”)에 관하여 체결되는 법적 구속력이 있는 계약입니다. 설치 또는 사용 전에 주의 깊게 읽어 주십시오. 본 소프트웨어를 다운로드, 설치, 접근 또는 사용함으로써 귀하는 본 계약을 읽고 이해하였으며 이에 구속되는 데 동의한 것으로 봅니다. 동의하지 않는 경우 본 소프트웨어를 설치·사용하지 말고, 취득한 모든 사본을 삭제하십시오. 조직을 대표하여 본 계약에 동의하는 경우, 귀하는 해당 조직을 구속할 권한이 있음을 진술합니다.",
+          p: "본 최종 사용자 라이선스 계약(이하 “본 계약”)은 귀하(이하 “귀하”)와 Token Forest의 개발자(“Poietic Studio”라는 이름으로 운영, 이하 “당사” 또는 “라이선서”) 사이에 Token Forest 소프트웨어(이하 “본 소프트웨어”)에 관하여 체결되는 법적 구속력이 있는 계약입니다. “Poietic Studio”는 개발자가 사용하는 상호이며 현재는 별도로 등록된 법인이 아닙니다. 본 계약상 라이선서는 이를 운영하는 개인 개발자입니다. 설치 또는 사용 전에 본 계약을 주의 깊게 읽어 주십시오. 본 소프트웨어를 다운로드, 설치, 접근 또는 사용함으로써 귀하는 본 계약을 읽고 이해하였으며 이에 구속되는 데 동의한 것으로 봅니다. 동의하지 않는 경우 본 소프트웨어를 설치·사용하지 말고, 취득한 모든 사본을 삭제하십시오. 조직을 대표하여 본 계약에 동의하는 경우, 귀하는 해당 조직을 구속할 권한이 있음을 진술합니다.",
         },
       ],
     },
@@ -760,7 +760,7 @@ const KO: LegalDoc = {
           p: "적용 법률이 허용하는 최대 범위에서, 본 소프트웨어 및 리더보드 서비스는 “있는 그대로(as is)” 및 “이용 가능한 상태(as available)”로 제공되며, 상품성, 특정 목적 적합성, 권원 및 비침해에 대한 묵시적 보증을 포함하여 명시적이든 묵시적이든 어떠한 종류의 보증도 하지 않습니다. 라이선서는 본 소프트웨어가 오류가 없거나 중단되지 않을 것, 그 결과가 정확하거나 신뢰할 수 있을 것, 또는 모든 결함이 수정될 것을 보증하지 않습니다.",
         },
         {
-          p: "본 소프트웨어가 표시하는 비용·지출 추정치는 내장 가격표에 기반한 근사치이며 청구서나 재무 기록이 아니고, 어떠한 결정의 유일한 근거로 의존해서는 안 됩니다. 일부 관할에서는 묵시적 보증의 배제를 허용하지 않으므로 위 배제의 일부가 귀하에게 적용되지 않을 수 있으며, 그 경우 귀하는 본 계약이 제한하려 하지 않는 법정 권리를 가질 수 있습니다.",
+          p: "본 소프트웨어가 표시하는 비용·지출 추정치는 내장 가격표에 기반한 근사치이며 청구서나 재무 기록이 아니고, 어떠한 결정의 유일한 근거로 의존해서는 안 됩니다. 일부 관할에서는 묵시적 보증의 배제를 허용하지 않으므로 위 배제의 일부가 귀하에게 적용되지 않을 수 있으며, 그 경우 귀하는 본 계약이 제한하려 하지 않는 법정 권리를 가질 수 있습니다. 특히 본 계약의 어떠한 내용도 오스트레일리아 소비자법 또는 기타 적용 법률에 따라 법적으로 배제할 수 없는 소비자 보증, 권리 또는 구제를 배제·제한·변경하지 않습니다.",
         },
       ],
     },
@@ -795,7 +795,7 @@ const KO: LegalDoc = {
       h: "14. 준거법 및 분쟁 해결",
       blocks: [
         {
-          p: "본 계약은 라이선서가 설립된 관할의 법(최초 공개 릴리스 전에 최종 확정)에 의해 규율되고 해석되며, 법의 저촉에 관한 규칙은 적용되지 않습니다. 본 계약에 기인하거나 관련된 분쟁은 해당 지역 관할 법원의 전속 관할에 따릅니다. 이는 소비자로서 귀하의 거주지 강행 법률에 따라 포기할 수 없는 권리에는 영향을 미치지 않습니다.",
+          p: "본 계약은 오스트레일리아 뉴사우스웨일스주의 법에 의해 규율되고 해석되며, 법의 저촉에 관한 규칙은 적용되지 않습니다. 본 계약에 기인하거나 관련된 분쟁은 오스트레일리아 뉴사우스웨일스주 법원의 전속 관할에 따릅니다. 본 조는 소비자로서 귀하의 거주지 강행 법률(적용되는 경우 오스트레일리아 소비자법 포함)에 따라 포기할 수 없는 권리에는 영향을 미치지 않습니다.",
         },
       ],
     },
@@ -836,7 +836,7 @@ const KO: LegalDoc = {
       h: "18. 문의",
       blocks: [
         {
-          code: "발행자: Poietic Studio(완전한 법인 정보는 최초 공개 릴리스 전에 추가 예정)\n일반/법무: contact@tokenforest.com.au\n개인정보: 개인정보 보호정책 참조\n보안: 보안 정책 참조\n웹사이트: https://www.tokenforest.com.au",
+          code: "발행자: Poietic Studio — Token Forest 개발자가 사용하는 상호(오스트레일리아 뉴사우스웨일스주)\n일반/법무: contact@tokenforest.com.au\n개인정보: 개인정보 보호정책 참조\n보안: 보안 정책 참조\n웹사이트: https://www.tokenforest.com.au",
         },
       ],
     },
