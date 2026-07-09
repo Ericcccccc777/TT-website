@@ -31,6 +31,13 @@ Each conversation produces a floating, color-coded token bubble above the tree (
 ## Cost & the 4 token classes
 Token Forest tracks four token classes: input, output, cache-read, and cache-write. Its Dashboard shows an offline cost estimate from a built-in price table (it may differ from your Anthropic or OpenAI bill). Cache-read tokens dominate raw counts but are cheap per token — in Token Forest's own 6-week sample, cache reads accounted for about 57% of real cost while input and output were only about 24% — which is why raw token counts can look enormous while real cost stays modest.
 
+## Dashboard
+Token Forest includes an offline usage & cost dashboard — a "report card" for your AI coding. Three views share one set of numbers, so any two figures reconcile:
+- Growth: one profile per tree — stage, days planted, growth curve, and "this tree is worth ≈ $X".
+- Usage: full-history stats — daily/weekly/monthly charts, per-model breakdown (Claude Code & Codex), a 26-week heatmap, burn rate, and per-project breakdown.
+- Chats: one line per conversation — title, project, prompt count, the four token classes, and an estimated cost.
+Everything is computed locally from your usage logs and never uploaded; cost is an offline estimate from a bundled price table (it may differ from your Anthropic or OpenAI bill). Details: ${base}/en/dashboard
+
 ## Privacy
 Local-first and fully offline. Token Forest reads only token counts, plus model name, timestamp, and session title, from your local Claude Code and Codex usage logs. It never reads your code, prompts, or conversation content, and sends no telemetry. The only network feature is the opt-in global leaderboard.
 

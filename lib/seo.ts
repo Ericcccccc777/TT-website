@@ -217,6 +217,34 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
         "전 세계에서 가장 큰 Token Forest 나무를 확인하세요. Claude Code와 Codex로 사용한 토큰으로 가장 강한 나무를 키우고 선택적 참여 글로벌 리더보드에 오르세요.",
     },
   },
+  "/dashboard": {
+    en: {
+      title: "Token Forest Dashboard — your Claude Code & Codex token usage and cost",
+      description:
+        "See your Claude Code and Codex token usage with an offline cost estimate — growth, per-model usage, a 26-week heatmap, and per-conversation billing, all computed locally and never uploaded.",
+      keywords: [
+        "Claude Code cost dashboard",
+        "Claude Code token usage dashboard",
+        "Codex usage dashboard",
+        "AI coding cost tracker",
+      ],
+    },
+    zh: {
+      title: "Token Forest 数据面板 — 你的 Claude Code 和 Codex token 用量与花费",
+      description:
+        "在数据面板里查看 Claude Code 和 Codex 的 token 用量与离线成本估算——成长曲线、按模型用量、26 周热力图、按对话账单,全部本地计算,绝不上传。",
+    },
+    ja: {
+      title: "Token Forest ダッシュボード — Claude Code と Codex のトークン使用量とコスト",
+      description:
+        "Claude Code と Codex のトークン使用量とオフラインのコスト見積もりを確認。成長曲線・モデル別使用量・26 週間ヒートマップ・会話ごとの明細を、すべてローカルで計算し、アップロードしません。",
+    },
+    ko: {
+      title: "Token Forest 대시보드 — Claude Code와 Codex 토큰 사용량 및 비용",
+      description:
+        "Claude Code와 Codex의 토큰 사용량과 오프라인 비용 추정치를 확인하세요. 성장 곡선·모델별 사용량·26주 히트맵·대화별 명세를 모두 로컬에서 계산하며 업로드하지 않습니다.",
+    },
+  },
 };
 
 /** Resolve copy for a path+locale, falling back to English. */

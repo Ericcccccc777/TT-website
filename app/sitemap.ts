@@ -14,6 +14,7 @@ const INDEXABLE_PATHS: {
 }[] = [
   { path: "/", priority: 1.0, changeFrequency: "weekly" },
   { path: "/download", priority: 0.9, changeFrequency: "weekly" },
+  { path: "/dashboard", priority: 0.8, changeFrequency: "monthly" },
   { path: "/leaderboard", priority: 0.7, changeFrequency: "hourly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "monthly" },
   { path: "/security", priority: 0.3, changeFrequency: "monthly" },

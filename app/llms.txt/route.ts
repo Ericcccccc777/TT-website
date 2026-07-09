@@ -30,6 +30,9 @@ export function GET() {
 ## Privacy
 - Local-first and fully offline. Token Forest reads only token counts (plus model name and timestamp) from your local Claude Code and Codex usage logs — never your code, prompts, or conversation content. No telemetry.
 
+## Dashboard
+- An offline usage & cost dashboard: growth profile, per-model usage (Claude Code & Codex), a 26-week heatmap, per-project breakdown, and per-conversation billing — all computed locally from your usage logs, never uploaded. ${base}/en/dashboard
+
 ## Leaderboard
 - Opt-in global leaderboard: ${base}/en/leaderboard
 
