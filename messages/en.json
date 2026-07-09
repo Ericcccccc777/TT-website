@@ -40,6 +40,8 @@
     "roadmap": "Roadmap",
     "privacy": "Privacy",
     "security": "Security",
+    "terms": "Terms",
+    "legal": "Legal",
     "legalNavAriaLabel": "Legal links",
     "copyright": "© {year} Token-Forest. All rights reserved.",
     "openSourceOnGithub": "Follow on GitHub"

@@ -40,6 +40,8 @@
     "roadmap": "ロードマップ",
     "privacy": "プライバシー",
     "security": "セキュリティ",
+    "terms": "利用規約",
+    "legal": "法的事項",
     "legalNavAriaLabel": "ポリシーリンク",
     "copyright": "© {year} Token-Forest. 無断転載を禁じます。",
     "openSourceOnGithub": "GitHub でフォロー"

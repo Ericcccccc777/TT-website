@@ -191,7 +191,30 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
     },
     ko: {
       title: "보안 정책 — Token Forest",
-      description: "Token Forest 취약점을 비공개로 보고하는 방법, 보고 범위, 대응 및 수정 공개 절차.",
+      description:
+        "Token Forest 취약점을 비공개로 보고하는 방법, 보고 범위, 대응 및 수정 공개 절차.",
+    },
+  },
+  "/terms": {
+    en: {
+      title: "End User License Agreement (EULA) — Token Forest",
+      description:
+        "The Token Forest End User License Agreement: your license to use the app and the optional leaderboard service, the warranty disclaimer, and the limitation of liability.",
+    },
+    zh: {
+      title: "最终用户许可协议(EULA) — Token Forest",
+      description:
+        "Token Forest 最终用户许可协议:你使用本应用与可选排行榜服务的授权、免责声明与责任限制。",
+    },
+    ja: {
+      title: "エンドユーザーライセンス契約(EULA) — Token Forest",
+      description:
+        "Token Forest エンドユーザーライセンス契約:本アプリおよび任意のリーダーボードサービスの使用許諾、保証の否認、責任の制限。",
+    },
+    ko: {
+      title: "최종 사용자 라이선스 계약(EULA) — Token Forest",
+      description:
+        "Token Forest 최종 사용자 라이선스 계약: 앱 및 선택형 리더보드 서비스 사용 라이선스, 보증 부인, 책임 제한.",
     },
   },
   "/leaderboard": {

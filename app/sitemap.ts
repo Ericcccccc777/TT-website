@@ -18,6 +18,7 @@ const INDEXABLE_PATHS: {
   { path: "/leaderboard", priority: 0.7, changeFrequency: "hourly" },
   { path: "/privacy", priority: 0.3, changeFrequency: "monthly" },
   { path: "/security", priority: 0.3, changeFrequency: "monthly" },
+  { path: "/terms", priority: 0.3, changeFrequency: "monthly" },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

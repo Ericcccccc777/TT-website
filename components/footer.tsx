@@ -19,10 +19,16 @@ export async function Footer() {
     { label: t("roadmap"), href: "/#roadmap", external: false },
   ] as const;
 
+  const LEGAL_LINKS = [
+    { label: t("privacy"), href: "/privacy" },
+    { label: t("security"), href: "/security" },
+    { label: t("terms"), href: "/terms" },
+  ] as const;
+
   return (
     <footer className="border-t-2 bg-surface-ui" style={{ borderTopColor: "var(--color-soil)" }}>
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-[1fr_auto_auto] sm:gap-8 lg:gap-16">
+        <div className="grid grid-cols-2 gap-10 sm:grid-cols-[1fr_auto_auto_auto] sm:gap-8 lg:gap-16">
           {/* ── Brand column ── */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2.5">
@@ -99,6 +105,27 @@ export async function Footer() {
               ))}
             </nav>
           </div>
+
+          {/* ── Legal column ── */}
+          <div className="flex flex-col gap-3">
+            <h2
+              className="font-pixel text-caption text-[var(--color-text-cream)]"
+              style={{ fontSize: "0.6875rem" }}
+            >
+              {t("legal")}
+            </h2>
+            <nav className="flex flex-col gap-2" aria-label={t("legalNavAriaLabel")}>
+              {LEGAL_LINKS.map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
 
         {/* ── Bottom row: copyright ── */}
@@ -107,20 +134,6 @@ export async function Footer() {
             <p className="font-body text-small text-[var(--color-text-muted-dark)]">
               {t("copyright", { year: currentYear })}
             </p>
-            <nav className="flex items-center gap-4" aria-label={t("legalNavAriaLabel")}>
-              <Link
-                href="/privacy"
-                className="font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light"
-              >
-                {t("privacy")}
-              </Link>
-              <Link
-                href="/security"
-                className="font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light"
-              >
-                {t("security")}
-              </Link>
-            </nav>
             <a
               href={GITHUB_URL}
               target="_blank"
