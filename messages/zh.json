@@ -202,10 +202,10 @@
     "menuHide": "隐藏",
     "menuCapsule": "切换到胶囊",
     "ctaHeading": "立即开始种树",
-    "ctaSub": "支持 Windows 与 macOS，免费使用。安装包正在打包，即将发布。",
+    "ctaSub": "支持 Windows 与 macOS，免费使用。安装包现已开放下载。",
     "ctaTrees": "🌳 全球 {count} 棵树",
     "ctaTokens": "⚡ 累计 {count} tokens",
-    "ctaGithubNote": "到 <link>GitHub</link> 点个 Star，发布时第一时间收到通知。"
+    "ctaGithubNote": "到 <link>GitHub</link> 点个 Star，新版本发布第一时间收到通知。"
   },
   "TreeShowcase": {
     "heading": "试试你的树",
@@ -226,7 +226,7 @@
     "f1Label": "下一棵树正在路上",
     "f1Desc": "节日树已经扎根,下一个树种正在温室里悄悄发芽。",
     "f2Label": "数据面板",
-    "f2Desc": "已开发完成，随下个版本推出——详情见「数据面板」页。",
+    "f2Desc": "首版已随桌面 App 上线，持续打磨中——详情见「数据面板」页。",
     "f3Label": "昼夜 & 季节",
     "f3Desc": "树会随真实时间和季节变换:白天 / 黄昏 / 夜晚,春夏秋冬。",
     "f4Label": "更多美术 & 惊喜",
@@ -247,7 +247,7 @@
   },
   "DownloadCta": {
     "heading": "立即开始种树",
-    "body": "支持 Windows 与 macOS，免费使用。安装包正在打包，即将发布。",
+    "body": "支持 Windows 与 macOS，免费使用。现已开放下载。",
     "openSource": "— 免费使用"
   },
   "LeaderboardPage": {
@@ -274,7 +274,7 @@
     "treeModalNext": "下一个",
     "howToHeading": "如何上榜",
     "howTo01Title": "下载 App",
-    "howTo01Body": "前往下载页面获取 Windows / macOS 安装包（即将发布），双击安装即可。",
+    "howTo01Body": "前往下载页面获取 Windows / macOS 安装包，运行即可。",
     "howTo02Title": "在设置里开启排行榜",
     "howTo02Body": "右键树打开菜单，排行榜 → 开启，查看同意弹窗——它会列出将同步的全部字段——确认后生效。",
     "howTo03Title": "设置用户名",
@@ -290,7 +290,7 @@
     "heroBody": "把你在 Claude Code / Codex 上花出去的每一个 token，变成桌面上飘动的气泡——点击收集，看着你的像素小树一步步长大，直到开花结果。",
     "windowsBtn": "Windows 安装包",
     "macBtn": "macOS 安装包",
-    "platformLine": "Windows · macOS — 安装包正在打包，即将发布",
+    "platformLine": "Windows · macOS — 当前版本 {version}",
     "whatIsHeading": "Token Forest 是什么",
     "petLabel": "像素桌面宠物",
     "petBody": "悬浮在任务栏上方的一小块土地，一棵会生长的像素树。",
@@ -298,11 +298,11 @@
     "visualBody": "Claude Code / Codex 每次花费 token，桌面上就冒出带数字的气泡。",
     "privacyLabel": "本地 · 隐私第一",
     "privacyBody": "只读取本地使用日志。无需账号、无遥测——可选排行榜默认关闭。",
-    "windowsHeading": "发布后，三步开始种树",
+    "windowsHeading": "三步开始种树",
     "step01Title": "下载安装包",
-    "step01Body": "安装包发布后，前往 <link>GitHub Releases</link> 下载 Windows 或 macOS 版本。",
-    "step02Title": "双击安装",
-    "step02Body": "跟随安装向导完成——无需命令行，无需任何额外依赖。",
+    "step01Body": "点击上方按钮，或前往 <link>GitHub Releases</link> 下载 Windows 或 macOS 版本。",
+    "step02Title": "解压 / 拖入即装",
+    "step02Body": "Windows：完整解压 ZIP 后运行 TokenForest.exe；macOS：打开 DMG，把 App 拖进「应用程序」。无需命令行，无需任何额外依赖。",
     "step03Title": "启动，开始种树",
     "step03Body": "打开 Token Forest，小树出现在任务栏上方；照常写代码，看 token 变成气泡飘起来。",
     "sysReqHeading": "系统要求",
@@ -310,10 +310,10 @@
     "sysReq1": "本机使用过 Claude Code 或 OpenAI Codex CLI（已产生使用日志）",
     "sysReq2": "无需账号——核心功能完全本地运行",
     "sysReq3": "轻量原生组件，启动快、占用低",
-    "githubBody": "有问题或建议？欢迎到 GitHub 提 Issue；顺手点个 Star，安装包发布第一时间知道。",
+    "githubBody": "有问题或建议？欢迎到 GitHub 提 Issue；顺手点个 Star，新版本发布第一时间知道。",
     "githubFollowBtn": "GitHub 关注发布",
-    "betaLabel": "正在打磨中",
-    "betaBody": "安装包正在做最后的打包与签名。到 GitHub 给仓库点个 Star，发布时第一时间收到通知。"
+    "betaLabel": "公测版 Beta",
+    "betaBody": "当前为未签名的公测构建：Windows 首次运行若弹出 SmartScreen，点「更多信息 → 仍要运行」；macOS 首次打开需在「系统设置 → 隐私与安全性」中点「仍要打开」。"
   },
   "ScrollHud": {
     "backToTop": "回到顶部"

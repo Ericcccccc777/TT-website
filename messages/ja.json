@@ -202,10 +202,10 @@
     "menuHide": "隠す",
     "menuCapsule": "カプセルに切替",
     "ctaHeading": "今日から育てよう",
-    "ctaSub": "Windows と macOS 対応、無料。インストーラーは準備中、まもなく公開。",
+    "ctaSub": "Windows と macOS 対応、無料。インストーラーは公開中です。",
     "ctaTrees": "🌳 世界で {count} 本",
     "ctaTokens": "⚡ 累計 {count} トークン",
-    "ctaGithubNote": "<link>GitHub</link> にスターをつけて、公開をいち早く受け取ろう。"
+    "ctaGithubNote": "<link>GitHub</link> にスターをつけて、新バージョンをいち早く受け取ろう。"
   },
   "TreeShowcase": {
     "heading": "あなたのツリーを試そう",
@@ -226,7 +226,7 @@
     "f1Label": "次の樹種がもうすぐ",
     "f1Desc": "ホリデーツリーが根を下ろし、次の樹種がすでに温室で芽吹いています。",
     "f2Label": "統計ダッシュボード",
-    "f2Desc": "開発は完了、次のバージョンで公開——詳細はダッシュボードページへ。",
+    "f2Desc": "第一版はアプリで公開中、さらに進化中——詳細はダッシュボードページへ。",
     "f3Label": "昼夜 & 季節",
     "f3Desc": "木が実際の時間と季節で変化します:昼・夕方・夜、春夏秋冬。",
     "f4Label": "アート & お楽しみ",
@@ -247,7 +247,7 @@
   },
   "DownloadCta": {
     "heading": "ツリーを育て始めよう",
-    "body": "Windows・macOS 対応、無料で使えます。インストーラーはまもなく公開です。",
+    "body": "Windows・macOS 対応、無料で使えます。今すぐダウンロードできます。",
     "openSource": "— 無料"
   },
   "LeaderboardPage": {
@@ -274,7 +274,7 @@
     "treeModalNext": "次へ",
     "howToHeading": "参加方法",
     "howTo01Title": "アプリをダウンロード",
-    "howTo01Body": "ダウンロードページから Windows / macOS インストーラー（近日公開）を入手し、ダブルクリックでインストール。",
+    "howTo01Body": "ダウンロードページから Windows / macOS 版を入手して実行するだけ。",
     "howTo02Title": "設定でランキングを有効化",
     "howTo02Body": "ツリーを右クリックし、ランキング → オン。同意ダイアログに同期される項目がすべて列挙されるので、確認して有効化。",
     "howTo03Title": "ユーザー名を設定",
@@ -290,7 +290,7 @@
     "heroBody": "Claude Code / Codex で使ったトークンが一つ一つ泡になってデスクトップに浮かび上がる——タップして集め、ピクセルツリーが成長し花咲き実るのを見守ろう。",
     "windowsBtn": "Windows インストーラー",
     "macBtn": "macOS インストーラー",
-    "platformLine": "Windows · macOS — インストーラーはまもなく公開",
+    "platformLine": "Windows · macOS — 現在のバージョン {version}",
     "whatIsHeading": "Token Forest とは？",
     "petLabel": "ピクセルデスクトップペット",
     "petBody": "タスクバーの上に浮かぶ小さな土地に、本当に育つピクセルツリーが住んでいます。",
@@ -298,11 +298,11 @@
     "visualBody": "Claude Code / Codex がトークンを消費するたびに、数字付きの泡がデスクトップに現れます。",
     "privacyLabel": "ローカル · プライバシー優先",
     "privacyBody": "ローカルの使用ログのみを読み込みます。アカウント不要・テレメトリなし——オプションのランキングは既定でオフ。",
-    "windowsHeading": "公開後は 3 ステップ",
+    "windowsHeading": "3 ステップで始めよう",
     "step01Title": "インストーラーをダウンロード",
-    "step01Body": "公開後、<link>GitHub Releases</link> から Windows / macOS 版を入手してください。",
-    "step02Title": "ダブルクリックでインストール",
-    "step02Body": "インストーラーに従うだけ——コマンドラインも追加依存も不要です。",
+    "step01Body": "上のボタンから、または <link>GitHub Releases</link> から Windows / macOS 版を入手してください。",
+    "step02Title": "解凍 / ドラッグで完了",
+    "step02Body": "Windows：ZIP を完全に展開して TokenForest.exe を実行。macOS：DMG を開いてアプリを「アプリケーション」へドラッグ。コマンドラインも追加依存も不要です。",
     "step03Title": "起動して育てはじめる",
     "step03Body": "Token Forest を開くとタスクバーの上に小さな木が現れます。いつも通りコードを書けば、token が気泡になって浮かびます。",
     "sysReqHeading": "システム要件",
@@ -310,10 +310,10 @@
     "sysReq1": "このマシンで Claude Code か OpenAI Codex CLI を使用済み（使用ログあり）",
     "sysReq2": "アカウント不要——コア機能は完全ローカル動作",
     "sysReq3": "軽量ネイティブウィジェット——起動が速く省リソース",
-    "githubBody": "質問やアイデアは GitHub の Issue へ。Star しておけばインストーラー公開をすぐ知れます。",
+    "githubBody": "質問やアイデアは GitHub の Issue へ。Star しておけば新バージョンの公開をすぐ知れます。",
     "githubFollowBtn": "GitHub でフォロー",
-    "betaLabel": "仕上げ中",
-    "betaBody": "インストーラーは最終パッケージングと署名の段階です。GitHub リポジトリに Star して、公開をいち早く受け取りましょう。"
+    "betaLabel": "パブリックベータ",
+    "betaBody": "現在は未署名のベータ版です。Windows で SmartScreen が表示されたら「詳細情報 → 実行」を、macOS では初回起動時に「システム設定 → プライバシーとセキュリティ → このまま開く」を選択してください。"
   },
   "ScrollHud": {
     "backToTop": "トップへ戻る"

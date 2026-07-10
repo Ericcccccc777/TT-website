@@ -5,6 +5,8 @@ import type { Locale } from "@/i18n/routing";
 import { localizedMetadata } from "@/lib/seo";
 import { BreadcrumbJsonLd, SoftwareAppJsonLd } from "@/components/json-ld";
 
+// 每次发版只改这一处;platformLine 文案会显示它。
+const APP_VERSION = "v0.1.3";
 const GITHUB_REPO = "https://github.com/Ericcccccc777/Poietic-TokenForest";
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 // 平台安装包直链:始终指向最新 Release 的同名资产。
@@ -126,7 +128,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
             className="mt-3 text-text-muted-light"
             style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
           >
-            {t("platformLine")}
+            {t("platformLine", { version: APP_VERSION })}
           </p>
         </div>
       </div>

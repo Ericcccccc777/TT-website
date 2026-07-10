@@ -202,10 +202,10 @@
     "menuHide": "Hide",
     "menuCapsule": "Shrink to capsule",
     "ctaHeading": "Start growing today",
-    "ctaSub": "Free for Windows and macOS. Installers are being packaged — coming soon.",
+    "ctaSub": "Free for Windows and macOS. Download and start growing today.",
     "ctaTrees": "🌳 {count} trees worldwide",
     "ctaTokens": "⚡ {count} tokens collected",
-    "ctaGithubNote": "Head to <link>GitHub</link> and drop a star to be first to know."
+    "ctaGithubNote": "Head to <link>GitHub</link> and drop a star to catch every new release."
   },
   "TreeShowcase": {
     "heading": "Try Your Tree",
@@ -226,7 +226,7 @@
     "f1Label": "The next tree is on the way",
     "f1Desc": "The holiday tree has taken root — and another species is already sprouting in our greenhouse.",
     "f2Label": "Stats dashboard",
-    "f2Desc": "Feature-complete — shipping with the next release. See the Dashboard page.",
+    "f2Desc": "The first version is live in the app — and still growing. See the Dashboard page.",
     "f3Label": "Day-Night & Seasons",
     "f3Desc": "Your tree shifts with real time and season: day, dusk, night, spring to winter.",
     "f4Label": "More Art & Surprises",
@@ -247,7 +247,7 @@
   },
   "DownloadCta": {
     "heading": "Start Growing Your Tree",
-    "body": "For Windows & macOS, free to use. Installers are being packaged — coming soon.",
+    "body": "For Windows & macOS, free to use. Download and plant yours today.",
     "openSource": "— free to use"
   },
   "LeaderboardPage": {
@@ -274,7 +274,7 @@
     "treeModalNext": "Next",
     "howToHeading": "How to Join",
     "howTo01Title": "Download the App",
-    "howTo01Body": "Get the Windows / macOS installer from the download page (coming soon) and double-click to install.",
+    "howTo01Body": "Get the Windows / macOS build from the download page and run it.",
     "howTo02Title": "Enable Leaderboard in Settings",
     "howTo02Body": "Right-click the tree, open Leaderboard → On, and review the consent dialog — it lists exactly what will be synced — then confirm.",
     "howTo03Title": "Set Your Username",
@@ -290,7 +290,7 @@
     "heroBody": "Every token you spend in Claude Code / Codex becomes a floating bubble on your desktop — click to collect and watch your pixel tree grow, blossom, and bear fruit.",
     "windowsBtn": "Windows installer",
     "macBtn": "macOS installer",
-    "platformLine": "Windows · macOS — installers are being packaged, coming soon",
+    "platformLine": "Windows · macOS — current version {version}",
     "whatIsHeading": "What is Token Forest?",
     "petLabel": "Pixel Desktop Pet",
     "petBody": "A tiny plot of land hovering above your taskbar, home to a pixel tree that actually grows.",
@@ -298,11 +298,11 @@
     "visualBody": "Every token Claude Code / Codex spends appears as a numbered bubble on your desktop.",
     "privacyLabel": "Local · Privacy First",
     "privacyBody": "Reads local usage logs only. No account, no telemetry — the optional leaderboard is off by default.",
-    "windowsHeading": "Three steps once it ships",
+    "windowsHeading": "Three steps to your tree",
     "step01Title": "Download the installer",
-    "step01Body": "Once released, grab the Windows or macOS build from <link>GitHub Releases</link>.",
-    "step02Title": "Double-click to install",
-    "step02Body": "Follow the installer — no command line, no extra dependencies.",
+    "step01Body": "Click a button above, or grab the build from <link>GitHub Releases</link>.",
+    "step02Title": "Unzip and run",
+    "step02Body": "Windows: fully extract the ZIP, then run TokenForest.exe. macOS: open the DMG and drag the app into Applications. No command line, no extra dependencies.",
     "step03Title": "Launch and grow",
     "step03Body": "Open Token Forest and the sapling appears above your taskbar. Code as usual and watch tokens float up as bubbles.",
     "sysReqHeading": "System Requirements",
@@ -310,10 +310,10 @@
     "sysReq1": "Claude Code or OpenAI Codex CLI used on this machine (usage logs present)",
     "sysReq2": "No account needed — core features run fully local",
     "sysReq3": "Lightweight native widget — fast start, low footprint",
-    "githubBody": "Questions or ideas? Open an issue on GitHub — and star the repo to catch the installer release.",
+    "githubBody": "Questions or ideas? Open an issue on GitHub — and star the repo to catch every new release.",
     "githubFollowBtn": "Follow on GitHub",
-    "betaLabel": "Final polish",
-    "betaBody": "The installers are getting their final packaging and signing. Star the GitHub repo to be first to know when they drop."
+    "betaLabel": "Public beta",
+    "betaBody": "These beta builds aren't code-signed yet: if Windows SmartScreen appears, click More info → Run anyway; on macOS approve the first launch under System Settings → Privacy & Security → Open Anyway."
   },
   "ScrollHud": {
     "backToTop": "Back to top"
