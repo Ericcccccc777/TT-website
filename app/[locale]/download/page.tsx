@@ -130,6 +130,48 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
           >
             {t("platformLine", { version: APP_VERSION })}
           </p>
+
+          {/* macOS/Windows 首次打开指引(未签名 App 放行步骤 + 截图) */}
+          <details
+            className="mt-6 w-full max-w-xl rounded-[2px] bg-surface-card p-4 text-left"
+            style={{ border: "var(--border-pixel)" }}
+          >
+            <summary
+              className="cursor-pointer text-leaf-deep"
+              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
+            >
+              {t("macGuideSummary")}
+            </summary>
+            <div
+              className="mt-3 text-text-muted-light"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)", lineHeight: 1.6 }}
+            >
+              <p>{t("macGuideIntro")}</p>
+              <ol className="mt-2 list-decimal space-y-1 pl-5">
+                <li>{t("macGuideStep1")}</li>
+                <li>{t("macGuideStep2")}</li>
+                <li>{t("macGuideStep3")}</li>
+                <li>{t("macGuideStep4")}</li>
+              </ol>
+              <Image
+                src="/download_guide_1.png"
+                alt={t("macGuideImg1Alt")}
+                width={418}
+                height={72}
+                className="mt-3 h-auto w-full max-w-md rounded-[2px]"
+                style={{ border: "var(--border-pixel)" }}
+              />
+              <Image
+                src="/download_guide_2.png"
+                alt={t("macGuideImg2Alt")}
+                width={948}
+                height={338}
+                className="mt-3 h-auto w-full rounded-[2px]"
+                style={{ border: "var(--border-pixel)" }}
+              />
+              <p className="mt-4">{t("winGuideNote")}</p>
+            </div>
+          </details>
         </div>
       </div>
 
