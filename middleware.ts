@@ -9,5 +9,9 @@ export const config = {
   // (opengraph-image / twitter-image / apple-icon / icon). Those have no dot,
   // so without excluding them here the locale middleware would 307-redirect
   // them to /en/… and the OG image + touch icon would break.
-  matcher: ["/((?!api|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)"],
+  // `ranger` is a locale-free admin route (app/ranger) — exclude it so the
+  // locale middleware does not 307-redirect /ranger to /en/ranger.
+  matcher: [
+    "/((?!api|ranger|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
+  ],
 };
