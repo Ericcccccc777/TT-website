@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import {
   getAdminUser,
@@ -8,6 +9,7 @@ import {
   isAdminEmail,
   isAuthorizedAdmin,
 } from "@/lib/ranger/auth";
+import { RANGER_LANG_COOKIE } from "@/lib/ranger/i18n";
 import type { SignInState } from "@/lib/ranger/types";
 
 // Ban/unban changes what the PUBLIC surfaces show. The leaderboard, home and
@@ -93,4 +95,60 @@ export async function unbanAction(formData: FormData): Promise<void> {
 
   revalidatePath("/ranger");
   revalidatePublicBoards();
+}
+
+/**
+ * Acknowledge a specific score-change (history row) as reviewed-OK. The analyzer
+ * flags rows heuristically; once acknowledged, the row renders normal and leaves
+ * the flagged counts. Admin-only.
+ */
+export async function acknowledgeAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const historyId = Number(formData.get("historyId"));
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!Number.isFinite(historyId)) throw new Error("Missing historyId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db
+    .from("leaderboard_history_reviews")
+    .upsert({ history_id: historyId, reviewed_by: admin.email }, { onConflict: "history_id" });
+  if (error) throw new Error(error.message);
+
+  if (userId) revalidatePath(`/ranger/${userId}`);
+}
+
+/** Undo a review acknowledgement (flag the row again). Admin-only. */
+export async function unacknowledgeAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const historyId = Number(formData.get("historyId"));
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!Number.isFinite(historyId)) throw new Error("Missing historyId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db
+    .from("leaderboard_history_reviews")
+    .delete()
+    .eq("history_id", historyId);
+  if (error) throw new Error(error.message);
+
+  if (userId) revalidatePath(`/ranger/${userId}`);
+}
+
+/**
+ * Set the admin console language (cookie). Not gated on admin on purpose so the
+ * language can also be switched from the login screen.
+ */
+export async function setRangerLangAction(formData: FormData): Promise<void> {
+  const lang = formData.get("lang") === "zh" ? "zh" : "en";
+  const store = await cookies();
+  store.set(RANGER_LANG_COOKIE, lang, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+  revalidatePath("/ranger", "layout");
 }
