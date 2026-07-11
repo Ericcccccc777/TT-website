@@ -11,7 +11,7 @@ import { routing, type Locale } from "@/i18n/routing";
  */
 export function siteUrl(): string {
   return (
-    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "https://tokenforest.com.au"
+    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") || "https://www.tokenforest.com.au"
   );
 }
 
@@ -98,7 +98,7 @@ export type SeoCopy = { title: string; description: string; keywords?: string[] 
 export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
   "/": {
     en: {
-      title: "Token Forest — grow a pixel tree from your Claude Code & Codex tokens",
+      title: "Token Forest — grow a pixel tree from your Claude Code tokens",
       description:
         "Token Forest is a cozy pixel-art desktop pet for Windows and macOS that grows a tree from the Claude Code and Codex tokens you spend. Local-first and offline — it reads only token counts, never your code. Free public beta.",
       keywords: [
@@ -130,7 +130,7 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
     en: {
       title: "Download Token Forest — Windows & macOS, free",
       description:
-        "Download Token Forest for Windows and macOS. A free desktop pet that grows a pixel tree from your Claude Code and Codex token usage — local, offline, privacy-first. Installers are being packaged.",
+        "Download Token Forest for Windows and macOS. A free desktop pet that grows a pixel tree from your Claude Code and Codex token usage — local, offline, privacy-first. Free download, no account needed.",
       keywords: [
         "download Token Forest",
         "Claude Code token tracker download",
@@ -140,17 +140,17 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
     zh: {
       title: "下载 Token Forest — Windows 与 macOS,免费",
       description:
-        "在 Windows 和 macOS 上下载 Token Forest。一款免费桌宠,把你的 Claude Code 和 Codex token 用量长成一棵像素树——本地、离线、隐私优先。安装包打包中。",
+        "在 Windows 和 macOS 上下载 Token Forest。一款免费桌宠,把你的 Claude Code 和 Codex token 用量长成一棵像素树——本地、离线、隐私优先。免费下载,无需账号。",
     },
     ja: {
       title: "Token Forest をダウンロード — Windows と macOS、無料",
       description:
-        "Windows と macOS で Token Forest をダウンロード。Claude Code と Codex のトークン使用量からピクセルツリーを育てる無料のデスクトップペット。ローカル・オフライン・プライバシー優先。インストーラーは準備中です。",
+        "Windows と macOS で Token Forest をダウンロード。Claude Code と Codex のトークン使用量からピクセルツリーを育てる無料のデスクトップペット。ローカル・オフライン・プライバシー優先。無料ダウンロード、アカウント不要。",
     },
     ko: {
       title: "Token Forest 다운로드 — Windows 및 macOS, 무료",
       description:
-        "Windows와 macOS에서 Token Forest를 다운로드하세요. Claude Code와 Codex 토큰 사용량으로 픽셀 나무를 키우는 무료 데스크톱 펫 — 로컬, 오프라인, 프라이버시 우선. 설치 프로그램을 준비 중입니다.",
+        "Windows와 macOS에서 Token Forest를 다운로드하세요. Claude Code와 Codex 토큰 사용량으로 픽셀 나무를 키우는 무료 데스크톱 펫 — 로컬, 오프라인, 프라이버시 우선. 무료 다운로드, 계정 불필요.",
     },
   },
   "/privacy": {
@@ -242,7 +242,7 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
   },
   "/dashboard": {
     en: {
-      title: "Token Forest Dashboard — your Claude Code & Codex token usage and cost",
+      title: "Token Forest Dashboard — Claude Code & Codex usage and cost",
       description:
         "See your Claude Code and Codex token usage with an offline cost estimate — growth, per-model usage, a 26-week heatmap, and per-conversation billing, all computed locally and never uploaded.",
       keywords: [
@@ -266,6 +266,223 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
       title: "Token Forest 대시보드 — Claude Code와 Codex 토큰 사용량 및 비용",
       description:
         "Claude Code와 Codex의 토큰 사용량과 오프라인 비용 추정치를 확인하세요. 성장 곡선·모델별 사용량·26주 히트맵·대화별 명세를 모두 로컬에서 계산하며 업로드하지 않습니다.",
+    },
+  },
+  "/ccusage-alternative": {
+    en: {
+      title: "ccusage Alternative — a Visual GUI Desktop App | Token Forest",
+      description:
+        "Looking for a ccusage GUI? Token Forest is a free desktop alternative that reads the same Claude Code & Codex logs, with a pixel pet and a full offline dashboard.",
+      keywords: [
+        "ccusage alternative",
+        "ccusage gui",
+        "ccusage desktop app",
+        "claude code usage tracker",
+        "ccusage vs",
+        "token forest",
+      ],
+    },
+    zh: {
+      title: "ccusage 替代方案：可视化 GUI 桌面应用 | Token Forest",
+      description:
+        "在找 ccusage 的图形界面？Token Forest 是免费的桌面替代方案，读取同样的 Claude Code 与 Codex 日志，带像素宠物和离线仪表盘。",
+      keywords: [
+        "ccusage 替代",
+        "ccusage gui",
+        "ccusage 桌面应用",
+        "claude code 用量统计",
+        "ccusage 对比",
+        "token forest",
+      ],
+    },
+    ja: {
+      title: "ccusage の代替 — ビジュアル GUI アプリ | Token Forest",
+      description:
+        "ccusage の GUI をお探しですか。Token Forest は同じ Claude Code・Codex ログを読む無料のデスクトップ代替。ピクセルのペットとオフラインのダッシュボード付き。",
+      keywords: [
+        "ccusage 代替",
+        "ccusage gui",
+        "ccusage デスクトップアプリ",
+        "claude code 使用量",
+        "ccusage 比較",
+        "token forest",
+      ],
+    },
+    ko: {
+      title: "ccusage 대안: 시각적 GUI 데스크톱 앱 | Token Forest",
+      description:
+        "ccusage GUI를 찾고 있나요? Token Forest는 같은 Claude Code·Codex 로그를 읽는 무료 데스크톱 대안으로, 픽셀 펫과 오프라인 대시보드를 제공합니다.",
+      keywords: [
+        "ccusage 대안",
+        "ccusage gui",
+        "ccusage 데스크톱 앱",
+        "claude code 사용량 추적",
+        "ccusage 비교",
+        "token forest",
+      ],
+    },
+  },
+  "/claude-code-usage-limits": {
+    en: {
+      title: "Claude Code Usage Limits Explained (Pro & Max) | Token Forest",
+      description:
+        "How Claude Code usage limits work — the rolling 5-hour session window, weekly caps, Pro vs Max 5x/20x, when limits reset, and how to track your burn rate so you're never caught mid-task.",
+      keywords: [
+        "claude code usage limit",
+        "claude code rate limit",
+        "claude code weekly limit",
+        "am i hitting my claude code limit",
+        "claude max usage limit",
+        "claude code limit reset",
+      ],
+    },
+    zh: {
+      title: "Claude Code 使用上限详解（Pro 与 Max）| Token Forest",
+      description:
+        "详解 Claude Code 使用上限：滚动 5 小时会话窗口、每周额度、Pro 与 Max 5x/20x 的区别、限额何时重置，以及如何盯住消耗速度，避免写到一半被限流。",
+      keywords: [
+        "claude code 使用上限",
+        "claude code 限额",
+        "claude code 每周上限",
+        "claude max 使用限制",
+        "claude code 限额重置",
+        "claude code rate limit",
+      ],
+    },
+    ja: {
+      title: "Claude Code の使用上限を解説（Pro・Max）| Token Forest",
+      description:
+        "Claude Code の使用上限を解説。ローリング 5 時間セッション、週次上限、Pro と Max 5x/20x の違い、上限リセットのタイミング、そして消費ペースを追って作業中の制限を防ぐ方法まで。",
+      keywords: [
+        "claude code 使用上限",
+        "claude code レート制限",
+        "claude code 週次上限",
+        "claude max 上限",
+        "claude code 上限 リセット",
+        "claude code limit",
+      ],
+    },
+    ko: {
+      title: "Claude Code 사용 한도 정리 (Pro·Max) | Token Forest",
+      description:
+        "Claude Code 사용 한도를 정리했습니다. 롤링 5시간 세션, 주간 한도, Pro와 Max 5x/20x의 차이, 한도 초기화 시점, 그리고 소모 속도를 추적해 작업 중 제한을 피하는 방법까지.",
+      keywords: [
+        "claude code 사용 한도",
+        "claude code 속도 제한",
+        "claude code 주간 한도",
+        "claude max 사용 제한",
+        "claude code 한도 초기화",
+        "claude code rate limit",
+      ],
+    },
+  },
+  "/claude-code-cost": {
+    en: {
+      title: "Claude Code Cost: Token Pricing Explained (2026)",
+      description:
+        "How much does Claude Code cost? A plain-English guide to token pricing, cache reads, Opus vs Sonnet vs Haiku, and subscription vs API — plus how to see your real cost.",
+      keywords: [
+        "claude code cost",
+        "claude code pricing",
+        "how much does claude code cost",
+        "claude code token cost",
+        "claude code cost per token",
+        "is claude code expensive",
+        "claude code api pricing",
+        "token forest",
+      ],
+    },
+    zh: {
+      title: "Claude Code 费用详解:Token 计价(2026)",
+      description:
+        "Claude Code 到底多少钱?一份大白话指南:四类 token 计价、缓存读取、Opus/Sonnet/Haiku 对比、订阅 vs API——以及如何在本地离线看到你的真实花费。",
+      keywords: [
+        "claude code 费用",
+        "claude code 价格",
+        "claude code 多少钱",
+        "claude code token 费用",
+        "claude code 每个token价格",
+        "claude code 贵吗",
+        "token forest",
+      ],
+    },
+    ja: {
+      title: "Claude Code の料金:トークン課金を解説(2026)",
+      description:
+        "Claude Code はいくら? 4 種類のトークン課金、キャッシュ読み取り、Opus/Sonnet/Haiku、サブスク対 API を平易に解説。自分の実コストの見方も紹介します。",
+      keywords: [
+        "claude code 料金",
+        "claude code 費用",
+        "claude code いくら",
+        "claude code トークン 料金",
+        "claude code 価格",
+        "claude code 高い",
+        "token forest",
+      ],
+    },
+    ko: {
+      title: "Claude Code 비용: 토큰 요금 정리 (2026)",
+      description:
+        "Claude Code는 얼마? 네 가지 토큰 요금, 캐시 읽기, Opus/Sonnet/Haiku, 구독 vs API를 쉬운 말로 정리하고 내 실제 비용 확인법까지 안내합니다.",
+      keywords: [
+        "claude code 비용",
+        "claude code 요금",
+        "claude code 가격",
+        "claude code 토큰 비용",
+        "claude code 토큰당 비용",
+        "claude code 비싼가",
+        "token forest",
+      ],
+    },
+  },
+  "/track-claude-code-usage": {
+    en: {
+      title: "How to Track Claude Code & Codex Token Usage",
+      description:
+        "A step-by-step guide to where Claude Code and Codex store your token usage logs, what's inside them, and how to read your usage and cost — all offline.",
+      keywords: [
+        "how to track claude code token usage",
+        "where does claude code store usage logs",
+        "how to see claude code costs",
+        "how to monitor codex usage",
+        "track claude code usage",
+      ],
+    },
+    zh: {
+      title: "如何追踪 Claude Code 与 Codex Token 用量",
+      description:
+        "手把手教你找到 Claude Code 与 Codex 的本地用量日志、看懂里面的内容，并完全离线地查看你的 token 用量与成本估算。",
+      keywords: [
+        "如何追踪 claude code token 用量",
+        "claude code 日志在哪里",
+        "查看 claude code 花费",
+        "监控 codex 用量",
+        "追踪 claude code 用量",
+      ],
+    },
+    ja: {
+      title: "Claude Code と Codex のトークン使用量を追跡する方法",
+      description:
+        "Claude Code と Codex のローカル使用ログの場所と中身、そして使用量とコストをオフラインで確認する手順を、ステップごとに解説します。",
+      keywords: [
+        "claude code トークン使用量 追跡",
+        "claude code ログ 場所",
+        "claude code コスト 確認",
+        "codex 使用量 監視",
+        "claude code 使用量",
+      ],
+    },
+    ko: {
+      title: "Claude Code·Codex 토큰 사용량 추적 방법",
+      description:
+        "Claude Code와 Codex의 로컬 사용 로그 위치와 내용, 그리고 사용량과 비용을 오프라인으로 확인하는 방법을 단계별로 안내합니다.",
+      keywords: [
+        "claude code 토큰 사용량 추적",
+        "claude code 로그 위치",
+        "claude code 비용 확인",
+        "codex 사용량 모니터링",
+        "claude code 사용량",
+      ],
     },
   },
 };

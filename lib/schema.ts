@@ -7,6 +7,7 @@ import {
   SITE_NAME,
   siteUrl,
   localizedUrl,
+  seoCopy,
 } from "@/lib/seo";
 
 // Pure JSON-LD builders. They return plain objects; the components in
@@ -36,6 +37,9 @@ export function softwareApplication(locale: Locale): JsonObject {
     "@id": `${base}/#app`,
     name: SITE_NAME,
     alternateName: SITE_ALTERNATE_NAMES,
+    // A prose sentence answer engines can lift for "what is Token Forest?".
+    // Reuses the localized home description (single source of truth).
+    description: seoCopy("/", locale).description,
     applicationCategory: "DeveloperApplication",
     operatingSystem: "Windows, macOS",
     inLanguage: BCP47[locale],

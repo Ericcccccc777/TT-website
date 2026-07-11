@@ -43,6 +43,12 @@
     "terms": "이용약관",
     "legal": "법률",
     "legalNavAriaLabel": "정책 링크",
+    "guides": "가이드",
+    "guidesNavAriaLabel": "가이드 링크",
+    "guideCost": "Claude Code 비용 가이드",
+    "guideLimits": "Claude Code 사용 한도",
+    "guideCcusage": "ccusage 대안",
+    "guideTrack": "Claude Code 사용량 추적",
     "copyright": "© {year} Poietic Studio. 모든 권리 보유.",
     "openSourceOnGithub": "GitHub에서 팔로우"
   },
@@ -243,7 +249,8 @@
     "rankHeader": "#",
     "usernameHeader": "사용자명",
     "tokensHeader": "Tokens",
-    "viewAll": "전체 리더보드 보기"
+    "viewAll": "전체 리더보드 보기",
+    "caption": "예시 이미지 — 실시간 순위는 리더보드에서 확인하세요."
   },
   "DownloadCta": {
     "heading": "나무 키우기 시작",

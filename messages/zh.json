@@ -43,6 +43,12 @@
     "terms": "使用条款",
     "legal": "法律",
     "legalNavAriaLabel": "法律与政策链接",
+    "guides": "指南",
+    "guidesNavAriaLabel": "指南链接",
+    "guideCost": "Claude Code 费用指南",
+    "guideLimits": "Claude Code 使用上限",
+    "guideCcusage": "ccusage 替代方案",
+    "guideTrack": "追踪 Claude Code 用量",
     "copyright": "© {year} Poietic Studio. 保留所有权利。",
     "openSourceOnGithub": "在 GitHub 上关注"
   },
@@ -243,7 +249,8 @@
     "rankHeader": "#",
     "usernameHeader": "用户名",
     "tokensHeader": "Tokens",
-    "viewAll": "查看完整排行榜"
+    "viewAll": "查看完整排行榜",
+    "caption": "示例演示——实时榜单请见排行榜页面。"
   },
   "DownloadCta": {
     "heading": "立即开始种树",

@@ -43,6 +43,12 @@
     "terms": "Terms",
     "legal": "Legal",
     "legalNavAriaLabel": "Legal links",
+    "guides": "Guides",
+    "guidesNavAriaLabel": "Guides",
+    "guideCost": "Claude Code cost guide",
+    "guideLimits": "Claude Code usage limits",
+    "guideCcusage": "ccusage alternative",
+    "guideTrack": "Track Claude Code usage",
     "copyright": "© {year} Poietic Studio. All rights reserved.",
     "openSourceOnGithub": "Follow on GitHub"
   },
@@ -243,7 +249,8 @@
     "rankHeader": "#",
     "usernameHeader": "Username",
     "tokensHeader": "Tokens",
-    "viewAll": "View Full Leaderboard"
+    "viewAll": "View Full Leaderboard",
+    "caption": "Illustrative example — the live standings are on the leaderboard."
   },
   "DownloadCta": {
     "heading": "Start Growing Your Tree",

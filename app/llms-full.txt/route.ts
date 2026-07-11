@@ -51,6 +51,9 @@ A: Yes, it is free during public beta.
 Q: Which platforms does it support?
 A: Windows 10/11 and macOS, from a single codebase.
 
+Q: The installer is unsigned — how do I open it?
+A: On Windows, if SmartScreen appears, click "More info" then "Run anyway". On macOS, if Gatekeeper blocks it, open System Settings → Privacy & Security and choose "Open Anyway" (or right-click the app and choose Open). Each release also publishes a SHA-256 checksum so you can verify the download.
+
 Q: Does it work with both Claude Code and Codex?
 A: Yes. It reads each tool's local usage logs (Claude Code and Codex).
 
@@ -77,6 +80,12 @@ Both the app UI and the website are available in four languages. Localized home 
 - 中文 (Chinese): ${base}/zh
 - 日本語 (Japanese): ${base}/ja
 - 한국어 (Korean): ${base}/ko
+
+## Guides
+- How much does Claude Code cost? Token pricing, cache reads, Opus vs Sonnet vs Haiku, and subscription vs API billing: ${base}/en/claude-code-cost
+- Claude Code usage limits explained — the rolling 5-hour session window, weekly caps, and Pro vs Max: ${base}/en/claude-code-usage-limits
+- ccusage alternative — a visual GUI desktop app that reads the same Claude Code & Codex logs: ${base}/en/ccusage-alternative
+- How to track your Claude Code & Codex token usage — where the logs live and how to read them: ${base}/en/track-claude-code-usage
 
 ## Official links
 - Website: ${base}/en
