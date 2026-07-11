@@ -7,8 +7,9 @@ import {
   Noto_Sans_JP,
   Noto_Sans_KR,
 } from "next/font/google";
-import { NextIntlClientProvider } from "next-intl";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import Script from "next/script";
 import { routing, type Locale } from "@/i18n/routing";
 import { OG_IMAGE, OG_LOCALE, SITE_NAME, siteUrl } from "@/lib/seo";
@@ -122,6 +123,11 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Reject unknown locales (e.g. browser requests for /apple-touch-icon.png that
+  // fall through to this catch-all segment) with a 404 instead of rendering the
+  // page with a garbage locale and crashing on Intl calls like toLocaleString.
+  if (!hasLocale(routing.locales, locale)) notFound();
 
   // Enable static rendering
   setRequestLocale(locale);
