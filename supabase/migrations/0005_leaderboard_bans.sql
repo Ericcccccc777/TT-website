@@ -77,3 +77,14 @@ as $$
 $$;
 
 grant execute on function public.get_leaderboard_stats() to anon, authenticated;
+
+-- ── 5. Grant service_role the privileges the /ranger admin console needs ───────
+-- This project has "Automatically expose new tables" OFF (see 0001's note) and
+-- only ever granted anon/authenticated — service_role was never granted, so the
+-- admin client (service_role) hits "42501 permission denied". Grant it here:
+--   • SELECT on leaderboard so the admin can read the full board (incl. user_id
+--     and rows hidden from the public), and
+--   • full DML on leaderboard_bans so the admin can hide / unhide users.
+-- service_role also bypasses RLS, so these grants are all it needs.
+grant select on public.leaderboard to service_role;
+grant select, insert, update, delete on public.leaderboard_bans to service_role;
