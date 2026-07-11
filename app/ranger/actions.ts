@@ -2,7 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
-import { getAdminUser, getRangerServerClient, isAuthorizedAdmin } from "@/lib/ranger/auth";
+import {
+  getAdminUser,
+  getRangerServerClient,
+  isAdminEmail,
+  isAuthorizedAdmin,
+} from "@/lib/ranger/auth";
 import type { SignInState } from "@/lib/ranger/types";
 
 // Ban/unban changes what the PUBLIC surfaces show. The leaderboard, home and
@@ -27,11 +32,22 @@ export async function signInAction(_prev: SignInState, formData: FormData): Prom
   const supabase = await getRangerServerClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error || !data.user) return { error: "Invalid email or password." };
+  // Surface the real reason (admin-only page, so detail is fine + far easier to
+  // debug than a generic "wrong password").
+  if (error || !data.user) {
+    return { error: error?.message ?? "Sign-in failed." };
+  }
 
   if (!isAuthorizedAdmin(data.user)) {
+    const u = data.user;
     await supabase.auth.signOut();
-    return { error: "This account is not authorized for Ranger." };
+    if (isAdminEmail(u.email) && !u.email_confirmed_at) {
+      return {
+        error:
+          "This admin email exists but its email is not confirmed. In Supabase → Authentication → Users, confirm it (or delete and re-create the user with 'Auto Confirm' checked).",
+      };
+    }
+    return { error: `Account ${u.email ?? ""} is not on the Ranger admin allow-list.` };
   }
 
   revalidatePath("/ranger");
