@@ -36,6 +36,12 @@ export function GET() {
 ## Leaderboard
 - Opt-in global leaderboard: ${base}/en/leaderboard
 
+## Guides
+- How much does Claude Code cost? Token pricing explained: ${base}/en/claude-code-cost
+- Claude Code usage limits explained (Pro & Max): ${base}/en/claude-code-usage-limits
+- ccusage alternative — a visual GUI desktop app: ${base}/en/ccusage-alternative
+- How to track your Claude Code & Codex token usage: ${base}/en/track-claude-code-usage
+
 ## Available languages
 - Both the app UI and this website are available in English, 中文 (Chinese), 日本語 (Japanese), and 한국어 (Korean).
 - English: ${base}/en

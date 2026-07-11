@@ -25,10 +25,17 @@ export async function Footer() {
     { label: t("terms"), href: "/terms" },
   ] as const;
 
+  const GUIDE_LINKS = [
+    { label: t("guideCost"), href: "/claude-code-cost" },
+    { label: t("guideLimits"), href: "/claude-code-usage-limits" },
+    { label: t("guideCcusage"), href: "/ccusage-alternative" },
+    { label: t("guideTrack"), href: "/track-claude-code-usage" },
+  ] as const;
+
   return (
     <footer className="border-t-2 bg-surface-ui" style={{ borderTopColor: "var(--color-soil)" }}>
       <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-[1fr_auto_auto_auto] sm:gap-8 lg:gap-16">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-8 lg:grid-cols-[1.4fr_auto_auto_auto_auto] lg:gap-12">
           {/* ── Brand column ── */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2.5">
@@ -68,6 +75,27 @@ export async function Footer() {
             </h2>
             <nav className="flex flex-col gap-2" aria-label={t("productNavAriaLabel")}>
               {PRODUCT_LINKS.map(({ label, href }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="font-body text-small text-[var(--color-text-muted-dark)] transition-colors duration-100 hover:text-leaf-light"
+                >
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+
+          {/* ── Guides column ── */}
+          <div className="flex flex-col gap-3">
+            <h2
+              className="font-pixel text-caption text-[var(--color-text-cream)]"
+              style={{ fontSize: "0.6875rem" }}
+            >
+              {t("guides")}
+            </h2>
+            <nav className="flex flex-col gap-2" aria-label={t("guidesNavAriaLabel")}>
+              {GUIDE_LINKS.map(({ label, href }) => (
                 <Link
                   key={href}
                   href={href}

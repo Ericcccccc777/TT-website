@@ -29,7 +29,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/_next/", "/_vercel/"],
+        // NB: never disallow /_next/ — Googlebot needs /_next/static/* (CSS/JS)
+        // to render the page. Only fully-private/internal paths are blocked.
+        disallow: ["/api/", "/_vercel/"],
       },
       ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: "/" })),
     ],

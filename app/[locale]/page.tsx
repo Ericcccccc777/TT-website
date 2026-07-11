@@ -346,6 +346,23 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             />
           </div>
 
+          {/* Honesty caption: the table above is an animated illustration, not
+              real leaderboard rows — the real standings live on /leaderboard. */}
+          <p
+            className="reveal mt-3 text-center"
+            style={
+              {
+                "--reveal-delay": "280ms",
+                fontFamily: "var(--font-body)",
+                fontSize: "var(--text-small)",
+                color: "var(--color-text-muted-dark)",
+                opacity: 0.75,
+              } as React.CSSProperties
+            }
+          >
+            {tlt("caption")}
+          </p>
+
           {/* CTA */}
           <div className="reveal mt-8 flex justify-center">
             <Link

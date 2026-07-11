@@ -43,6 +43,12 @@
     "terms": "利用規約",
     "legal": "法的事項",
     "legalNavAriaLabel": "ポリシーリンク",
+    "guides": "ガイド",
+    "guidesNavAriaLabel": "ガイドリンク",
+    "guideCost": "Claude Code 料金ガイド",
+    "guideLimits": "Claude Code の使用上限",
+    "guideCcusage": "ccusage の代替",
+    "guideTrack": "Claude Code の使用量を追跡",
     "copyright": "© {year} Poietic Studio. 無断転載を禁じます。",
     "openSourceOnGithub": "GitHub でフォロー"
   },
@@ -243,7 +249,8 @@
     "rankHeader": "#",
     "usernameHeader": "ユーザー名",
     "tokensHeader": "Tokens",
-    "viewAll": "ランキング全体を見る"
+    "viewAll": "ランキング全体を見る",
+    "caption": "イメージ例——実際のランキングはリーダーボードでご覧ください。"
   },
   "DownloadCta": {
     "heading": "ツリーを育て始めよう",
