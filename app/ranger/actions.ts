@@ -27,7 +27,10 @@ function revalidatePublicBoards() {
  * session immediately discarded so it never gains access.
  */
 export async function signInAction(_prev: SignInState, formData: FormData): Promise<SignInState> {
-  const email = String(formData.get("email") ?? "").trim();
+  let email = String(formData.get("email") ?? "").trim();
+  // The login form only asks for the local part — complete bare usernames to a
+  // full @gmail.com address (a value that already contains "@" is left as-is).
+  if (email && !email.includes("@")) email = `${email}@gmail.com`;
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Enter an email and password." };
 

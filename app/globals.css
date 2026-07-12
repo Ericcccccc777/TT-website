@@ -2186,3 +2186,34 @@ body {
     box-shadow: 0 0 9px 2px rgb(217 119 87 / 85%);
   }
 }
+
+/* ── Ranger admin console — consistent button/link feedback ───────────────────
+   Uses filter + transform (not background) so it layers on top of the inline
+   background colors the ranger controls set. Apply via className="ranger-btn". */
+.ranger-btn {
+  cursor: pointer;
+  transition:
+    transform 90ms ease,
+    filter 90ms ease,
+    box-shadow 90ms ease;
+}
+
+.ranger-btn:hover {
+  filter: brightness(1.08);
+}
+
+.ranger-btn:active {
+  transform: translateY(1px);
+  filter: brightness(0.9);
+}
+
+.ranger-btn:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 1px;
+}
+
+.ranger-btn:disabled {
+  cursor: default;
+  filter: none;
+  transform: none;
+}

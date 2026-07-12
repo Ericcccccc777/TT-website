@@ -8,7 +8,7 @@ import { LANGS, type Lang } from "@/lib/ranger/i18n";
  */
 export function RangerLangSwitcher({ current }: { current: Lang }) {
   return (
-    <form action={setRangerLangAction} className="flex items-center gap-1">
+    <form action={setRangerLangAction} className="flex shrink-0 items-center gap-1">
       {LANGS.map((l) => {
         const active = l.code === current;
         return (
@@ -18,7 +18,7 @@ export function RangerLangSwitcher({ current }: { current: Lang }) {
             name="lang"
             value={l.code}
             aria-pressed={active}
-            className="rounded-[2px] px-2 py-1 text-[11px]"
+            className="ranger-btn whitespace-nowrap rounded-[2px] px-2 py-1 text-[11px]"
             style={{
               border: "1px solid var(--color-soil)",
               background: active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",

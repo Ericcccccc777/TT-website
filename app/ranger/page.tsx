@@ -77,7 +77,7 @@ export default async function RangerPage() {
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="rounded-[2px] bg-surface-card px-4 py-2 text-text-forest shadow-pixel-sm"
+                className="ranger-btn rounded-[2px] bg-surface-card px-4 py-2 text-text-forest shadow-pixel-sm"
                 style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-small)", border: "var(--border-pixel)" }}
               >
                 {t(lang, "signOut")}
@@ -158,7 +158,7 @@ export default async function RangerPage() {
                         <input type="hidden" name="userId" value={r.userId} />
                         <button
                           type="submit"
-                          className="rounded-[2px] bg-leaf-deep px-3 py-1 text-text-cream"
+                          className="ranger-btn rounded-[2px] bg-leaf-deep px-3 py-1 text-text-cream"
                           style={{ fontFamily: "var(--font-pixel)", fontSize: 10 }}
                         >
                           {t(lang, "unhide")}
@@ -176,7 +176,7 @@ export default async function RangerPage() {
                         />
                         <button
                           type="submit"
-                          className="rounded-[2px] bg-red-700 px-3 py-1 text-white"
+                          className="ranger-btn rounded-[2px] bg-red-700 px-3 py-1 text-white"
                           style={{ fontFamily: "var(--font-pixel)", fontSize: 10 }}
                         >
                           {t(lang, "hide")}

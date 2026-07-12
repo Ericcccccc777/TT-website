@@ -13,14 +13,25 @@ export function RangerLoginForm() {
     <form action={formAction} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
         <span className="font-body text-small text-[var(--color-text-muted-light)]">Email</span>
-        <input
-          type="email"
-          name="email"
-          autoComplete="username"
-          required
-          className="rounded-[2px] bg-surface-card px-3 py-2 font-body text-text-forest"
+        <div
+          className="flex items-stretch overflow-hidden rounded-[2px] bg-surface-card"
           style={{ border: "var(--border-pixel)" }}
-        />
+        >
+          <input
+            type="text"
+            name="email"
+            autoComplete="username"
+            required
+            placeholder="your-name"
+            className="min-w-0 flex-1 bg-transparent px-3 py-2 font-body text-text-forest outline-none"
+          />
+          <span
+            className="flex items-center px-3 font-body text-small text-[var(--color-text-muted-light)]"
+            style={{ borderLeft: "var(--border-pixel)" }}
+          >
+            @gmail.com
+          </span>
+        </div>
       </label>
       <label className="flex flex-col gap-1.5">
         <span className="font-body text-small text-[var(--color-text-muted-light)]">Password</span>

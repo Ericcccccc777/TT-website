@@ -337,7 +337,7 @@ export default async function RangerUserPage({
                               <input type="hidden" name="userId" value={userId} />
                               <button
                                 type="submit"
-                                className="rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                                className="ranger-btn rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
                                 style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
                               >
                                 {t(lang, "markOk")}
@@ -348,7 +348,7 @@ export default async function RangerUserPage({
                             <form action={unacknowledgeAction} className="mt-1.5">
                               <input type="hidden" name="historyId" value={h.id} />
                               <input type="hidden" name="userId" value={userId} />
-                              <button type="submit" className="text-[10px] underline underline-offset-2 opacity-70">
+                              <button type="submit" className="ranger-btn text-[10px] underline underline-offset-2 opacity-70">
                                 {t(lang, "undo")}
                               </button>
                             </form>
@@ -388,7 +388,7 @@ export default async function RangerUserPage({
                   <input type="hidden" name="userId" value={row.userId} />
                   <button
                     type="submit"
-                    className="rounded-[2px] bg-leaf-deep px-4 py-2 text-text-cream shadow-pixel-sm"
+                    className="ranger-btn rounded-[2px] bg-leaf-deep px-4 py-2 text-text-cream shadow-pixel-sm"
                     style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-small)" }}
                   >
                     {t(lang, "unhideBtn")}
@@ -406,7 +406,7 @@ export default async function RangerUserPage({
                   />
                   <button
                     type="submit"
-                    className="rounded-[2px] bg-red-700 px-4 py-2 text-white shadow-pixel-sm"
+                    className="ranger-btn rounded-[2px] bg-red-700 px-4 py-2 text-white shadow-pixel-sm"
                     style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-small)" }}
                   >
                     {t(lang, "hideBtn")}
@@ -487,7 +487,7 @@ function SegGroup({
             key={it.key}
             href={it.href}
             aria-current={it.active ? "true" : undefined}
-            className="flex items-center px-3 py-1.5 font-body text-[11px] whitespace-nowrap transition-colors"
+            className="ranger-btn flex items-center px-3 py-1.5 font-body text-[11px] whitespace-nowrap transition-colors"
             style={{
               borderLeft: i === 0 ? undefined : "var(--border-pixel)",
               background: it.active ? "var(--color-leaf-deep)" : "var(--color-surface-card)",
