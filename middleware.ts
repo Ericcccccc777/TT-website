@@ -11,7 +11,8 @@ export const config = {
   // them to /en/… and the OG image + touch icon would break.
   // `ranger` is a locale-free admin route (app/ranger) — exclude it so the
   // locale middleware does not 307-redirect /ranger to /en/ranger.
+  // `forest-preview` is the locale-free web-forest concept prototype (app/forest-preview).
   matcher: [
-    "/((?!api|ranger|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
+    "/((?!api|ranger|forest-preview|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
   ],
 };
