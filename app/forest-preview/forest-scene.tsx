@@ -1,93 +1,43 @@
 "use client";
 
 /**
- * Web Forest concept prototype (docs/WEB_FOREST_PRODUCT_VISION.md §20.2).
+ * Web Forest concept prototype v2 — single-screen "farm plot" layout.
  *
- * A horizontally explorable 2.5D pixel forest: four biomes, parallax layers,
- * the real tree/decoration sprites, biome particles, and a simulated desktop
- * link (energy orbs, pet-the-tree echo). Everything is fake data + local
- * state — no backend, no auth, no sync. Camera moves imperatively (refs, not
- * React state) so dragging stays smooth.
+ * v1 was a horizontally scrolling strip of four biomes; feedback: it read as a
+ * parade, not a forest. v2 is QQ-farm style: ONE contiguous plot of land seen
+ * slightly from above, every tree planted together (main + young trees), with
+ * themed corners (snow / sand / shrine) instead of separate zones. The whole
+ * forest is visible at once; no camera. Depth comes from a perspective
+ * trapezoid field, y-sorted occlusion and back-row shrink.
  *
- * Deliberately self-contained: all styles live in the <style> block below and
- * nothing outside app/forest-preview/ depends on this file.
+ * Still fake data + local state only — no backend, no auth. Self-contained:
+ * all styles live in the <style> block below.
  */
 
 import Image from "next/image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
-// ── World constants ────────────────────────────────────────────────────────────
+// ── Stage (design-space) constants — scaled to fit the viewport ────────────────
 
-const BIOME_W = 1500;
-const WORLD_W = BIOME_W * 4;
-const GROUND_H = 128;
-
-type BiomeId = "apple" | "cherry" | "cactus" | "christmas";
-
-interface BiomeDef {
-  id: BiomeId;
-  name: string;
-  emoji: string;
-  x: number; // world-space left edge
-  sky: [string, string, string]; // top / mid / horizon
-  groundTop: string;
-  groundEdge: string;
-}
-
-const BIOMES: BiomeDef[] = [
-  {
-    id: "apple",
-    name: "苹果果园",
-    emoji: "🍎",
-    x: 0,
-    sky: ["#8fb8d0", "#c4dce8", "#e8d5a8"],
-    groundTop: "#4d8f4a",
-    groundEdge: "#6fae5c",
-  },
-  {
-    id: "cherry",
-    name: "樱花神社",
-    emoji: "🌸",
-    x: BIOME_W,
-    sky: ["#5a5480", "#c98a96", "#f2d4b8"],
-    groundTop: "#5f8f56",
-    groundEdge: "#8fae72",
-  },
-  {
-    id: "cactus",
-    name: "仙人掌峡谷",
-    emoji: "🌵",
-    x: BIOME_W * 2,
-    sky: ["#4a2c4d", "#c96a4a", "#f0b878"],
-    groundTop: "#d0a05e",
-    groundEdge: "#e0bc7e",
-  },
-  {
-    id: "christmas",
-    name: "冬日林地",
-    emoji: "🎄",
-    x: BIOME_W * 3,
-    sky: ["#070d1c", "#122038", "#28405c"],
-    groundTop: "#dfe8f2",
-    groundEdge: "#f4f8fc",
-  },
-];
-
-const biomeCenter = (b: BiomeDef) => b.x + BIOME_W / 2;
+const STAGE_W = 1680;
+const STAGE_H = 1050;
+// Field trapezoid (the plot): back edge y=430, front edge y=1000
+const FIELD = { backY: 430, frontY: 1000, backL: 310, backR: 1370, frontL: 90, frontR: 1590 };
 
 // ── Fake tree data (vision §9.2 tree profile fields) ───────────────────────────
 
 interface TreeDef {
   id: string;
-  biome: BiomeId;
   sprite: string;
-  nw: number; // natural sprite size
+  nw: number;
   nh: number;
-  h: number; // display height
-  x: number; // world-space center of the trunk
-  lift: number; // px the sprite's visual foot sits above its bounding box
+  h: number; // display height at scale 1
+  x: number; // stage-space trunk center
+  y: number; // stage-space foot baseline (drives z-order)
+  s: number; // depth scale (back rows shrink)
   main?: boolean;
+  emoji: string;
   name: string;
   kind: string;
   roman: string;
@@ -101,56 +51,56 @@ interface TreeDef {
 
 const TREES: TreeDef[] = [
   {
-    id: "apple-main", biome: "apple", sprite: "AppleTree_8", nw: 759, nh: 823, h: 380, x: 770,
-    lift: 18, main: true, name: "老苹果", kind: "苹果树", roman: "VIII", planted: "2026-04-21",
-    days: 83, tokens: "93.4M", next: "已长满 🏆", recent: "2 小时前 · +1.2M",
-    eco: "果园的篱笆修好了,鸟开始清晨来访",
+    id: "christmas-main", sprite: "ChristmasTree_8", nw: 698, nh: 1214, h: 350, x: 350, y: 585,
+    s: 0.88, main: true, emoji: "🎄", name: "极夜星", kind: "圣诞树", roman: "VIII",
+    planted: "2026-05-30", days: 44, tokens: "452.8M", next: "已长满 🏆",
+    recent: "昨晚 · +2.4M", eco: "雪角的灯串亮起来了",
   },
   {
-    id: "apple-young", biome: "apple", sprite: "AppleTree_4", nw: 759, nh: 823, h: 216, x: 420,
-    lift: 10, name: "小果", kind: "苹果树", roman: "IV", planted: "2026-06-30", days: 13,
-    tokens: "6.8M", next: "距 V 阶段还需 3.2M", recent: "26 分钟前 · +0.4M",
+    id: "cactus-main", sprite: "Cactus_8", nw: 600, nh: 600, h: 250, x: 1330, y: 580,
+    s: 0.88, main: true, emoji: "🌵", name: "峡谷卫兵", kind: "仙人掌", roman: "VIII",
+    planted: "2026-05-16", days: 58, tokens: "364.0M", next: "已长满 🏆",
+    recent: "3 天前 · +0.9M", eco: "沙地里开了一朵沙漠花",
+  },
+  {
+    id: "cherry-main", sprite: "CherryTree_8", nw: 759, nh: 729, h: 300, x: 1120, y: 705,
+    s: 0.95, main: true, emoji: "🌸", name: "宵樱", kind: "樱花树", roman: "VIII",
+    planted: "2026-05-02", days: 72, tokens: "271.5M", next: "已长满 🏆",
+    recent: "昨天 · +3.1M", eco: "石灯点亮后,萤火虫多了起来",
+  },
+  {
+    id: "apple-main", sprite: "AppleTree_8", nw: 759, nh: 823, h: 330, x: 500, y: 860,
+    s: 1, main: true, emoji: "🍎", name: "老苹果", kind: "苹果树", roman: "VIII",
+    planted: "2026-04-21", days: 83, tokens: "93.4M", next: "已长满 🏆",
+    recent: "2 小时前 · +1.2M", eco: "果园的篱笆修好了,鸟开始清晨来访",
+  },
+  {
+    id: "apple-young", sprite: "AppleTree_4", nw: 759, nh: 823, h: 175, x: 745, y: 775,
+    s: 1, emoji: "🍎", name: "小果", kind: "苹果树", roman: "IV", planted: "2026-06-30",
+    days: 13, tokens: "6.8M", next: "距 V 阶段还需 3.2M", recent: "26 分钟前 · +0.4M",
     eco: "树下长出了第一丛白花",
   },
   {
-    id: "cherry-main", biome: "cherry", sprite: "CherryTree_8", nw: 759, nh: 729, h: 348, x: 2330,
-    lift: 16, main: true, name: "宵樱", kind: "樱花树", roman: "VIII", planted: "2026-05-02",
-    days: 72, tokens: "271.5M", next: "已长满 🏆", recent: "昨天 · +3.1M",
-    eco: "石灯点亮后,萤火虫多了起来",
-  },
-  {
-    id: "cherry-young", biome: "cherry", sprite: "CherryTree_3", nw: 759, nh: 729, h: 190, x: 2030,
-    lift: 9, name: "初瓣", kind: "樱花树", roman: "III", planted: "2026-07-01", days: 12,
-    tokens: "5.1M", next: "距 IV 阶段还需 6.9M", recent: "1 小时前 · +0.2M",
+    id: "cherry-young", sprite: "CherryTree_3", nw: 759, nh: 729, h: 140, x: 940, y: 625,
+    s: 0.92, emoji: "🌸", name: "初瓣", kind: "樱花树", roman: "III", planted: "2026-07-01",
+    days: 12, tokens: "5.1M", next: "距 IV 阶段还需 6.9M", recent: "1 小时前 · +0.2M",
     eco: "花瓣落进了小溪",
   },
   {
-    id: "cactus-main", biome: "cactus", sprite: "Cactus_8", nw: 600, nh: 600, h: 285, x: 3815,
-    lift: 12, main: true, name: "峡谷卫兵", kind: "仙人掌", roman: "VIII", planted: "2026-05-16",
-    days: 58, tokens: "364.0M", next: "已长满 🏆", recent: "3 天前 · +0.9M",
-    eco: "日落时会有滚草路过",
-  },
-  {
-    id: "cactus-young", biome: "cactus", sprite: "Cactus_4", nw: 600, nh: 600, h: 150, x: 3540,
-    lift: 7, name: "小刺", kind: "仙人掌", roman: "IV", planted: "2026-06-18", days: 25,
-    tokens: "18.3M", next: "距 V 阶段还需 21.7M", recent: "5 小时前 · +0.6M",
+    id: "cactus-young", sprite: "Cactus_4", nw: 600, nh: 600, h: 110, x: 1462, y: 662,
+    s: 0.92, emoji: "🌵", name: "小刺", kind: "仙人掌", roman: "IV", planted: "2026-06-18",
+    days: 25, tokens: "18.3M", next: "距 V 阶段还需 21.7M", recent: "5 小时前 · +0.6M",
     eco: "石缝里开了一朵沙漠花",
   },
   {
-    id: "christmas-main", biome: "christmas", sprite: "ChristmasTree_8", nw: 698, nh: 1214, h: 430,
-    x: 5345, lift: 14, main: true, name: "极夜星", kind: "圣诞树", roman: "VIII",
-    planted: "2026-05-30", days: 44, tokens: "452.8M", next: "已长满 🏆",
-    recent: "昨晚 · +2.4M", eco: "雪停的晚上能看到流星",
-  },
-  {
-    id: "christmas-young", biome: "christmas", sprite: "ChristmasTree_4", nw: 698, nh: 1214,
-    h: 225, x: 5030, lift: 8, name: "小雪杉", kind: "圣诞树", roman: "IV",
-    planted: "2026-06-25", days: 18, tokens: "22.6M", next: "距 V 阶段还需 27.4M",
-    recent: "40 分钟前 · +0.5M", eco: "树梢挂上了第一颗星",
+    id: "christmas-young", sprite: "ChristmasTree_4", nw: 698, nh: 1214, h: 175, x: 185, y: 700,
+    s: 0.95, emoji: "🎄", name: "小雪杉", kind: "圣诞树", roman: "IV", planted: "2026-06-25",
+    days: 18, tokens: "22.6M", next: "距 V 阶段还需 27.4M", recent: "40 分钟前 · +0.5M",
+    eco: "树梢挂上了第一颗星",
   },
 ];
 
-// ── Static decorations (existing sprites) ──────────────────────────────────────
+// ── Static decorations (existing sprites; y drives z-order) ────────────────────
 
 interface DecoDef {
   id: string;
@@ -159,38 +109,40 @@ interface DecoDef {
   nh: number;
   h: number;
   x: number;
-  bottom: number; // offset above ground top (negative = tucked into ground)
-  z: number;
+  y: number;
   flip?: boolean;
+  behind?: number; // optional z override (e.g. torii behind its tree)
 }
 
+const FENCE_FRONT_Y = 1012;
 const DECOS: DecoDef[] = [
-  // apple orchard
-  { id: "fence-a1", sprite: "Fence", nw: 193, nh: 67, h: 56, x: 180, bottom: -4, z: 4 },
-  { id: "fence-a2", sprite: "Fence", nw: 193, nh: 67, h: 56, x: 1010, bottom: -4, z: 4 },
-  { id: "fence-a3", sprite: "Fence", nw: 193, nh: 67, h: 56, x: 1160, bottom: -4, z: 4 },
-  { id: "basket", sprite: "Basket", nw: 86, nh: 60, h: 50, x: 900, bottom: -2, z: 5 },
-  // cherry shrine
-  { id: "torii", sprite: "Torii", nw: 780, nh: 674, h: 306, x: 2180, bottom: -6, z: 1 },
-  { id: "bfence-c1", sprite: "BambooFence", nw: 193, nh: 65, h: 54, x: 1720, bottom: -4, z: 4 },
-  { id: "bfence-c2", sprite: "BambooFence", nw: 193, nh: 65, h: 54, x: 2700, bottom: -4, z: 4 },
-  // cactus canyon
-  { id: "bfence-x1", sprite: "BrokenFence", nw: 193, nh: 63, h: 52, x: 3585, bottom: -4, z: 4 },
-  { id: "bfence-x2", sprite: "BrokenFence", nw: 193, nh: 63, h: 52, x: 3990, bottom: -4, z: 4, flip: true },
-  // winter woodland
-  { id: "fence-w1", sprite: "Fence", nw: 193, nh: 67, h: 56, x: 4890, bottom: -4, z: 4 },
-  { id: "fence-w2", sprite: "Fence", nw: 193, nh: 67, h: 56, x: 5520, bottom: -4, z: 4 },
+  // front fence row with a gate gap at x≈840 (path entrance)
+  ...[150, 300, 450, 600, 750].map((x, i) => ({
+    id: `fence-f${i}`, sprite: "Fence", nw: 193, nh: 67, h: 62, x, y: FENCE_FRONT_Y,
+  })),
+  ...[930, 1080, 1230, 1380, 1530].map((x, i) => ({
+    id: `fence-g${i}`, sprite: "Fence", nw: 193, nh: 67, h: 62, x, y: FENCE_FRONT_Y,
+  })),
+  // back hedge: smaller fences along the back edge (perspective shrink)
+  ...[420, 560, 700, 840, 980, 1120, 1260].map((x, i) => ({
+    id: `fence-b${i}`, sprite: "Fence", nw: 193, nh: 67, h: 40, x, y: 442,
+  })),
+  // themed corners
+  { id: "bfence-1", sprite: "BambooFence", nw: 193, nh: 65, h: 46, x: 1268, y: 715 },
+  { id: "bfence-2", sprite: "BambooFence", nw: 193, nh: 65, h: 44, x: 968, y: 668 },
+  { id: "xfence-1", sprite: "BrokenFence", nw: 193, nh: 63, h: 42, x: 1478, y: 590, flip: true },
+  { id: "xfence-2", sprite: "BrokenFence", nw: 193, nh: 63, h: 44, x: 1210, y: 545 },
+  { id: "torii", sprite: "Torii", nw: 780, nh: 674, h: 250, x: 1180, y: 668, behind: 640 },
+  { id: "basket", sprite: "Basket", nw: 86, nh: 60, h: 52, x: 640, y: 878 },
 ];
 
-// Interactive prop positions
 const LAMPS = [
-  { id: "lamp-c1", x: 1950, h: 142 },
-  { id: "lamp-c2", x: 2580, h: 142 },
-  { id: "lamp-w1", x: 5170, h: 142 },
+  { id: "lamp-1", x: 1002, y: 712, h: 118 },
+  { id: "lamp-2", x: 1268, y: 748, h: 126 },
 ];
-const SWING = { x: 615, h: 172 };
-const CHEST = { x: 1085, fw: 109, fh: 102, scale: 1.15 };
-const CHIME = { x: 2120, fw: 337, fh: 431, h: 112, hang: 118 }; // 挂在鸟居横梁下、避开树冠
+const SWING = { x: 322, y: 838, h: 168 };
+const CHEST = { x: 705, y: 915, fw: 109, fh: 102, scale: 1.1 };
+const CHIME = { x: 1122, y: 668, fw: 337, fh: 431, h: 96, topAt: 570 };
 
 // ── Deterministic PRNG (same on server & client → no hydration mismatch) ──────
 
@@ -205,224 +157,103 @@ function mulberry32(seed: number) {
   };
 }
 
-interface Particle {
-  left: number; // 0..1 within biome
-  delay: number;
-  dur: number;
-  size: number;
-  sway: number;
-  color: string;
-  kind: "fall" | "dust";
+// function declaration (hoisted): module-init code below calls it via fieldRange
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, v));
 }
 
-const PARTICLE_STYLES: Record<BiomeId, { colors: string[]; count: number; kind: "fall" | "dust" }> = {
-  apple: { colors: ["#7fae5c", "#5d8f4a", "#c8943c"], count: 5, kind: "fall" },
-  cherry: { colors: ["#f4b8c8", "#eda3b8", "#f9d2dc"], count: 10, kind: "fall" },
-  cactus: { colors: ["#e0bc7e", "#d0a05e"], count: 6, kind: "dust" },
-  christmas: { colors: ["#ffffff", "#dfe8f2"], count: 13, kind: "fall" },
-};
+/** x-range of the field at a given y (linear interpolation of the trapezoid). */
+function fieldRange(y: number): [number, number] {
+  const t = clamp((y - FIELD.backY) / (FIELD.frontY - FIELD.backY), 0, 1);
+  return [FIELD.backL + (FIELD.frontL - FIELD.backL) * t, FIELD.backR + (FIELD.frontR - FIELD.backR) * t];
+}
 
-const PARTICLES: Record<BiomeId, Particle[]> = (() => {
-  const out = {} as Record<BiomeId, Particle[]>;
-  BIOMES.forEach((b, bi) => {
-    const rnd = mulberry32(1000 + bi * 77);
-    const spec = PARTICLE_STYLES[b.id];
-    out[b.id] = Array.from({ length: spec.count }, () => ({
-      left: 0.05 + rnd() * 0.9,
-      delay: -rnd() * 14,
-      dur: spec.kind === "dust" ? 3.5 + rnd() * 3 : 9 + rnd() * 7,
-      size: spec.kind === "dust" ? 2 : 3 + Math.round(rnd() * 3),
-      sway: 18 + rnd() * 46,
-      color: spec.colors[Math.floor(rnd() * spec.colors.length)] ?? spec.colors[0]!,
-      kind: spec.kind,
-    }));
-  });
+// Scattered bushes / flowers / grass tufts (procedural stand-in vegetation)
+interface BushDef { x: number; y: number; w: number; kind: "bush" | "flower" | "tuft" | "stone"; hue: string }
+const BUSHES: BushDef[] = (() => {
+  const rnd = mulberry32(20260713);
+  const out: BushDef[] = [];
+  const kinds: BushDef["kind"][] = ["bush", "tuft", "flower", "tuft", "bush", "flower", "stone", "tuft"];
+  const hues = ["#3f7a3c", "#4d8f4a", "#579448", "#6fae5c"];
+  for (let i = 0; i < 26; i++) {
+    const y = 470 + rnd() * 500;
+    const [lo, hi] = fieldRange(y);
+    const x = lo + 40 + rnd() * (hi - lo - 80);
+    // keep the middle path and tree feet breathable
+    if (Math.abs(x - 840) < 60 && y > 700) continue;
+    if (TREES.some((t) => Math.abs(t.x - x) < 70 && Math.abs(t.y - y) < 46)) continue;
+    out.push({
+      x, y,
+      w: 26 + rnd() * 30,
+      kind: kinds[Math.floor(rnd() * kinds.length)] ?? "tuft",
+      hue: hues[Math.floor(rnd() * hues.length)] ?? "#4d8f4a",
+    });
+  }
   return out;
 })();
 
-// Ground tufts (foreground parallax layer)
-const TUFTS: { x: number; hue: string; w: number }[] = (() => {
-  const rnd = mulberry32(4242);
-  const hues: Record<BiomeId, string[]> = {
-    apple: ["#3f7a3c", "#579448"],
-    cherry: ["#4f7a48", "#7a9458"],
-    cactus: ["#a87c48", "#8a6238"],
-    christmas: ["#c8d6e6", "#aebfd4"],
-  };
-  const list: { x: number; hue: string; w: number }[] = [];
-  BIOMES.forEach((b) => {
-    for (let i = 0; i < 4; i++) {
-      const cs = hues[b.id];
-      list.push({
-        x: b.x + 120 + rnd() * (BIOME_W - 240),
-        hue: cs[Math.floor(rnd() * cs.length)] ?? cs[0]!,
-        w: 34 + rnd() * 26,
-      });
-    }
-  });
-  return list;
-})();
-
-// Stars for the winter night sky
-const STARS: { l: number; t: number; d: number }[] = (() => {
-  const rnd = mulberry32(99);
-  return Array.from({ length: 34 }, () => ({
-    l: rnd() * 100,
-    t: rnd() * 52,
-    d: rnd() * 3,
+// Localized ambient particles per corner
+interface Emitter { id: string; x: number; y: number; w: number; h: number; colors: string[]; count: number }
+const EMITTERS: Emitter[] = [
+  { id: "em-cherry", x: 990, y: 380, w: 300, h: 330, colors: ["#f4b8c8", "#eda3b8", "#f9d2dc"], count: 7 },
+  { id: "em-snow", x: 190, y: 210, w: 340, h: 380, colors: ["#ffffff", "#e8f0fa"], count: 8 },
+  { id: "em-apple", x: 380, y: 540, w: 260, h: 320, colors: ["#7fae5c", "#c8943c"], count: 3 },
+  { id: "em-dust", x: 1240, y: 430, w: 300, h: 160, colors: ["#e0bc7e"], count: 3 },
+];
+const PARTICLES = (() => {
+  const rnd = mulberry32(777);
+  return EMITTERS.map((em) => ({
+    em,
+    ps: Array.from({ length: em.count }, () => ({
+      left: rnd(),
+      delay: -rnd() * 12,
+      dur: 7 + rnd() * 6,
+      size: 3 + Math.round(rnd() * 3),
+      sway: 14 + rnd() * 30,
+      color: em.colors[Math.floor(rnd() * em.colors.length)] ?? em.colors[0]!,
+    })),
   }));
 })();
 
-// ── Far / mid silhouette SVGs (procedural stand-in art, palette from sprites) ──
-
-function FarScenery({ biome }: { biome: BiomeId }) {
-  const w = 1360;
-  const h = 300;
-  if (biome === "apple") {
-    return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-        <path d="M0 300 L0 208 L120 168 L260 196 L420 130 L560 178 L700 150 L860 196 L1020 148 L1180 186 L1360 160 L1360 300 Z" fill="#7fa06a" opacity="0.75" />
-        <path d="M0 300 L0 244 L180 214 L340 238 L520 200 L700 232 L880 206 L1060 240 L1240 214 L1360 232 L1360 300 Z" fill="#5d8757" opacity="0.85" />
-      </svg>
-    );
-  }
-  if (biome === "cherry") {
-    return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-        <path d="M0 300 L0 250 L200 216 L400 248 L1360 262 L1360 300 Z" fill="#6d6584" opacity="0.7" />
-        <path d="M480 300 L680 96 L744 96 L940 300 Z" fill="#8a7f9e" />
-        <path d="M652 128 L680 96 L744 96 L772 128 L744 142 L712 122 L684 144 Z" fill="#ece6f2" />
-        <rect x="0" y="238" width={w} height="26" fill="#cbb8c8" opacity="0.45" />
-      </svg>
-    );
-  }
-  if (biome === "cactus") {
-    return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-        <path d="M60 300 L60 170 L90 140 L250 140 L280 170 L280 300 Z" fill="#b06848" />
-        <path d="M420 300 L420 120 L450 92 L640 92 L670 120 L670 300 Z" fill="#8a4e3c" />
-        <path d="M900 300 L900 156 L930 128 L1120 128 L1150 156 L1150 300 Z" fill="#a05a40" />
-        <rect x="0" y="252" width={w} height="48" fill="#6e3d33" opacity="0.85" />
-      </svg>
-    );
-  }
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-      <path d="M0 300 L0 230 Q170 176 340 226 Q510 270 680 226 Q850 180 1020 228 Q1190 268 1360 224 L1360 300 Z" fill="#ccd8e8" opacity="0.5" />
-      <path d="M40 300 L110 190 L180 300 Z M200 300 L286 150 L372 300 Z M400 300 L470 206 L540 300 Z M980 300 L1066 148 L1152 300 Z M1180 300 L1250 200 L1320 300 Z" fill="#1d3145" />
-      <path d="M600 300 L690 170 L780 300 Z M800 300 L870 216 L940 300 Z" fill="#16263a" />
-    </svg>
-  );
-}
-
-function MidScenery({ biome }: { biome: BiomeId }) {
-  const w = 1360;
-  const h = 170;
-  if (biome === "apple") {
-    return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-        {[70, 300, 540, 800, 1060, 1270].map((cx, i) => (
-          <g key={i} fill={i % 2 ? "#345c33" : "#3f6f3d"}>
-            <rect x={cx - 7} y={112} width={14} height={40} fill="#4e3a26" />
-            <circle cx={cx} cy={86} r={44} />
-            <circle cx={cx - 30} cy={104} r={30} />
-            <circle cx={cx + 30} cy={104} r={30} />
-          </g>
-        ))}
-      </svg>
-    );
-  }
-  if (biome === "cherry") {
-    return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-        <path d="M180 170 L180 120 L150 120 L260 62 L370 120 L340 120 L340 170 Z" fill="#4a3350" />
-        {[520, 760, 1020, 1240].map((cx, i) => (
-          <g key={i} fill={i % 2 ? "#7a4a62" : "#8f5a72"}>
-            <rect x={cx - 6} y={116} width={12} height={36} fill="#4e3a3a" />
-            <circle cx={cx} cy={92} r={38} />
-            <circle cx={cx - 26} cy={108} r={26} />
-            <circle cx={cx + 26} cy={108} r={26} />
-          </g>
-        ))}
-      </svg>
-    );
-  }
-  if (biome === "cactus") {
-    return (
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-        <path d="M120 170 L120 96 L146 70 L200 70 L226 96 L226 170 Z" fill="#5e3a30" />
-        <path d="M1120 170 L1120 110 L1150 84 L1230 84 L1258 110 L1258 170 Z" fill="#5e3a30" />
-        {[420, 660, 920].map((cx, i) => (
-          <g key={i} fill="#4e5e38">
-            <rect x={cx - 9} y={78} width={18} height={92} rx={6} />
-            <rect x={cx - 34} y={96} width={12} height={34} rx={5} />
-            <rect x={cx - 34} y={96} width={26} height={12} rx={5} />
-            <rect x={cx + 22} y={110} width={12} height={30} rx={5} />
-            <rect x={cx + 8} y={110} width={26} height={12} rx={5} />
-          </g>
-        ))}
-      </svg>
-    );
-  }
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden>
-      {[100, 320, 560, 820, 1080, 1280].map((cx, i) => (
-        <g key={i}>
-          <path d={`M${cx - 66} 170 L${cx} ${i % 2 ? 34 : 56} L${cx + 66} 170 Z`} fill="#0f1c2c" />
-          <path d={`M${cx - 40} 118 L${cx} ${i % 2 ? 72 : 90} L${cx + 40} 118 Z`} fill="#22384e" opacity="0.8" />
-        </g>
-      ))}
-    </svg>
-  );
-}
+// Night stars + day clouds
+const STARS = (() => {
+  const rnd = mulberry32(99);
+  return Array.from({ length: 40 }, () => ({ l: rnd() * 100, t: rnd() * 40, d: rnd() * 3 }));
+})();
+const CLOUDS = [
+  { y: 64, s: 1, dur: 150, delay: -20 },
+  { y: 150, s: 0.7, dur: 190, delay: -95 },
+  { y: 34, s: 0.55, dur: 230, delay: -160 },
+];
 
 // ── Small helpers ──────────────────────────────────────────────────────────────
 
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const spritePath = (name: string) => `/sprites/${name}.png`;
+const Z = (y: number) => Math.round(y); // depth sort: lower on screen = in front
 
-interface OrbFx {
-  id: number;
-  sx: number;
-  sy: number;
-  dx: number;
-  dy: number;
-  color: string;
-}
-interface FloatFx {
-  id: number;
-  treeId: string;
-  text: string;
-}
+interface OrbFx { id: number; tx: number; ty: number; color: string; claude: boolean }
+interface FloatFx { id: number; treeId: string; text: string }
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function ForestScene() {
   const reduced = usePrefersReducedMotion();
 
-  const viewportRef = useRef<HTMLDivElement | null>(null);
-  const layersRef = useRef<{ el: HTMLElement; f: number }[]>([]);
-  const skyRefs = useRef<Map<BiomeId, HTMLElement>>(new Map());
-  const camRef = useRef(0);
-  const vwRef = useRef(1200);
-  const vhRef = useRef(800);
-  const panAnimRef = useRef<number | null>(null);
-  const dragRef = useRef<{ startX: number; startCam: number; lastX: number; v: number } | null>(null);
-  const activeBiomeRef = useRef<BiomeId>("apple");
+  const fxIdRef = useRef(1);
   const lastEchoRef = useRef(0);
   const petAccumRef = useRef<Record<string, number>>({});
-  const fxIdRef = useRef(1);
 
-  const [activeBiome, setActiveBiome] = useState<BiomeId>("apple");
+  const [scale, setScale] = useState(0.75);
+  const [night, setNight] = useState(false);
   const [profileTree, setProfileTree] = useState<TreeDef | null>(null);
   const [photoMode, setPhotoMode] = useState(false);
   const [welcome, setWelcome] = useState(true);
-  const [litLamps, setLitLamps] = useState<Record<string, boolean>>({ "lamp-w1": true });
+  const [litLamps, setLitLamps] = useState<Record<string, boolean>>({ "lamp-2": true });
   const [chestFrame, setChestFrame] = useState(0);
   const [chimeFrame, setChimeFrame] = useState(0);
   const [swinging, setSwinging] = useState(false);
-  const [windBiome, setWindBiome] = useState<BiomeId | null>(null);
   const [windKey, setWindKey] = useState(0);
+  const [windOn, setWindOn] = useState(false);
   const [echo, setEcho] = useState<string | null>(null);
   const [orbs, setOrbs] = useState<OrbFx[]>([]);
   const [floats, setFloats] = useState<FloatFx[]>([]);
@@ -430,174 +261,58 @@ export function ForestScene() {
   const [swayTree, setSwayTree] = useState<string | null>(null);
   const [syncSecs, setSyncSecs] = useState(12);
 
-  // ── camera ───────────────────────────────────────────────────────────────────
-
-  const applyCam = useCallback((x: number) => {
-    const vw = vwRef.current;
-    const cam = clamp(x, 0, WORLD_W - vw);
-    camRef.current = cam;
-    layersRef.current.forEach(({ el, f }) => {
-      el.style.transform = `translate3d(${-cam * f + (1 - f) * vw * 0.5}px, 0, 0)`;
-    });
-    // sky cross-fade by which biome the viewport center sits in. Narrow the
-    // blend window (×1.7) so biome centers read pure and only borders mix,
-    // then normalize so overlapping panes never sum below 1 (no dark seams).
-    const p = clamp((cam + vw / 2) / BIOME_W - 0.5, 0, 3);
-    const raw = BIOMES.map((_b, i) => Math.max(0, 1 - Math.abs(p - i) * 1.7));
-    const sum = raw.reduce((a, v) => a + v, 0) || 1;
-    BIOMES.forEach((b, i) => {
-      const el = skyRefs.current.get(b.id);
-      if (el) el.style.opacity = String((raw[i] ?? 0) / sum);
-    });
-    const nearest = BIOMES[Math.round(p)] ?? BIOMES[0]!;
-    if (nearest.id !== activeBiomeRef.current) {
-      activeBiomeRef.current = nearest.id;
-      setActiveBiome(nearest.id);
-    }
-  }, []);
-
-  const stopPan = useCallback(() => {
-    if (panAnimRef.current !== null) {
-      cancelAnimationFrame(panAnimRef.current);
-      panAnimRef.current = null;
-    }
-  }, []);
-
-  const panTo = useCallback(
-    (targetWorldX: number) => {
-      stopPan();
-      const target = clamp(targetWorldX - vwRef.current / 2, 0, WORLD_W - vwRef.current);
-      const step = () => {
-        const d = target - camRef.current;
-        if (Math.abs(d) < 0.8) {
-          applyCam(target);
-          panAnimRef.current = null;
-          return;
-        }
-        applyCam(camRef.current + d * 0.13);
-        panAnimRef.current = requestAnimationFrame(step);
-      };
-      panAnimRef.current = requestAnimationFrame(step);
-    },
-    [applyCam, stopPan],
-  );
-
-  // collect parallax layers / sky panes, then size + focus the apple main tree
+  // scale the fixed-size stage to fit the viewport (whole forest always visible)
   useEffect(() => {
-    const vp = viewportRef.current;
-    if (!vp) return;
-    layersRef.current = Array.from(vp.querySelectorAll<HTMLElement>("[data-fp-f]")).map((el) => ({
-      el,
-      f: Number(el.dataset.fpF),
-    }));
-    skyRefs.current = new Map(
-      Array.from(vp.querySelectorAll<HTMLElement>("[data-fp-sky]")).map((el) => [
-        el.dataset.fpSky as BiomeId,
-        el,
-      ]),
-    );
-    const measure = () => {
-      vwRef.current = vp.clientWidth;
-      vhRef.current = vp.clientHeight;
-      applyCam(camRef.current);
-    };
+    const measure = () =>
+      setScale(Math.min(window.innerWidth / STAGE_W, window.innerHeight / STAGE_H));
     measure();
-    applyCam(770 - vwRef.current / 2);
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [applyCam]);
+  }, []);
 
-  // ── drag / inertia / wheel / keyboard ───────────────────────────────────────
-
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const t = e.target as HTMLElement;
-      if (t.closest("button, a, .fp-card, .fp-hud")) return;
-      stopPan();
-      dragRef.current = { startX: e.clientX, startCam: camRef.current, lastX: e.clientX, v: 0 };
-      (e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId);
-    },
-    [stopPan],
-  );
-
-  const onPointerMove = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const d = dragRef.current;
-      if (!d) return;
-      d.v = d.lastX - e.clientX;
-      d.lastX = e.clientX;
-      applyCam(d.startCam + (d.startX - e.clientX));
-    },
-    [applyCam],
-  );
-
-  const onPointerUp = useCallback(() => {
-    const d = dragRef.current;
-    dragRef.current = null;
-    if (!d || Math.abs(d.v) < 2) return;
-    let v = d.v * 1.1;
-    const glide = () => {
-      v *= 0.94;
-      if (Math.abs(v) < 0.4) return;
-      applyCam(camRef.current + v);
-      panAnimRef.current = requestAnimationFrame(glide);
-    };
-    stopPan();
-    panAnimRef.current = requestAnimationFrame(glide);
-  }, [applyCam, stopPan]);
-
-  const onWheel = useCallback(
-    (e: React.WheelEvent) => {
-      stopPan();
-      applyCam(camRef.current + (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY));
-    },
-    [applyCam, stopPan],
-  );
+  useEffect(() => {
+    const t = window.setInterval(() => setSyncSecs((s) => (s >= 46 ? 8 : s + 1)), 1000);
+    return () => window.clearInterval(t);
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setProfileTree(null);
         setPhotoMode(false);
-        return;
       }
-      if (e.key === "ArrowLeft") applyCam(camRef.current - 120);
-      if (e.key === "ArrowRight") applyCam(camRef.current + 120);
-      const n = Number(e.key);
-      if (n >= 1 && n <= 4) panTo(biomeCenter(BIOMES[n - 1]!));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [applyCam, panTo]);
+  }, []);
 
   // ── simulated desktop link ───────────────────────────────────────────────────
 
-  const spawnOrb = useCallback(
-    (tree?: TreeDef) => {
-      const target =
-        tree ?? TREES.find((t) => t.main && t.biome === activeBiomeRef.current) ?? TREES[0]!;
-      const vw = vwRef.current;
-      const vh = vhRef.current;
-      const tx = target.x - camRef.current;
-      if (tx < -80 || tx > vw + 80) return; // off-screen tree: skip the fx
-      const ty = vh - GROUND_H - target.h * 0.66;
-      const sx = vw * 0.5;
-      const sy = vh - 26;
-      const id = fxIdRef.current++;
-      const claude = id % 2 === 1;
-      setOrbs((o) => [...o, { id, sx, sy, dx: tx - sx, dy: ty - sy, color: claude ? "var(--color-bubble-claude)" : "var(--color-bubble-codex)" }]);
-      window.setTimeout(() => {
-        setOrbs((o) => o.filter((x) => x.id !== id));
-        setGlowTree(target.id);
-        const fid = fxIdRef.current++;
-        setFloats((f) => [...f, { id: fid, treeId: target.id, text: claude ? "+1.2M" : "+0.6M" }]);
-        setSyncSecs(0);
-        window.setTimeout(() => setFloats((f) => f.filter((x) => x.id !== fid)), 1900);
-        window.setTimeout(() => setGlowTree((g) => (g === target.id ? null : g)), 1400);
-      }, 1250);
-    },
-    [],
-  );
+  const spawnOrb = useCallback((tree?: TreeDef) => {
+    const pool = TREES.filter((t) => t.main);
+    const target = tree ?? pool[fxIdRef.current % pool.length] ?? TREES[0]!;
+    const id = fxIdRef.current++;
+    const claude = id % 2 === 1;
+    setOrbs((o) => [
+      ...o,
+      {
+        id,
+        tx: target.x,
+        ty: target.y - target.h * target.s * 0.62,
+        color: claude ? "var(--color-bubble-claude)" : "var(--color-bubble-codex)",
+        claude,
+      },
+    ]);
+    window.setTimeout(() => {
+      setOrbs((o) => o.filter((x) => x.id !== id));
+      setGlowTree(target.id);
+      const fid = fxIdRef.current++;
+      setFloats((f) => [...f, { id: fid, treeId: target.id, text: claude ? "+1.2M" : "+0.6M" }]);
+      setSyncSecs(0);
+      window.setTimeout(() => setFloats((f) => f.filter((x) => x.id !== fid)), 1900);
+      window.setTimeout(() => setGlowTree((g) => (g === target.id ? null : g)), 1400);
+    }, 1250);
+  }, []);
 
   useEffect(() => {
     if (reduced) return;
@@ -606,11 +321,6 @@ export function ForestScene() {
     }, 10_000);
     return () => window.clearInterval(t);
   }, [reduced, spawnOrb]);
-
-  useEffect(() => {
-    const t = window.setInterval(() => setSyncSecs((s) => (s >= 46 ? 8 : s + 1)), 1000);
-    return () => window.clearInterval(t);
-  }, []);
 
   const triggerEcho = useCallback((text: string) => {
     const now = Date.now();
@@ -670,88 +380,121 @@ export function ForestScene() {
   }, []);
 
   const blowWind = useCallback(() => {
-    const b = activeBiomeRef.current;
-    setWindBiome(b);
+    setWindOn(true);
     setWindKey((k) => k + 1);
-    if (b === "cherry") playChime();
-    window.setTimeout(() => setWindBiome((w) => (w === b ? null : w)), 2600);
+    playChime();
+    window.setTimeout(() => setWindOn(false), 2600);
   }, [playChime]);
 
-  // ── render helpers ──────────────────────────────────────────────────────────
+  const focusTree = useCallback((t: TreeDef) => {
+    setProfileTree(t);
+    setSwayTree(t.id);
+    window.setTimeout(() => setSwayTree((s) => (s === t.id ? null : s)), 950);
+  }, []);
+
+  // ── render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      ref={viewportRef}
-      className="fp-viewport"
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onPointerCancel={onPointerUp}
-      onWheel={onWheel}
-    >
-      {/* ── sky (screen-space, cross-faded per biome) ── */}
-      {BIOMES.map((b) => (
-        <div
-          key={b.id}
-          data-fp-sky={b.id}
-          className="fp-sky"
-          style={{
-            background: `linear-gradient(180deg, ${b.sky[0]} 0%, ${b.sky[1]} 55%, ${b.sky[2]} 100%)`,
-            opacity: b.id === "apple" ? 1 : 0,
-          }}
-          aria-hidden
-        >
-          {b.id === "apple" && <div className="fp-sun" style={{ left: "18%", top: "12%", background: "#fff3c8", boxShadow: "0 0 60px 22px rgba(255,240,190,0.65)" }} />}
-          {b.id === "cherry" && <div className="fp-sun" style={{ left: "70%", top: "30%", background: "#ffd9c8", boxShadow: "0 0 54px 20px rgba(255,190,170,0.5)" }} />}
-          {b.id === "cactus" && <div className="fp-sun fp-sun-lg" style={{ left: "40%", top: "42%", background: "#ffb868", boxShadow: "0 0 70px 30px rgba(255,150,80,0.55)" }} />}
-          {b.id === "christmas" && (
-            <>
-              <div className="fp-moon" />
-              {STARS.map((s, i) => (
-                <span key={i} className="fp-star fp-anim" style={{ left: `${s.l}%`, top: `${s.t}%`, animationDelay: `${s.d}s` }} />
-              ))}
-            </>
-          )}
-        </div>
-      ))}
-
-      {/* ── far silhouettes ── */}
-      <div className="fp-layer" data-fp-f="0.35" aria-hidden>
-        {BIOMES.map((b) => (
-          <div key={b.id} className="fp-scenery" style={{ left: biomeCenter(b) * 0.35 - 680, bottom: GROUND_H - 10 }}>
-            <FarScenery biome={b.id} />
-          </div>
+    <div className={`fp-viewport${night ? " fp-night" : ""}`}>
+      {/* sky (screen space) */}
+      <div className="fp-sky fp-sky-day" aria-hidden>
+        <div className="fp-sun" />
+        {!reduced &&
+          CLOUDS.map((c, i) => (
+            <svg
+              key={i}
+              className="fp-cloud fp-anim"
+              style={{ top: c.y, animationDuration: `${c.dur}s`, animationDelay: `${c.delay}s`, transform: `scale(${c.s})` }}
+              width="220" height="70" viewBox="0 0 220 70"
+            >
+              <ellipse cx="60" cy="46" rx="56" ry="22" fill="#ffffff" opacity="0.92" />
+              <ellipse cx="120" cy="34" rx="48" ry="26" fill="#ffffff" opacity="0.92" />
+              <ellipse cx="170" cy="48" rx="44" ry="18" fill="#ffffff" opacity="0.92" />
+            </svg>
+          ))}
+      </div>
+      <div className="fp-sky fp-sky-night" aria-hidden>
+        <div className="fp-moon" />
+        {STARS.map((s, i) => (
+          <span key={i} className="fp-star fp-anim" style={{ left: `${s.l}%`, top: `${s.t}%`, animationDelay: `${s.d}s` }} />
         ))}
       </div>
 
-      {/* ── mid silhouettes ── */}
-      <div className="fp-layer" data-fp-f="0.62" aria-hidden>
-        {BIOMES.map((b) => (
-          <div key={b.id} className="fp-scenery" style={{ left: biomeCenter(b) * 0.62 - 680, bottom: GROUND_H - 6, opacity: 0.92 }}>
-            <MidScenery biome={b.id} />
-          </div>
-        ))}
-      </div>
+      {/* stage: fixed 1680×1050 design space, scaled to fit, bottom-anchored */}
+      <div className="fp-stage" style={{ transform: `translateX(-50%) scale(${scale})` }}>
+        {/* ── the plot: perspective trapezoid field + themed patches + path ── */}
+        <svg className="fp-fieldsvg" width={STAGE_W} height={STAGE_H} viewBox={`0 0 ${STAGE_W} ${STAGE_H}`} aria-hidden>
+          <defs>
+            <linearGradient id="fpGrass" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#5d9a52" />
+              <stop offset="0.5" stopColor="#4d8f4a" />
+              <stop offset="1" stopColor="#3f7f40" />
+            </linearGradient>
+            <pattern id="fpRows" width="64" height="34" patternUnits="userSpaceOnUse" patternTransform="skewX(-16)">
+              <rect width="64" height="17" fill="#000000" opacity="0.05" />
+              <rect y="17" width="64" height="17" fill="#ffffff" opacity="0.04" />
+            </pattern>
+          </defs>
+          {/* plateau side (soil thickness below the front edge) */}
+          <path d={`M ${FIELD.frontL} ${FIELD.frontY} L ${FIELD.frontR} ${FIELD.frontY} L ${FIELD.frontR - 14} ${FIELD.frontY + 42} L ${FIELD.frontL + 14} ${FIELD.frontY + 42} Z`} fill="#5a4028" />
+          <path d={`M ${FIELD.frontL + 14} ${FIELD.frontY + 42} L ${FIELD.frontR - 14} ${FIELD.frontY + 42} L ${FIELD.frontR - 30} ${FIELD.frontY + 50} L ${FIELD.frontL + 30} ${FIELD.frontY + 50} Z`} fill="#3c2a1a" />
+          {/* field base + subtle farm rows */}
+          <path d={`M ${FIELD.backL} ${FIELD.backY} L ${FIELD.backR} ${FIELD.backY} L ${FIELD.frontR} ${FIELD.frontY} L ${FIELD.frontL} ${FIELD.frontY} Z`} fill="url(#fpGrass)" />
+          <path d={`M ${FIELD.backL} ${FIELD.backY} L ${FIELD.backR} ${FIELD.backY} L ${FIELD.frontR} ${FIELD.frontY} L ${FIELD.frontL} ${FIELD.frontY} Z`} fill="url(#fpRows)" />
+          {/* back edge highlight */}
+          <path d={`M ${FIELD.backL} ${FIELD.backY} L ${FIELD.backR} ${FIELD.backY} L ${FIELD.backR + 10} ${FIELD.backY + 14} L ${FIELD.backL - 10} ${FIELD.backY + 14} Z`} fill="#7cb668" opacity="0.9" />
+          {/* themed corner patches: snow / sand / shrine moss */}
+          <ellipse cx="345" cy="600" rx="255" ry="96" fill="#eef4fa" opacity="0.95" />
+          <ellipse cx="255" cy="565" rx="130" ry="52" fill="#ffffff" opacity="0.65" />
+          <ellipse cx="1345" cy="600" rx="230" ry="88" fill="#ddb572" opacity="0.95" />
+          <ellipse cx="1420" cy="575" rx="110" ry="40" fill="#e8c88a" opacity="0.7" />
+          <ellipse cx="1140" cy="720" rx="230" ry="80" fill="#6f9a58" opacity="0.85" />
+          <ellipse cx="1140" cy="716" rx="150" ry="52" fill="#f4c8d4" opacity="0.28" />
+          <ellipse cx="520" cy="880" rx="250" ry="86" fill="#5d9a52" opacity="0.8" />
+          {/* dirt path: gate → center → forks */}
+          <path d="M 810 1052 L 870 1052 L 862 900 Q 858 830 890 800 L 1050 745 L 1042 723 L 878 776 Q 836 786 826 850 L 818 900 Z" fill="#a8845a" opacity="0.95" />
+          <path d="M 838 812 Q 760 770 668 776 L 560 800 L 556 782 L 662 758 Q 762 750 848 792 Z" fill="#a8845a" opacity="0.9" />
+          <path d="M 842 806 Q 828 700 782 652 L 700 600 L 712 585 L 792 636 Q 848 688 860 800 Z" fill="#a8845a" opacity="0.8" />
+          <path d="M 818 1046 L 858 1046 L 856 1000 L 822 1000 Z" fill="#c8a06a" opacity="0.6" />
+        </svg>
 
-      {/* ── ground ── */}
-      <div className="fp-layer" data-fp-f="1" aria-hidden>
-        <div className="fp-soil" />
-        {BIOMES.map((b) => (
-          <div
-            key={b.id}
-            className="fp-ground"
-            style={{
-              left: b.x - 80,
-              width: BIOME_W + 160,
-              background: `linear-gradient(180deg, ${b.groundEdge} 0%, ${b.groundTop} 14%, ${b.groundTop} 34%, #6b4a32 68%, #4a3423 100%)`,
-            }}
-          />
+        {/* scattered vegetation (y-sorted with everything else) */}
+        {BUSHES.map((b, i) => (
+          <svg
+            key={i}
+            className="fp-veg"
+            style={{ left: b.x - b.w / 2, top: b.y - b.w, zIndex: Z(b.y) }}
+            width={b.w}
+            height={b.w}
+            viewBox="0 0 40 40"
+            aria-hidden
+          >
+            {b.kind === "bush" && (
+              <>
+                <circle cx="14" cy="30" r="10" fill={b.hue} />
+                <circle cx="26" cy="28" r="12" fill={b.hue} />
+                <circle cx="20" cy="22" r="9" fill="#6fae5c" />
+              </>
+            )}
+            {b.kind === "tuft" && (
+              <path d="M8 40 L14 18 L18 40 Z M16 40 L22 10 L28 40 Z M26 40 L33 20 L38 40 Z" fill={b.hue} />
+            )}
+            {b.kind === "flower" && (
+              <>
+                <path d="M18 40 L20 24 L22 40 Z" fill="#4d8f4a" />
+                <circle cx="20" cy="20" r="6" fill="#f4b8c8" />
+                <circle cx="20" cy="20" r="2.4" fill="#c8943c" />
+              </>
+            )}
+            {b.kind === "stone" && (
+              <>
+                <ellipse cx="20" cy="32" rx="13" ry="8" fill="#9aa4ae" />
+                <ellipse cx="16" cy="29" rx="6" ry="4" fill="#c2ccd4" />
+              </>
+            )}
+          </svg>
         ))}
-        <div className="fp-path" />
-      </div>
 
-      {/* ── main content: trees, props, particles, fx ── */}
-      <div className="fp-layer" data-fp-f="1">
         {/* static decorations */}
         {DECOS.map((d) => {
           const w = (d.nw / d.nh) * d.h;
@@ -766,7 +509,12 @@ export function ForestScene() {
               loading="eager"
               draggable={false}
               className="fp-sprite"
-              style={{ left: d.x - w / 2, bottom: GROUND_H + d.bottom, zIndex: d.z, transform: d.flip ? "scaleX(-1)" : undefined }}
+              style={{
+                left: d.x - w / 2,
+                top: d.y - d.h,
+                zIndex: Z(d.behind ?? d.y),
+                transform: d.flip ? "scaleX(-1)" : undefined,
+              }}
             />
           );
         })}
@@ -775,7 +523,7 @@ export function ForestScene() {
         <button
           type="button"
           className="fp-prop"
-          style={{ left: SWING.x - (90 / 200) * SWING.h * 0.5, bottom: GROUND_H - 2, zIndex: 4 }}
+          style={{ left: SWING.x - (90 / 200) * SWING.h * 0.5, top: SWING.y - SWING.h, zIndex: Z(SWING.y) }}
           onClick={() => {
             setSwinging(true);
             window.setTimeout(() => setSwinging(false), 4900);
@@ -783,15 +531,9 @@ export function ForestScene() {
           aria-label="秋千"
         >
           <Image
-            src={spritePath("Swing")}
-            alt=""
-            width={Math.round((90 / 200) * SWING.h)}
-            height={SWING.h}
-            unoptimized
-            loading="eager"
-            draggable={false}
-            className={swinging ? "fp-rock" : undefined}
-            style={{ transformOrigin: "50% 8%" }}
+            src={spritePath("Swing")} alt="" width={Math.round((90 / 200) * SWING.h)} height={SWING.h}
+            unoptimized loading="eager" draggable={false}
+            className={swinging ? "fp-rock" : undefined} style={{ transformOrigin: "50% 8%" }}
           />
         </button>
 
@@ -804,19 +546,14 @@ export function ForestScene() {
               key={l.id}
               type="button"
               className="fp-prop"
-              style={{ left: l.x - w / 2, bottom: GROUND_H - 2, zIndex: 4 }}
+              style={{ left: l.x - w / 2, top: l.y - l.h, zIndex: Z(l.y) }}
               onClick={() => setLitLamps((s) => ({ ...s, [l.id]: !s[l.id] }))}
               aria-label={lit ? "熄灭石灯" : "点亮石灯"}
             >
               {lit && <span className="fp-lampglow" />}
               <Image
-                src={spritePath("StoneLamp_1")}
-                alt=""
-                width={Math.round(w)}
-                height={l.h}
-                unoptimized
-                loading="eager"
-                draggable={false}
+                src={spritePath("StoneLamp_1")} alt="" width={Math.round(w)} height={l.h}
+                unoptimized loading="eager" draggable={false}
                 style={{ filter: lit ? "brightness(1.25) drop-shadow(0 0 10px rgba(255,200,110,0.9))" : undefined }}
               />
             </button>
@@ -827,7 +564,7 @@ export function ForestScene() {
         <button
           type="button"
           className="fp-prop"
-          style={{ left: CHEST.x - (CHEST.fw * CHEST.scale) / 2, bottom: GROUND_H - 4, zIndex: 5 }}
+          style={{ left: CHEST.x - (CHEST.fw * CHEST.scale) / 2, top: CHEST.y - CHEST.fh * CHEST.scale, zIndex: Z(CHEST.y) }}
           onClick={() => chestFrame === 0 && playChest()}
           aria-label="宝箱"
         >
@@ -843,11 +580,11 @@ export function ForestScene() {
           />
         </button>
 
-        {/* wind chime (sheet animation, hangs from the torii) */}
+        {/* wind chime (hangs from the torii beam) */}
         <button
           type="button"
           className="fp-prop"
-          style={{ left: CHIME.x - ((CHIME.fw / CHIME.fh) * CHIME.h) / 2, bottom: GROUND_H + CHIME.hang, zIndex: 3 }}
+          style={{ left: CHIME.x - ((CHIME.fw / CHIME.fh) * CHIME.h) / 2, top: CHIME.topAt, zIndex: Z(CHIME.y) }}
           onClick={playChime}
           aria-label="风铃"
         >
@@ -863,28 +600,25 @@ export function ForestScene() {
           />
         </button>
 
-        {/* trees */}
+        {/* trees (y-sorted; back rows shrink slightly) */}
         {TREES.map((t) => {
-          const w = (t.nw / t.nh) * t.h;
+          const h = t.h * t.s;
+          const w = (t.nw / t.nh) * h;
           const float = floats.find((f) => f.treeId === t.id);
           return (
             <button
               key={t.id}
               type="button"
               className="fp-tree"
-              style={{ left: t.x - w / 2, bottom: GROUND_H - t.lift, width: w, height: t.h, zIndex: t.main ? 3 : 2 }}
+              style={{ left: t.x - w / 2, top: t.y - h, width: w, height: h, zIndex: Z(t.y) }}
               onClick={() => setProfileTree(t)}
               onPointerMove={onPetMove(t)}
               aria-label={`${t.kind}「${t.name}」 · 阶段 ${t.roman}`}
             >
+              <span className="fp-shadow" style={{ width: w * 0.68, height: Math.max(10, w * 0.13) }} />
               <Image
-                src={spritePath(t.sprite)}
-                alt=""
-                width={Math.round(w)}
-                height={t.h}
-                unoptimized
-                loading="eager"
-                draggable={false}
+                src={spritePath(t.sprite)} alt="" width={Math.round(w)} height={Math.round(h)}
+                unoptimized loading="eager" draggable={false}
                 className={swayTree === t.id ? "fp-sway" : undefined}
                 style={{ transformOrigin: "50% 92%" }}
               />
@@ -895,55 +629,39 @@ export function ForestScene() {
           );
         })}
 
-        {/* per-biome ambient particles + wind bursts */}
+        {/* localized ambient particles + wind bursts */}
         {!reduced &&
-          BIOMES.map((b) => (
-            <div key={b.id} className="fp-particles" style={{ left: b.x, width: BIOME_W }} aria-hidden>
-              {PARTICLES[b.id].map((p, i) =>
-                p.kind === "dust" ? (
-                  <span
-                    key={i}
-                    className="fp-dust fp-anim"
-                    style={{
+          PARTICLES.map(({ em, ps }) => (
+            <div key={em.id} className="fp-emitter" style={{ left: em.x, top: em.y, width: em.w, height: em.h }} aria-hidden>
+              {ps.map((p, i) => (
+                <span
+                  key={i}
+                  className="fp-fall fp-anim"
+                  style={
+                    {
                       left: `${p.left * 100}%`,
-                      top: `${30 + ((i * 13) % 45)}%`,
-                      width: 22,
-                      height: 2,
+                      width: p.size,
+                      height: p.size,
                       background: p.color,
+                      "--sw": `${p.sway}px`,
+                      "--fh": `${em.h}px`,
                       animationDuration: `${p.dur}s`,
                       animationDelay: `${p.delay}s`,
-                    }}
-                  />
-                ) : (
-                  <span
-                    key={i}
-                    className="fp-fall fp-anim"
-                    style={
-                      {
-                        left: `${p.left * 100}%`,
-                        width: p.size,
-                        height: p.size,
-                        background: p.color,
-                        "--sw": `${p.sway}px`,
-                        animationDuration: `${p.dur}s`,
-                        animationDelay: `${p.delay}s`,
-                      } as React.CSSProperties
-                    }
-                  />
-                ),
-              )}
-              {b.id === "cactus" && <span className="fp-tumbleweed fp-anim" aria-hidden />}
-              {windBiome === b.id && (
-                <span key={windKey} className="fp-gustwrap" aria-hidden>
-                  {Array.from({ length: 14 }, (_, i) => (
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+              {windOn && (
+                <span key={windKey} className="fp-gustwrap">
+                  {Array.from({ length: 8 }, (_, i) => (
                     <span
                       key={i}
                       className="fp-gust"
                       style={{
-                        left: `${(i * 7.1) % 60}%`,
-                        top: `${18 + ((i * 17) % 55)}%`,
-                        background: PARTICLE_STYLES[b.id].colors[i % PARTICLE_STYLES[b.id].colors.length],
-                        animationDelay: `${(i % 5) * 0.12}s`,
+                        left: `${(i * 11) % 55}%`,
+                        top: `${20 + ((i * 17) % 55)}%`,
+                        background: em.colors[i % em.colors.length],
+                        animationDelay: `${(i % 4) * 0.12}s`,
                       }}
                     />
                   ))}
@@ -951,37 +669,31 @@ export function ForestScene() {
               )}
             </div>
           ))}
-      </div>
 
-      {/* ── foreground tufts ── */}
-      <div className="fp-layer" data-fp-f="1.18" aria-hidden>
-        {TUFTS.map((t, i) => (
-          <svg key={i} className="fp-tuft" style={{ left: t.x * 1.18 - t.w / 2, bottom: 6 }} width={t.w} height={42} viewBox="0 0 40 42">
-            <path d="M4 42 L10 16 L14 42 Z M14 42 L20 6 L26 42 Z M24 42 L31 18 L36 42 Z" fill={t.hue} />
-          </svg>
+        {/* energy orbs fly to the tree inside stage space */}
+        {orbs.map((o) => (
+          <span
+            key={o.id}
+            className="fp-orb"
+            style={
+              {
+                left: 840,
+                top: STAGE_H - 12,
+                background: o.color,
+                boxShadow: `0 0 12px 4px ${o.claude ? "rgba(217,119,87,0.55)" : "rgba(16,163,127,0.5)"}`,
+                "--dx": `${o.tx - 840}px`,
+                "--dy": `${o.ty - (STAGE_H - 12)}px`,
+              } as React.CSSProperties
+            }
+            aria-hidden
+          />
         ))}
+
+        {/* night dims the plot slightly (lamps carry the mood) */}
+        <div className="fp-nightveil" aria-hidden />
       </div>
 
-      {/* ── screen-space fx: energy orbs ── */}
-      {orbs.map((o) => (
-        <span
-          key={o.id}
-          className="fp-orb"
-          style={
-            {
-              left: o.sx,
-              top: o.sy,
-              background: o.color,
-              boxShadow: `0 0 12px 4px ${o.color.includes("claude") ? "rgba(217,119,87,0.55)" : "rgba(16,163,127,0.5)"}`,
-              "--dx": `${o.dx}px`,
-              "--dy": `${o.dy}px`,
-            } as React.CSSProperties
-          }
-          aria-hidden
-        />
-      ))}
-
-      {/* ── HUD ── */}
+      {/* ── HUD (screen space) ── */}
       {!photoMode && (
         <>
           <div className="fp-hud fp-hud-tl">
@@ -993,53 +705,41 @@ export function ForestScene() {
           </div>
 
           <div className="fp-hud fp-hud-tr">
-            <button type="button" className="fp-btn" onClick={() => panTo(770)}>
-              回到主树
+            <button type="button" className="fp-btn" onClick={blowWind}>🌬 吹风</button>
+            <button type="button" className="fp-btn" onClick={() => spawnOrb()}>⚡ 模拟桌面收取</button>
+            <button type="button" className="fp-btn" onClick={() => setNight((n) => !n)}>
+              {night ? "☀ 白天" : "🌙 夜晚"}
             </button>
-            <button type="button" className="fp-btn" onClick={blowWind}>
-              🌬 吹风
-            </button>
-            <button type="button" className="fp-btn" onClick={() => spawnOrb()}>
-              ⚡ 模拟桌面收取
-            </button>
-            <button type="button" className="fp-btn" onClick={() => setPhotoMode(true)}>
-              📷 拍照
-            </button>
+            <button type="button" className="fp-btn" onClick={() => setPhotoMode(true)}>📷 拍照</button>
           </div>
 
           <div className="fp-hud fp-hud-bc">
-            {BIOMES.map((b) => (
+            {TREES.filter((t) => t.main).map((t) => (
               <button
-                key={b.id}
+                key={t.id}
                 type="button"
-                className={`fp-pill${activeBiome === b.id ? " fp-pill-on" : ""}`}
-                onClick={() => panTo(biomeCenter(b))}
+                className={`fp-pill${profileTree?.id === t.id ? " fp-pill-on" : ""}`}
+                onClick={() => focusTree(t)}
               >
-                {b.emoji} {b.name}
+                {t.emoji} {t.name}
               </button>
             ))}
           </div>
 
-          <div className="fp-hud fp-hud-br">概念原型 · 假数据 · 对应 M0/M1</div>
+          <div className="fp-hud fp-hud-br">概念原型 v2 · 单屏农场式 · 假数据</div>
         </>
       )}
 
       {photoMode && <div className="fp-photohint">拍照模式 · 按 ESC 退出</div>}
-
-      {/* desktop echo toast */}
       {echo && <div className="fp-echo">{echo}</div>}
 
       {/* ── tree profile card ── */}
       {profileTree && (
         <div className="fp-card" role="dialog" aria-label={`${profileTree.name} 的档案`}>
           <div className="fp-card-head">
-            <span className="fp-card-title">
-              {BIOMES.find((b) => b.id === profileTree.biome)?.emoji} {profileTree.name}
-            </span>
+            <span className="fp-card-title">{profileTree.emoji} {profileTree.name}</span>
             <span className="fp-card-stage">阶段 {profileTree.roman}</span>
-            <button type="button" className="fp-card-x" onClick={() => setProfileTree(null)} aria-label="关闭">
-              ✕
-            </button>
+            <button type="button" className="fp-card-x" onClick={() => setProfileTree(null)} aria-label="关闭">✕</button>
           </div>
           <div className="fp-card-rows">
             <div><span>树种</span><b>{profileTree.kind}{profileTree.main ? " · 主树" : ""}</b></div>
@@ -1061,13 +761,13 @@ export function ForestScene() {
             <p>你离开的 5 天里:</p>
             <ul>
               <li>🍎 「老苹果」进入了第 VIII 阶段</li>
-              <li>🏮 樱花林的两盏石灯亮了一整晚</li>
-              <li>❄️ 冬日林地下了第一场雪,雪地上有脚印</li>
+              <li>🏮 神社角的两盏石灯亮了一整晚</li>
+              <li>❄️ 雪角下了第一场雪,雪地上有脚印</li>
             </ul>
             <button type="button" className="fp-btn fp-btn-lg" onClick={() => setWelcome(false)}>
               进入森林
             </button>
-            <div className="fp-welcome-note">概念原型:数据为演示,拖动查看四个林区</div>
+            <div className="fp-welcome-note">概念原型 v2:所有树种在同一块林地 · 数据为演示</div>
           </div>
         </div>
       )}
@@ -1081,70 +781,82 @@ export function ForestScene() {
 
 const CSS = `
 .fp-viewport {
-  position: fixed; inset: 0; overflow: hidden; touch-action: none;
-  user-select: none; -webkit-user-select: none; overscroll-behavior: none;
-  cursor: grab; background: #0a0f14; font-family: var(--font-body);
+  position: fixed; inset: 0; overflow: hidden; user-select: none; -webkit-user-select: none;
+  overscroll-behavior: none; font-family: var(--font-body); background: #0a0f14;
 }
-.fp-viewport:active { cursor: grabbing; }
-.fp-sky { position: absolute; inset: 0; transition: none; }
-.fp-sun { position: absolute; width: 74px; height: 74px; border-radius: 50%; }
-.fp-sun-lg { width: 110px; height: 110px; }
+.fp-sky { position: absolute; inset: 0; transition: opacity .9s ease; }
+.fp-sky-day { background: linear-gradient(180deg, #8fb8d0 0%, #c4dce8 55%, #dfe8d8 100%); opacity: 1; }
+.fp-sky-night { background: linear-gradient(180deg, #070d1c 0%, #122038 55%, #1e3350 100%); opacity: 0; }
+.fp-night .fp-sky-day { opacity: 0; }
+.fp-night .fp-sky-night { opacity: 1; }
+.fp-sun {
+  position: absolute; left: 12%; top: 9%; width: 84px; height: 84px; border-radius: 50%;
+  background: #fff3c8; box-shadow: 0 0 64px 24px rgba(255,240,190,0.6);
+}
 .fp-moon {
-  position: absolute; left: 72%; top: 10%; width: 66px; height: 66px; border-radius: 50%;
+  position: absolute; left: 78%; top: 8%; width: 64px; height: 64px; border-radius: 50%;
   background: #f2f4e8; box-shadow: inset -14px -8px 0 rgba(160,170,150,0.45), 0 0 44px 14px rgba(220,230,255,0.28);
 }
 .fp-star { position: absolute; width: 3px; height: 3px; background: #dfe8ff; animation: fp-twinkle 2.6s ease-in-out infinite; }
-.fp-layer { position: absolute; inset: 0; width: ${WORLD_W}px; will-change: transform; pointer-events: none; }
-.fp-layer .fp-tree, .fp-layer .fp-prop { pointer-events: auto; }
-.fp-scenery { position: absolute; pointer-events: none; }
-.fp-soil { position: absolute; left: -200px; right: -200px; width: ${WORLD_W + 400}px; bottom: 0; height: ${GROUND_H}px; background: linear-gradient(180deg,#7a5a3a 0%,#5a4028 40%,#3c2a1a 100%); }
-.fp-ground { position: absolute; bottom: 0; height: ${GROUND_H}px; mask-image: linear-gradient(to right, transparent 0, #000 90px, #000 calc(100% - 90px), transparent 100%); }
-.fp-path { position: absolute; left: 0; width: ${WORLD_W}px; bottom: 16px; height: 20px; background: #8a6a44; opacity: .85; border-top: 3px solid #a8845a; border-bottom: 3px solid #6a4e30; background-image: repeating-linear-gradient(90deg, transparent 0 46px, rgba(255,240,210,.28) 46px 58px); }
-.fp-sprite, .fp-prop, .fp-tree { position: absolute; image-rendering: pixelated; }
-.fp-sprite { pointer-events: none; }
-.fp-prop { background: none; border: none; padding: 0; cursor: pointer; }
+.fp-cloud { position: absolute; left: -240px; animation-name: fp-cloud; animation-timing-function: linear; animation-iteration-count: infinite; }
+.fp-night .fp-cloud { opacity: .18; }
+
+.fp-stage {
+  position: absolute; left: 50%; bottom: 0; width: ${STAGE_W}px; height: ${STAGE_H}px;
+  transform-origin: 50% 100%;
+}
+.fp-fieldsvg { position: absolute; left: 0; top: 0; z-index: 0; }
+.fp-night .fp-fieldsvg { filter: brightness(.62) saturate(.85); }
+.fp-nightveil { position: absolute; inset: 0; z-index: 2000; pointer-events: none; background: rgba(10,18,40,0); transition: background .9s ease; }
+.fp-night .fp-nightveil { background: rgba(10,18,40,.18); }
+
+.fp-veg { position: absolute; pointer-events: none; }
+.fp-night .fp-veg { filter: brightness(.66); }
+.fp-sprite { position: absolute; image-rendering: pixelated; pointer-events: none; }
+.fp-night .fp-sprite, .fp-night .fp-tree img, .fp-night .fp-prop img, .fp-night .fp-sheet { filter: brightness(.72); }
+.fp-night .fp-prop img[style*="drop-shadow"] { filter: brightness(1.2) drop-shadow(0 0 12px rgba(255,200,110,0.95)); }
+.fp-prop { position: absolute; background: none; border: none; padding: 0; cursor: pointer; image-rendering: pixelated; }
 .fp-prop:focus-visible, .fp-tree:focus-visible { outline: 2px solid var(--color-leaf-light); outline-offset: 3px; }
-.fp-prop img, .fp-tree img { image-rendering: pixelated; display: block; }
+.fp-prop img, .fp-tree img { image-rendering: pixelated; display: block; position: relative; }
 .fp-sheet { display: block; image-rendering: pixelated; background-repeat: no-repeat; }
-.fp-tree { background: none; border: none; padding: 0; cursor: pointer; }
+.fp-tree { position: absolute; background: none; border: none; padding: 0; cursor: pointer; }
+.fp-shadow {
+  position: absolute; left: 50%; bottom: -4px; transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(20,30,20,.36) 0%, rgba(20,30,20,0) 70%); border-radius: 50%;
+}
 .fp-treetag {
-  position: absolute; left: 50%; top: -6px; transform: translateX(-50%);
-  font-family: var(--font-body); font-size: 12px; font-weight: 500; letter-spacing: .04em;
+  position: absolute; left: 50%; top: -8px; transform: translateX(-50%);
+  font-family: var(--font-body); font-size: 15px; font-weight: 500; letter-spacing: .04em;
   color: #fff; background: rgba(20,28,22,.72); border: 1px solid rgba(255,255,255,.22);
-  padding: 2px 8px; border-radius: 2px; opacity: 0; transition: opacity .18s; pointer-events: none; white-space: nowrap;
+  padding: 2px 9px; border-radius: 2px; opacity: 0; transition: opacity .18s; pointer-events: none; white-space: nowrap;
 }
 .fp-tree:hover .fp-treetag, .fp-tree:focus-visible .fp-treetag { opacity: 1; }
+.fp-sway img, img.fp-sway { animation: fp-sway .9s ease-in-out; }
 .fp-sway { animation: fp-sway .9s ease-in-out; }
 .fp-canopyglow {
-  position: absolute; left: 50%; top: 26%; width: 70%; height: 46%; transform: translateX(-50%);
+  position: absolute; left: 50%; top: 22%; width: 74%; height: 48%; transform: translateX(-50%);
   border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, rgba(255,235,150,.55) 0%, rgba(255,235,150,0) 68%);
   animation: fp-pulse .5s ease-in-out 3;
 }
 .fp-float {
-  position: absolute; left: 50%; top: 8%; transform: translateX(-50%);
-  font-family: var(--font-pixel); font-size: 15px; color: #ffe9a8;
+  position: absolute; left: 50%; top: 4%; transform: translateX(-50%);
+  font-family: var(--font-pixel); font-size: 17px; color: #ffe9a8;
   text-shadow: 2px 2px 0 rgba(0,0,0,.5); animation: fp-float 1.8s ease-out forwards; pointer-events: none;
 }
 .fp-lampglow {
-  position: absolute; left: 50%; bottom: 44%; width: 190px; height: 190px; transform: translateX(-50%);
+  position: absolute; left: 50%; bottom: 40%; width: 210px; height: 210px; transform: translateX(-50%);
   border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, rgba(255,196,110,.5) 0%, rgba(255,196,110,0) 66%);
 }
-.fp-particles { position: absolute; top: 9%; bottom: ${GROUND_H - 26}px; pointer-events: none; overflow: hidden; }
-.fp-fall { position: absolute; top: -4%; border-radius: 1px; animation-name: fp-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
-.fp-dust { position: absolute; border-radius: 1px; opacity: 0; animation-name: fp-dust; animation-timing-function: linear; animation-iteration-count: infinite; }
-.fp-tumbleweed {
-  position: absolute; bottom: 4px; left: 0; width: 34px; height: 34px; border-radius: 50%;
-  border: 3px solid #8a6238; box-shadow: inset 0 0 0 2px rgba(138,98,56,.5), inset 8px 4px 0 -6px #8a6238, inset -8px -4px 0 -6px #8a6238;
-  animation: fp-tumble 15s linear infinite; animation-delay: 3s;
-}
+.fp-night .fp-lampglow { background: radial-gradient(circle, rgba(255,196,110,.72) 0%, rgba(255,196,110,0) 70%); }
+.fp-emitter { position: absolute; pointer-events: none; overflow: hidden; z-index: 1500; }
+.fp-fall { position: absolute; top: -6px; border-radius: 1px; animation-name: fp-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
 .fp-gustwrap { position: absolute; inset: 0; }
 .fp-gust { position: absolute; width: 5px; height: 5px; border-radius: 1px; opacity: 0; animation: fp-gust 2.1s ease-out forwards; }
-.fp-tuft { position: absolute; pointer-events: none; opacity: .95; }
-.fp-orb { position: absolute; width: 14px; height: 14px; border-radius: 50%; z-index: 40; pointer-events: none; animation: fp-orb 1.25s cubic-bezier(.3,.1,.3,1) forwards; }
+.fp-orb { position: absolute; width: 15px; height: 15px; border-radius: 50%; z-index: 1900; pointer-events: none; animation: fp-orb 1.25s cubic-bezier(.3,.1,.3,1) forwards; }
 
-.fp-hud { position: absolute; z-index: 50; font-family: var(--font-body); }
+.fp-hud { position: absolute; z-index: 5000; font-family: var(--font-body); }
 .fp-hud-tl {
   left: 16px; top: 14px; padding: 10px 14px; color: var(--color-text-cream);
   background: rgba(27,42,34,.88); border: 2px solid #0e1712; border-radius: var(--radius-pixel); box-shadow: var(--shadow-pixel);
@@ -1153,7 +865,7 @@ const CSS = `
 .fp-forestname { font-size: 16px; font-weight: 700; margin-top: 4px; }
 .fp-syncline { font-size: 11.5px; margin-top: 4px; color: var(--color-text-muted-dark); display: flex; align-items: center; gap: 6px; }
 .fp-dot { width: 7px; height: 7px; border-radius: 50%; background: #7bd88f; box-shadow: 0 0 6px 1px rgba(123,216,143,.8); }
-.fp-hud-tr { right: 16px; top: 14px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 46vw; }
+.fp-hud-tr { right: 16px; top: 14px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 52vw; }
 .fp-btn {
   font-family: var(--font-body); font-size: 12.5px; font-weight: 500; cursor: pointer;
   color: var(--color-text-cream); background: rgba(27,42,34,.88);
@@ -1173,9 +885,9 @@ const CSS = `
 .fp-pill:hover { background: rgba(42,62,50,.92); }
 .fp-pill-on { background: var(--color-leaf-deep); border-color: #1d3f24; font-weight: 700; }
 .fp-hud-br { right: 14px; bottom: 14px; font-size: 11px; color: rgba(255,255,255,.75); background: rgba(20,26,22,.6); padding: 5px 9px; border-radius: 2px; }
-.fp-photohint { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 50; font-size: 12px; color: rgba(255,255,255,.85); background: rgba(20,26,22,.55); padding: 6px 12px; border-radius: 2px; font-family: var(--font-body); }
+.fp-photohint { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 5000; font-size: 12px; color: rgba(255,255,255,.85); background: rgba(20,26,22,.55); padding: 6px 12px; border-radius: 2px; font-family: var(--font-body); }
 .fp-echo {
-  position: absolute; left: 50%; top: 18px; transform: translateX(-50%); z-index: 60;
+  position: absolute; left: 50%; top: 18px; transform: translateX(-50%); z-index: 6000;
   font-family: var(--font-body); font-size: 13px; font-weight: 500; color: #1e2521;
   background: var(--color-surface-parchment); border: 2px solid var(--color-soil);
   border-radius: var(--radius-pixel); box-shadow: var(--shadow-pixel); padding: 9px 16px;
@@ -1183,7 +895,7 @@ const CSS = `
 }
 
 .fp-card {
-  position: absolute; left: 16px; bottom: 16px; z-index: 55; width: min(340px, calc(100vw - 32px));
+  position: absolute; left: 16px; bottom: 16px; z-index: 5500; width: min(340px, calc(100vw - 32px));
   background: var(--color-surface-parchment); border: 3px solid var(--color-soil);
   border-radius: var(--radius-pixel); box-shadow: var(--shadow-pixel-lg); padding: 14px 16px;
   color: var(--color-text-forest); animation: fp-pop .2s ease-out;
@@ -1198,7 +910,7 @@ const CSS = `
 .fp-card-eco { margin-top: 10px; font-size: 12.5px; background: rgba(58,125,68,.12); border-left: 3px solid var(--color-leaf-deep); padding: 7px 9px; }
 .fp-card-note { margin-top: 9px; font-size: 11px; color: var(--color-text-muted-light); line-height: 1.5; }
 
-.fp-scrim { position: absolute; inset: 0; z-index: 70; background: rgba(8,15,12,.55); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.fp-scrim { position: absolute; inset: 0; z-index: 7000; background: rgba(8,15,12,.55); display: flex; align-items: center; justify-content: center; padding: 20px; }
 .fp-welcome {
   width: min(430px, 92vw); background: var(--color-surface-parchment); color: var(--color-text-forest);
   border: 3px solid var(--color-soil); border-radius: var(--radius-pixel); box-shadow: var(--shadow-pixel-lg);
@@ -1210,16 +922,15 @@ const CSS = `
 .fp-welcome-note { margin-top: 12px; font-size: 11px; color: var(--color-text-muted-light); }
 
 @keyframes fp-fall {
-  0% { transform: translate3d(0,-4vh,0) rotate(0deg); opacity: 0; }
+  0% { transform: translate3d(0,0,0) rotate(0deg); opacity: 0; }
   8% { opacity: .95; }
-  50% { transform: translate3d(var(--sw,30px),40vh,0) rotate(160deg); }
+  50% { transform: translate3d(var(--sw,24px),calc(var(--fh,300px) * .5),0) rotate(160deg); }
   96% { opacity: .9; }
-  100% { transform: translate3d(calc(var(--sw,30px) * -0.4),86vh,0) rotate(320deg); opacity: 0; }
+  100% { transform: translate3d(calc(var(--sw,24px) * -0.4),var(--fh,300px),0) rotate(320deg); opacity: 0; }
 }
-@keyframes fp-dust { 0% { transform: translateX(0); opacity: 0; } 12% { opacity: .8; } 88% { opacity: .6; } 100% { transform: translateX(260px); opacity: 0; } }
-@keyframes fp-tumble { 0% { transform: translateX(-60px) rotate(0); } 100% { transform: translateX(${BIOME_W + 120}px) rotate(1turn); } }
-@keyframes fp-gust { 0% { transform: translate3d(0,0,0); opacity: 0; } 10% { opacity: .95; } 100% { transform: translate3d(52vw,9vh,0); opacity: 0; } }
+@keyframes fp-gust { 0% { transform: translate3d(0,0,0); opacity: 0; } 10% { opacity: .95; } 100% { transform: translate3d(46vw,7vh,0); opacity: 0; } }
 @keyframes fp-twinkle { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes fp-cloud { 0% { left: -240px; } 100% { left: 100%; } }
 @keyframes fp-sway { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-1.6deg); } 60% { transform: rotate(1.9deg); } 85% { transform: rotate(-.8deg); } }
 @keyframes fp-pulse { 0%,100% { opacity: .25; } 50% { opacity: 1; } }
 @keyframes fp-float { 0% { transform: translate(-50%,0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translate(-50%,-52px); opacity: 0; } }
@@ -1232,11 +943,11 @@ const CSS = `
 @media (max-width: 720px) {
   .fp-hud-tl { padding: 8px 10px; }
   .fp-forestname { font-size: 14px; }
-  .fp-hud-tr { max-width: 60vw; gap: 6px; }
+  .fp-hud-tr { max-width: 62vw; gap: 6px; }
   .fp-btn { font-size: 11.5px; padding: 6px 8px; }
   .fp-pill { font-size: 11.5px; padding: 6px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fp-anim, .fp-sway, .fp-rock, .fp-canopyglow, .fp-orb, .fp-tumbleweed { animation: none !important; }
+  .fp-anim, .fp-sway, .fp-rock, .fp-canopyglow, .fp-orb { animation: none !important; }
 }
 `;
