@@ -1,11 +1,20 @@
+import { Fragment } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminUser } from "@/lib/ranger/auth";
 import { getRangerUserDetail } from "@/lib/ranger/data";
-import { analyzeHistory, type Severity } from "@/lib/ranger/analysis";
+import {
+  analyzeHistory,
+  fmtGap,
+  fmtRate,
+  THRESHOLDS,
+  type AnalyzedRow,
+  type Severity,
+} from "@/lib/ranger/analysis";
 import { getRangerLang, t, type Key, type Lang } from "@/lib/ranger/i18n";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
+import { BarsChart, ChartCard, CumulativeChart } from "@/components/ranger/charts";
 import { acknowledgeAction, banAction, unacknowledgeAction, unbanAction } from "../actions";
 
 // Admin detail view — never indexed, never cached, always request-time (cookies).
@@ -70,6 +79,111 @@ function SevBadge({
   );
 }
 
+/**
+ * The breakdown behind one score increase.
+ *
+ * The desktop client buckets its tokens by the Claude Code log's OWN timestamps into
+ * 5-minute windows and uploads four aggregates — never the per-window timeline, which
+ * would be a minute-by-minute record of when this person works and sleeps. So this
+ * panel can tell you "the busiest 5 minutes held 20M tokens", but not which 5 minutes.
+ * That is the whole point, and it is enough: 480M banked across 96 unremarkable windows
+ * is a hoarded workday; 480M inside one window is not a machine.
+ *
+ * The load-bearing line is the reconciliation. `sum` is the client's claim; `delta` is
+ * what the SERVER computed from two rows it wrote itself. Editing garden.json moves the
+ * score but not the token log, so the two stop agreeing — the cheater's own submission
+ * contradicts itself.
+ */
+function BucketPanel({ row, lang }: { row: AnalyzedRow; lang: Lang }) {
+  const b = row.bucket;
+  const cell = "rounded-[2px] px-3 py-2";
+  const cellStyle = { border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" };
+
+  if (!b) {
+    // No evidence — NOT a red flag. Old clients cannot produce a summary, and a current
+    // client that can't prove its ledger covers the whole delta declines to send one
+    // rather than send a wrong one. Say which, so the admin doesn't over-read it.
+    return (
+      <div className={cell} style={cellStyle}>
+        <p className="text-[11px] opacity-70">
+          {t(lang, row.appVersion ? "bktNoneModern" : "bktNoneLegacy", {
+            v: row.appVersion ?? "—",
+          })}
+        </p>
+      </div>
+    );
+  }
+
+  const stats: { label: string; value: string; hint?: string; bad?: boolean }[] = [
+    {
+      label: t(lang, "bktWindows"),
+      value: String(b.n),
+      hint: t(lang, "bktWindowsHint", { span: fmtGap(b.span) }),
+    },
+    {
+      label: t(lang, "bktBusiest"),
+      value: b.max.toLocaleString("en"),
+      hint: fmtRate(b.impliedRate),
+      bad: b.max > THRESHOLDS.BUCKET_WATCH,
+    },
+    {
+      label: t(lang, "bktAvg"),
+      value: Math.round(b.avgPerBucket).toLocaleString("en"),
+      hint: t(lang, "bktAvgHint"),
+    },
+    {
+      label: t(lang, "bktReconcile"),
+      value: b.sumMatches ? t(lang, "bktMatch") : t(lang, "bktMismatch"),
+      hint: `${b.sum.toLocaleString("en")} ${b.sumMatches ? "=" : "≠"} ${row.delta.toLocaleString("en")}`,
+      bad: !b.sumMatches,
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((s) => (
+          <div
+            key={s.label}
+            className={cell}
+            style={{
+              ...cellStyle,
+              ...(s.bad ? { borderColor: "#b91c1c", background: "rgba(185,28,28,0.06)" } : {}),
+            }}
+          >
+            <div className="text-[10px] tracking-wide uppercase opacity-55">{s.label}</div>
+            <div
+              className="font-mono text-[13px]"
+              style={{ color: s.bad ? "#b91c1c" : "var(--color-text-forest)" }}
+            >
+              {s.value}
+            </div>
+            {s.hint && <div className="font-mono text-[10px] opacity-55">{s.hint}</div>}
+          </div>
+        ))}
+      </div>
+
+      {b.problems.length > 0 && (
+        <ul
+          className="rounded-[2px] px-3 py-2 text-[11px]"
+          style={{ border: "1px solid #b91c1c", background: "rgba(185,28,28,0.06)", color: "#b91c1c" }}
+        >
+          {b.problems.map((p, i) => (
+            <li key={i}>• {p}</li>
+          ))}
+        </ul>
+      )}
+
+      <p className="text-[10px] opacity-50">
+        {t(lang, "bktFooter", {
+          cap: THRESHOLDS.BUCKET_SUS.toLocaleString("en"),
+          v: row.appVersion ?? "—",
+        })}
+      </p>
+    </div>
+  );
+}
+
 export default async function RangerUserPage({
   params,
   searchParams,
@@ -85,29 +199,35 @@ export default async function RangerUserPage({
   const sp = await searchParams;
   const view = sp.view === "flagged" ? "flagged" : "all";
   const sort = sp.sort === "jump" || sp.sort === "rate" ? sp.sort : "time";
+  const expand = typeof sp.expand === "string" ? Number(sp.expand) : null;
 
   const { row, history, acknowledgedIds, error } = await getRangerUserDetail(userId);
   const { rows, summary } = analyzeHistory(history, new Set(acknowledgedIds));
 
-  // Filter + sort (baseline excluded from jump/rate sorts — its "delta" is the
-  // accumulated pre-history total, not a real single step).
+  // Filter + sort. Baseline rows are excluded from the jump/rate sorts because their
+  // "delta" is the whole accumulated pre-history total, not a single step — it would
+  // always win. Test on oldScore, NOT severity: a baseline row can now come back
+  // watch/suspicious (an implausible first-ever total is the off→on re-register hole),
+  // so severity no longer identifies it.
+  const isBaseline = (r: (typeof rows)[number]) => r.oldScore === null;
   let display = rows;
   if (view === "flagged") {
     display = display.filter((r) => r.severity === "watch" || r.severity === "suspicious");
   }
   if (sort === "jump") {
-    display = [...display].filter((r) => r.severity !== "baseline").sort((a, b) => b.delta - a.delta);
+    display = [...display].filter((r) => !isBaseline(r)).sort((a, b) => b.delta - a.delta);
   } else if (sort === "rate") {
     display = [...display]
-      .filter((r) => r.severity !== "baseline")
+      .filter((r) => !isBaseline(r))
       .sort((a, b) => (b.rate ?? -1) - (a.rate ?? -1));
   }
 
   const base = `/ranger/${userId}`;
-  const href = (nextView: string, nextSort: string) => {
+  const href = (nextView: string, nextSort: string, nextExpand: number | null = null) => {
     const p = new URLSearchParams();
     if (nextView !== "all") p.set("view", nextView);
     if (nextSort !== "time") p.set("sort", nextSort);
+    if (nextExpand !== null) p.set("expand", String(nextExpand));
     const q = p.toString();
     return q ? `${base}?${q}` : base;
   };
@@ -126,8 +246,56 @@ export default async function RangerUserPage({
         ? t(lang, "verdictWatch", { n: summary.watchCount })
         : t(lang, "verdictClean", { n: summary.changeCount });
 
-  const allCount = rows.filter((r) => r.severity !== "baseline").length;
+  const allCount = rows.filter((r) => !isBaseline(r)).length;
   const flaggedCount = summary.watchCount + summary.suspiciousCount;
+
+  // ── Chart data. `rows` is newest-first; charts read left-to-right, so reverse. ──
+  const asc = [...rows].reverse();
+  const ms = (iso: string) => new Date(iso).getTime();
+
+  // 1. The score as it actually stood over time (baseline included — it is where the
+  //    curve starts).
+  const cumulative = asc.map((r) => ({
+    t: ms(r.at),
+    v: r.newScore,
+    severity: r.severity,
+    label: `${fmtWhen(r.at)} · ${fmtTokens(r.newScore)}${isBaseline(r) ? "" : ` (${fmtSigned(r.delta)})`}`,
+  }));
+
+  // 2. What each sync added. Baseline excluded: its "delta" is the whole pre-history
+  //    total, so including it would dwarf every real step and flatten the chart.
+  const changes = asc.filter((r) => !isBaseline(r));
+  const deltaBars = changes.map((r) => ({
+    t: ms(r.at),
+    v: Math.max(0, r.delta),
+    severity: r.severity,
+    label: `${fmtWhen(r.at)} · ${fmtSigned(r.delta)} over ${r.gapLabel}`,
+  }));
+
+  // 3. THE judgement chart: each gain as a % of what was physically possible in the time
+  //    that had passed. This is the whole fix in one picture — a hoarded workday and a
+  //    quick sync both land low, because the ceiling grew with the wait. Only fabrication
+  //    crosses 100%. (A raw ceiling overlay would not work: at an 8-hour gap the ceiling is
+  //    billions, which would squash every honest bar to nothing.)
+  const headroomBars = changes
+    .filter((r) => r.ceiling !== null && r.ceiling > 0)
+    .map((r) => ({
+      t: ms(r.at),
+      v: (Math.max(0, r.delta) / (r.ceiling as number)) * 100,
+      severity: r.severity,
+      label: `${fmtWhen(r.at)} · ${Math.round((Math.max(0, r.delta) / (r.ceiling as number)) * 100)}% of the ${fmtSigned(r.ceiling as number)} ceiling for ${r.gapLabel}`,
+    }));
+
+  // 4. The evidence: the busiest 5-minute window inside each gain. Only rows whose client
+  //    sent a summary appear — an empty chart here means "old clients", not "nothing wrong".
+  const bucketBars = changes
+    .filter((r) => r.bucket !== null)
+    .map((r) => ({
+      t: ms(r.at),
+      v: r.bucket!.max,
+      severity: r.severity,
+      label: `${fmtWhen(r.at)} · busiest window ${fmtTokens(r.bucket!.max)} (${r.bucket!.n} windows over ${fmtGap(r.bucket!.span)})`,
+    }));
 
   // Table columns — right-align the numeric metrics for a clean, scannable grid.
   const cols: { label: string; align: "left" | "right" }[] = [
@@ -245,6 +413,48 @@ export default async function RangerUserPage({
           </dl>
         </Panel>
 
+        {/* Charts. Built from the same rows the table below shows — the table IS the
+            table view the palette's relief rule asks for, so nothing here is gated
+            behind colour. Every scale is derived from the data at render time. */}
+        <section className="mt-8">
+          <h2
+            className="text-leaf-deep"
+            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h2)", lineHeight: 1.3 }}
+          >
+            {t(lang, "sectCharts")}
+          </h2>
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <ChartCard title={t(lang, "chCumulative")} note={t(lang, "chCumulativeNote")}>
+              <CumulativeChart points={cumulative} empty={t(lang, "chEmpty")} />
+            </ChartCard>
+
+            <ChartCard title={t(lang, "chDeltas")} note={t(lang, "chDeltasNote")}>
+              <BarsChart bars={deltaBars} empty={t(lang, "chEmpty")} />
+            </ChartCard>
+
+            <ChartCard title={t(lang, "chHeadroom")} note={t(lang, "chHeadroomNote")}>
+              <BarsChart
+                bars={headroomBars}
+                empty={t(lang, "chEmpty")}
+                refLine={100}
+                refLabel={t(lang, "chCeiling")}
+                yMaxHint={120}
+                clampAt={200}
+                percent
+              />
+            </ChartCard>
+
+            <ChartCard title={t(lang, "chBusiest")} note={t(lang, "chBusiestNote")}>
+              <BarsChart
+                bars={bucketBars}
+                empty={t(lang, "chNoEvidence")}
+                refLine={THRESHOLDS.BUCKET_SUS}
+                refLabel={t(lang, "chWindowCap")}
+              />
+            </ChartCard>
+          </div>
+        </section>
+
         {/* History: title + toolbar + table */}
         <section className="mt-8">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
@@ -301,14 +511,25 @@ export default async function RangerUserPage({
                   {display.map((h) => {
                     const showMarkOk =
                       !h.acknowledged && (h.severity === "watch" || h.severity === "suspicious");
+                    const open = expand === h.id;
+                    const tint = h.acknowledged ? "rgba(21,128,61,0.06)" : SEV_TINT[h.severity];
                     return (
+                      <Fragment key={h.id}>
                       <tr
-                        key={h.id}
                         className="border-t border-leaf-deep/20"
-                        style={{ background: h.acknowledged ? "rgba(21,128,61,0.06)" : SEV_TINT[h.severity] }}
+                        style={{ background: tint }}
                       >
                         <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
-                          {fmtWhen(h.at)}
+                          {/* Clicking the timestamp opens the breakdown below it. URL state,
+                              server-rendered — same idiom as the segmented controls, no client JS. */}
+                          <Link
+                            href={href(view, sort, open ? null : h.id)}
+                            scroll={false}
+                            className="ranger-btn inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                          >
+                            <span aria-hidden className="opacity-50">{open ? "▾" : "▸"}</span>
+                            {fmtWhen(h.at)}
+                          </Link>
                         </td>
                         <td className="px-3 py-2.5 align-top whitespace-nowrap">{h.gapLabel}</td>
                         <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
@@ -355,6 +576,14 @@ export default async function RangerUserPage({
                           )}
                         </td>
                       </tr>
+                      {open && (
+                        <tr style={{ background: tint }}>
+                          <td colSpan={7} className="px-3 pb-4">
+                            <BucketPanel row={h} lang={lang} />
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                     );
                   })}
                   {display.length === 0 && (
