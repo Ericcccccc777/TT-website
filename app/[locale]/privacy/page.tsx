@@ -10,7 +10,7 @@ import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 const EN: LegalDoc = {
   title: "Token Forest Privacy Notice",
   meta: [
-    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-08 · Effective at first public release",
+    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-14 · Effective at first public release",
     "Publisher: Poietic Studio",
   ],
   sections: [
@@ -113,6 +113,8 @@ const EN: LegalDoc = {
               ["Each tree's token total and growth stage", "Yes (tree details)"],
               ["Region — only if you picked one", "Yes (flag)"],
               ["Current tree species", "Yes"],
+              ["App version", "No"],
+              ["Anti-cheat summary — four numbers, see below (v0.1.5+)", "No"],
               ["Server-generated created/updated timestamps", "May be shown"],
             ],
           },
@@ -121,10 +123,35 @@ const EN: LegalDoc = {
           p: "Small print: if you leave the name blank, the generated anonymous name is rendered in your app language, so the leaderboard indirectly reflects which UI language you use.",
         },
         {
-          p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project names, Git branches, per-model or per-session usage, cost estimates.",
+          p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project names, Git branches, per-model or per-session usage, cost estimates, or any per-window / time-of-day breakdown of your token use.",
         },
         {
           p: "Like any online service, Supabase's infrastructure processes standard connection data (such as IP addresses and request timestamps) to operate and secure the service, under Supabase's own policies.",
+        },
+      ],
+    },
+    {
+      h: "The anti-cheat summary (v0.1.5+)",
+      blocks: [
+        {
+          p: "A leaderboard score is a number your own machine computes, so on its own it proves nothing — and it cuts both ways. Someone can inflate it by editing a local file, while an honest heavy user who lets bubbles pile up all day and collects them at once produces a jump that looks identical to that. To tell the two apart, each sync that raises your score carries four aggregate numbers describing how the increase was earned:",
+        },
+        {
+          list: [
+            "how many 5-minute windows the new tokens are spread across,",
+            "how many tokens are in the busiest single window,",
+            "their sum, and",
+            "the time span from the earliest window to the latest.",
+          ],
+        },
+        {
+          p: "The windows are keyed on the timestamps in the Claude Code / Codex logs themselves — when the tokens were actually spent — so a hoarded workday correctly reads as many ordinary windows rather than one impossible spike.",
+        },
+        {
+          p: "We deliberately do not upload the per-window timeline. A 5-minute-resolution record of your token use would amount to a log of when you work and when you sleep. The four aggregates cannot reconstruct that: they say how big the busiest window was, never which window it was. The precise per-window figures are computed on your machine, used to derive the four numbers, and never leave it.",
+        },
+        {
+          p: "These four numbers are not shown on the public leaderboard — the database revokes read access to those columns for the public read-only role. They are readable only by an administrator reviewing a specific account, and they are advisory: they inform a human decision, they do not automatically punish anyone. If the app cannot vouch for its own figures (for example, it was upgraded mid-stream, or it was closed between collecting a bubble and syncing), it sends nothing rather than send something wrong.",
         },
       ],
     },
@@ -206,7 +233,7 @@ const EN: LegalDoc = {
 const ZH: LegalDoc = {
   title: "Token Forest 隐私声明",
   meta: [
-    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-08 · 首个公开版本发布时生效",
+    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-14 · 首个公开版本发布时生效",
     "发布者:Poietic Studio",
   ],
   sections: [
@@ -303,6 +330,8 @@ const ZH: LegalDoc = {
               ["每棵树的 Token 数与成长阶段", "是(树详情)"],
               ["地区——仅在你主动选择后", "是(国旗)"],
               ["当前树种", "是"],
+              ["App 版本号", "否"],
+              ["防作弊摘要——四个数字,见下(v0.1.5+)", "否"],
               ["服务端生成的创建/更新时间", "可能显示"],
             ],
           },
@@ -311,10 +340,35 @@ const ZH: LegalDoc = {
           p: "小字说明:昵称留空时生成的匿名名按你的界面语言渲染,因此榜单会间接体现你的 UI 语言。",
         },
         {
-          p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、项目名、Git 分支、按模型/按会话用量、成本估算。",
+          p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、项目名、Git 分支、按模型/按会话用量、成本估算,以及任何逐片段/按时段的 token 使用明细。",
         },
         {
           p: "与任何在线服务一样,Supabase 的基础设施会为运行与安全处理标准连接数据(如 IP 地址、请求时间),适用其自身政策。",
+        },
+      ],
+    },
+    {
+      h: "防作弊摘要(v0.1.5+)",
+      blocks: [
+        {
+          p: "排行榜分数是你自己机器算出来的一个数字,单看它什么也证明不了——而且这把刀是双刃的:有人可以改本地存档把它抬上去;而一个诚实的重度用户,把气泡攒一整天再一次性收取,产生的跳变和作弊长得一模一样。为了把两者分开,每一次让分数上涨的同步会附带四个聚合数字,说明这次涨分是怎么赚到的:",
+        },
+        {
+          list: [
+            "这些新增的 token 分布在多少个 5 分钟片段里,",
+            "其中最多的一片有多少 token,",
+            "它们的总和,以及",
+            "从最早的片段到最晚的片段跨了多久。",
+          ],
+        },
+        {
+          p: "片段按 Claude Code / Codex 日志里那条消息自己的时间戳切分——也就是 token 真正被消耗的时刻——所以囤了一整天的气泡会正确地读作「很多个平平无奇的片段」,而不是「一次不可能的暴涨」。",
+        },
+        {
+          p: "我们刻意不上传逐片段的时间线。一份 5 分钟粒度的 token 使用记录,等同于一份「你几点在工作、几点在睡觉」的日志。这四个聚合数字还原不出它:它们只说最多的那一片有多大,从不说那是哪一片。精确的逐片段数值在你的机器上计算、用来推导出这四个数字,然后就留在你的机器上,不会离开。",
+        },
+        {
+          p: "这四个数字不在公开排行榜上展示——数据库层面已对公开只读角色撤销了这几列的读取权限。只有管理员在审核某个具体账号时可见,且仅供参考:它们辅助人的判断,不会自动惩罚任何人。如果应用无法为自己给出的数字背书(例如中途升级过,或在收取气泡和同步之间被关闭),它会什么都不报,而不是报一个错的。",
         },
       ],
     },
@@ -396,7 +450,7 @@ const ZH: LegalDoc = {
 const JA: LegalDoc = {
   title: "Token Forest プライバシー通知",
   meta: [
-    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-08 · 最初の公開リリース時に発効",
+    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-14 · 最初の公開リリース時に発効",
     "発行者:Poietic Studio",
   ],
   sections: [
@@ -502,6 +556,8 @@ const JA: LegalDoc = {
               ["木ごとのトークン合計と成長段階", "はい(木の詳細)"],
               ["地域——あなたが選択した場合のみ", "はい(国旗)"],
               ["現在の木の種類", "はい"],
+              ["アプリのバージョン", "いいえ"],
+              ["不正防止サマリー——4 つの数値、下記参照(v0.1.5+)", "いいえ"],
               ["サーバーが生成する作成/更新のタイムスタンプ", "表示される場合あり"],
             ],
           },
@@ -510,10 +566,35 @@ const JA: LegalDoc = {
           p: "細目:名前を空欄にすると、生成される匿名名はアプリの言語で表示されるため、リーダーボードにはお使いの UI 言語が間接的に反映されます。",
         },
         {
-          p: "いかなるモードでもアップロードしないもの:生ログ、プロンプトや会話内容、ソースコード、セッションタイトル、ファイルパス、プロジェクト名、Git ブランチ、モデル別・セッション別の使用状況、費用の見積もり。",
+          p: "いかなるモードでもアップロードしないもの:生ログ、プロンプトや会話内容、ソースコード、セッションタイトル、ファイルパス、プロジェクト名、Git ブランチ、モデル別・セッション別の使用状況、費用の見積もり、およびトークン使用の区間別・時間帯別の内訳一切。",
         },
         {
           p: "あらゆるオンラインサービスと同様に、Supabase のインフラは、サービスの運用と保護のために標準的な接続データ(IP アドレスやリクエストのタイムスタンプなど)を、Supabase 自身のポリシーに従って処理します。",
+        },
+      ],
+    },
+    {
+      h: "不正防止サマリー(v0.1.5+)",
+      blocks: [
+        {
+          p: "リーダーボードのスコアは、あなた自身のマシンが計算した数値にすぎず、それだけでは何も証明しません——そしてこれは諸刃の剣です。ローカルファイルを書き換えて水増しすることもできますし、一方で、正直なヘビーユーザーがバブルを一日ためこんで一度に回収すると、不正とまったく同じ形の急上昇が生まれます。この二つを見分けるため、スコアが上がる同期には、その増加がどのように得られたかを示す 4 つの集計値が添えられます:",
+        },
+        {
+          list: [
+            "新しいトークンが何個の 5 分間ウィンドウに分かれているか、",
+            "最も多いウィンドウ 1 個のトークン数、",
+            "それらの合計、そして",
+            "最も早いウィンドウから最も遅いウィンドウまでの時間幅。",
+          ],
+        },
+        {
+          p: "ウィンドウは Claude Code / Codex のログに記録されたタイムスタンプ自体——トークンが実際に消費された時刻——を基準に区切られます。そのため、ためこんだ一日分は「ごく普通のウィンドウが多数」として正しく読み取られ、「あり得ない急上昇」にはなりません。",
+        },
+        {
+          p: "区間ごとのタイムラインは意図的にアップロードしません。5 分粒度のトークン使用記録は、あなたがいつ働き、いつ眠るかの記録に等しいからです。4 つの集計値からそれを復元することはできません:最も多いウィンドウが「どれだけ大きいか」は分かっても、「どのウィンドウか」は決して分かりません。正確な区間ごとの数値はあなたのマシン上で計算され、4 つの数値を導くために使われたのち、端末を出ることはありません。",
+        },
+        {
+          p: "この 4 つの数値は公開リーダーボードには表示されません——データベース側で、公開用の読み取り専用ロールからこれらの列の読み取り権限が取り消されています。特定のアカウントを審査する管理者のみが閲覧でき、あくまで参考情報です:人の判断を助けるだけで、誰かを自動的に罰することはありません。アプリが自らの数値を保証できない場合(例:途中でアップグレードされた、バブルの回収と同期の間に終了された)、誤った値を送るのではなく、何も送りません。",
         },
       ],
     },
@@ -595,7 +676,7 @@ const JA: LegalDoc = {
 const KO: LegalDoc = {
   title: "Token Forest 개인정보 보호정책",
   meta: [
-    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-08 · 최초 공개 릴리스 시 발효",
+    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-14 · 최초 공개 릴리스 시 발효",
     "발행자: Poietic Studio",
   ],
   sections: [
@@ -692,6 +773,8 @@ const KO: LegalDoc = {
               ["나무별 토큰 합계와 성장 단계", "예(나무 상세)"],
               ["지역 — 사용자가 선택한 경우에만", "예(국기)"],
               ["현재 나무 종류", "예"],
+              ["앱 버전", "아니요"],
+              ["부정행위 방지 요약——네 개의 숫자, 아래 참조(v0.1.5+)", "아니요"],
               ["서버가 생성한 생성/수정 타임스탬프", "표시될 수 있음"],
             ],
           },
@@ -700,10 +783,35 @@ const KO: LegalDoc = {
           p: "세부 사항: 이름을 비우면 생성되는 익명 이름이 앱 언어로 표시되므로, 리더보드에 사용자의 UI 언어가 간접적으로 반영됩니다.",
         },
         {
-          p: "어떤 모드에서도 업로드하지 않는 것: 원본 로그, 프롬프트나 대화 내용, 소스 코드, 세션 제목, 파일 경로, 프로젝트 이름, Git 브랜치, 모델별·세션별 사용량, 비용 추정.",
+          p: "어떤 모드에서도 업로드하지 않는 것: 원본 로그, 프롬프트나 대화 내용, 소스 코드, 세션 제목, 파일 경로, 프로젝트 이름, Git 브랜치, 모델별·세션별 사용량, 비용 추정, 그리고 토큰 사용의 구간별·시간대별 내역 일체.",
         },
         {
           p: "다른 온라인 서비스와 마찬가지로, Supabase의 인프라는 서비스를 운영하고 보호하기 위해 표준 연결 데이터(IP 주소, 요청 타임스탬프 등)를 Supabase 자체 정책에 따라 처리합니다.",
+        },
+      ],
+    },
+    {
+      h: "부정행위 방지 요약 (v0.1.5+)",
+      blocks: [
+        {
+          p: "리더보드 점수는 사용자 본인의 컴퓨터가 계산한 숫자이므로, 그 자체로는 아무것도 증명하지 못합니다——그리고 이는 양날의 검입니다. 누군가는 로컬 파일을 고쳐 점수를 부풀릴 수 있고, 반대로 정직한 헤비 유저가 버블을 하루 종일 모았다가 한 번에 수확하면 부정행위와 똑같이 생긴 급등이 만들어집니다. 이 둘을 구별하기 위해, 점수를 올리는 각 동기화에는 그 상승이 어떻게 이루어졌는지 설명하는 네 개의 집계값이 함께 전송됩니다:",
+        },
+        {
+          list: [
+            "새 토큰이 몇 개의 5분 구간에 걸쳐 있는지,",
+            "가장 많은 단일 구간의 토큰 수,",
+            "그 합계, 그리고",
+            "가장 이른 구간부터 가장 늦은 구간까지의 기간.",
+          ],
+        },
+        {
+          p: "구간은 Claude Code / Codex 로그 자체의 타임스탬프——토큰이 실제로 소비된 시각——를 기준으로 나뉩니다. 따라서 하루 동안 모아둔 것은 「평범한 구간이 여러 개」로 올바르게 읽히며, 「불가능한 급등」이 되지 않습니다.",
+        },
+        {
+          p: "구간별 타임라인은 의도적으로 업로드하지 않습니다. 5분 단위의 토큰 사용 기록은 당신이 언제 일하고 언제 자는지에 대한 기록이나 마찬가지이기 때문입니다. 네 개의 집계값으로는 그것을 복원할 수 없습니다: 가장 많은 구간이 「얼마나 큰지」는 말해도, 「어느 구간인지」는 결코 말하지 않습니다. 정확한 구간별 수치는 당신의 기기에서 계산되어 네 숫자를 도출하는 데 쓰인 뒤, 기기를 떠나지 않습니다.",
+        },
+        {
+          p: "이 네 숫자는 공개 리더보드에 표시되지 않습니다——데이터베이스에서 공개용 읽기 전용 역할에 대해 해당 열의 읽기 권한이 취소되어 있습니다. 특정 계정을 검토하는 관리자만 볼 수 있으며, 참고용입니다: 사람의 판단을 돕는 것이지 누구도 자동으로 처벌하지 않습니다. 앱이 자신의 수치를 보증할 수 없는 경우(예: 도중에 업그레이드되었거나, 버블 수확과 동기화 사이에 종료된 경우), 잘못된 값을 보내는 대신 아무것도 보내지 않습니다.",
         },
       ],
     },
