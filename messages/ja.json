@@ -78,8 +78,7 @@
     "tryBubbleAria": "デモバブルを集める",
     "videoHeading": "実際の動きを見る",
     "videoPlayLabel": "Token Forest のデモ動画を再生(1 分 49 秒)",
-    "videoPrivacyNote": "再生すると動画は YouTube から読み込まれ、YouTube が独自の Cookie を設定する場合があります。再生するまでは何も読み込まれません。",
-    "videoWatchOnYouTube": "YouTube で見る"
+    "videoPrivacyNote": "再生すると動画は YouTube から読み込まれ、YouTube が独自の Cookie を設定する場合があります。再生するまでは何も読み込まれません。"
   },
   "Features": {
     "heading": "機能",

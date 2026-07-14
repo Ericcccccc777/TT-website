@@ -78,8 +78,7 @@
     "tryBubbleAria": "Collect the demo bubble",
     "videoHeading": "See it in action",
     "videoPlayLabel": "Play the Token Forest demo video (1 minute 49 seconds)",
-    "videoPrivacyNote": "Press play and the video loads from YouTube, which may set its own cookies. Nothing is loaded until you do.",
-    "videoWatchOnYouTube": "Watch on YouTube"
+    "videoPrivacyNote": "Press play and the video loads from YouTube, which may set its own cookies. Nothing is loaded until you do."
   },
   "Features": {
     "heading": "Features",
