@@ -53,6 +53,46 @@ export const OG_IMAGE = {
   type: "image/png",
 } as const;
 
+// ── Demo video ────────────────────────────────────────────────────────────────
+
+/**
+ * The product demo video. Facts (title, duration, upload date) are copied
+ * verbatim from YouTube — schema.org VideoObject must describe the canonical
+ * video, not a paraphrase of it, or the markup is a policy violation.
+ *
+ * `thumbnail` is deliberately self-hosted rather than pointing at i.ytimg.com:
+ * that host is unreachable on some networks, and a broken thumbnail would leave
+ * a hole where the video block should be. The player itself is only reachable
+ * where YouTube is, which we accept.
+ *
+ * `embedUrl` uses youtube-nocookie.com, and the facade in components/
+ * video-facade.tsx mounts it only after a click — so a visitor who never plays
+ * the video never touches a YouTube server.
+ */
+export const DEMO_VIDEO = {
+  id: "I_qqApJl_Bo",
+  title: "Token Forest | I turned my AI coding tokens into a living pixel forest",
+  watchUrl: "https://www.youtube.com/watch?v=I_qqApJl_Bo",
+  embedUrl: "https://www.youtube-nocookie.com/embed/I_qqApJl_Bo",
+  thumbnail: "/token-forest-demo.jpg",
+  thumbnailWidth: 1280,
+  thumbnailHeight: 720,
+  uploadDate: "2026-07-09T22:52:33-07:00",
+  /** ISO 8601 duration — 109 seconds. */
+  duration: "PT1M49S",
+  durationLabel: "1:49",
+  /** The video's spoken/on-screen language. One cut serves all four locales. */
+  inLanguage: "en",
+} as const;
+
+/** VideoObject description, per locale. English is the guaranteed fallback. */
+export const DEMO_VIDEO_DESCRIPTION: Record<Locale, string> = {
+  en: "A short demo of Token Forest: a pixel companion that sits above your taskbar and turns every Claude Code and Codex request into an energy bubble. Collect the bubbles and your tree grows, stage by stage, from a sprout into a fruit-bearing tree.",
+  zh: "Token Forest 简短演示:一只停在任务栏上方的像素桌宠,把你在 Claude Code 和 Codex 上的每一次请求变成能量气泡。收集气泡,你的树就会一阶一阶长大,从幼苗长成结果的大树。",
+  ja: "Token Forest の短いデモ。タスクバーの上に住むピクセルの相棒が、Claude Code と Codex のリクエストをエネルギーバブルに変えます。バブルを集めると、木は芽から実をつける大木へと段階的に成長します。",
+  ko: "Token Forest 짧은 데모. 작업 표시줄 위에 사는 픽셀 친구가 Claude Code와 Codex 요청을 에너지 방울로 바꿉니다. 방울을 모으면 나무가 새싹에서 열매 맺는 나무로 단계별로 자랍니다.",
+};
+
 // ── URL helpers ───────────────────────────────────────────────────────────────
 
 /** Normalize a logical path: "/" → "", "/x" stays, "x" → "/x". */

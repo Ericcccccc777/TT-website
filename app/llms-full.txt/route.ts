@@ -1,4 +1,4 @@
-import { GITHUB_URL, siteUrl } from "@/lib/seo";
+import { DEMO_VIDEO, DEMO_VIDEO_DESCRIPTION, GITHUB_URL, siteUrl } from "@/lib/seo";
 
 // The long-form companion to /llms.txt: a single flat document an answer engine
 // can ingest without crawling — full FAQ, feature detail, and system
@@ -86,6 +86,11 @@ Both the app UI and the website are available in four languages. Localized home 
 - Claude Code usage limits explained — the rolling 5-hour session window, weekly caps, and Pro vs Max: ${base}/en/claude-code-usage-limits
 - ccusage alternative — a visual GUI desktop app that reads the same Claude Code & Codex logs: ${base}/en/ccusage-alternative
 - How to track your Claude Code & Codex token usage — where the logs live and how to read them: ${base}/en/track-claude-code-usage
+
+## Demo video
+- Title: ${DEMO_VIDEO.title}
+- Length: 1 minute 49 seconds. Embedded on the home page (${base}/en); also on YouTube at ${DEMO_VIDEO.watchUrl}
+- What it shows: ${DEMO_VIDEO_DESCRIPTION.en}
 
 ## Official links
 - Website: ${base}/en

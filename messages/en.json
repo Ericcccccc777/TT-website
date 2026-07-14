@@ -75,7 +75,11 @@
     "privacyBody": "Token Forest only reads your local Claude Code / Codex usage logs. Core features run fully offline — no account, no telemetry, nothing uploaded by default. The optional leaderboard stays off until you enable it and confirm its consent dialog.",
     "uploadedZero": "No uploads by default",
     "holdToGrow": "Press & hold to grow",
-    "tryBubbleAria": "Collect the demo bubble"
+    "tryBubbleAria": "Collect the demo bubble",
+    "videoHeading": "See it in action",
+    "videoPlayLabel": "Play the Token Forest demo video (1 minute 49 seconds)",
+    "videoPrivacyNote": "Press play and the video loads from YouTube, which may set its own cookies. Nothing is loaded until you do.",
+    "videoWatchOnYouTube": "Watch on YouTube"
   },
   "Features": {
     "heading": "Features",

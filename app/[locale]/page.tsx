@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/hero";
 import { HowSteps } from "@/components/how-steps";
+import { VideoFacade } from "@/components/video-facade";
 import { FeatureCard } from "@/components/feature-card";
 import {
   RealtimeDemo,
@@ -150,6 +151,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               {t("heading")}
             </span>
           </h2>
+
+          <VideoFacade
+            heading={t("videoHeading")}
+            playLabel={t("videoPlayLabel")}
+            privacyNote={t("videoPrivacyNote")}
+            watchOnYouTube={t("videoWatchOnYouTube")}
+          />
 
           <HowSteps
             steps={[

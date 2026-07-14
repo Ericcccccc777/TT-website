@@ -1,4 +1,4 @@
-import { GITHUB_URL, siteUrl } from "@/lib/seo";
+import { DEMO_VIDEO, GITHUB_URL, siteUrl } from "@/lib/seo";
 
 // Dynamic so every link composes from siteUrl() and is correct the moment DNS
 // flips. The folder is literally named "llms.txt" → served at /llms.txt (the
@@ -48,6 +48,9 @@ export function GET() {
 - 中文: ${base}/zh
 - 日本語: ${base}/ja
 - 한국어: ${base}/ko
+
+## Demo video
+- A 1-minute-49-second demo, embedded on the home page: "${DEMO_VIDEO.title}" — ${DEMO_VIDEO.watchUrl}
 
 ## Official links
 - Website: ${base}/en
