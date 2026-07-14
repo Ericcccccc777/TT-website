@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAdminUser } from "@/lib/ranger/auth";
-import { getRangerLeaderboard } from "@/lib/ranger/data";
+import { getRangerLeaderboard, getRangerTokenSeries } from "@/lib/ranger/data";
 import { getRangerLang, t } from "@/lib/ranger/i18n";
 import { RangerLoginForm } from "@/components/ranger/login-form";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
+import { ChartCard, Legend, MAX_SERIES, MultiLineChart } from "@/components/ranger/charts";
 import { banAction, signOutAction, unbanAction } from "./actions";
 
 // Admin console — never indexed, never cached, always request-time (cookies).
@@ -54,12 +55,17 @@ export default async function RangerPage() {
   }
 
   // ── Signed in as admin → moderation table ──
-  const { rows, error } = await getRangerLeaderboard();
+  const [{ rows, error }, { series, error: seriesError }] = await Promise.all([
+    getRangerLeaderboard(),
+    // Capped at MAX_SERIES: a 9th categorical hue is indistinguishable under colour-vision
+    // deficiency, so the chart shows the leaders and the table below carries everyone else.
+    getRangerTokenSeries(30, MAX_SERIES),
+  ]);
   const bannedCount = rows.filter((r) => r.banned).length;
 
   return (
     <main className="min-h-screen bg-surface-parchment">
-      <div className="mx-auto max-w-5xl px-6 py-12">
+      <div className="mx-auto w-[90%] max-w-[1600px] px-6 py-12">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1
@@ -94,6 +100,24 @@ export default async function RangerPage() {
             {t(lang, "listLoadError", { e: error })}
           </p>
         )}
+
+        {/* Everyone against everyone: the shape of a run is the tell. An honest player's
+            curve is a staircase that climbs while they work and holds flat while they
+            don't. A fabricated one is a wall. The table below is the accessible view of
+            the same data, and every line is labelled at its end — identity never rests on
+            colour alone. Hidden (banned) players are drawn dashed, not dropped: they are
+            exactly who you came here to look at. */}
+        <section className="mt-8">
+          <ChartCard title={t(lang, "chCompare")} note={t(lang, "chCompareNote", { n: series.length })}>
+            <MultiLineChart series={series} empty={t(lang, "chEmpty")} />
+            {series.length > 0 && <Legend series={series} />}
+          </ChartCard>
+          {seriesError && (
+            <p className="mt-2 text-[11px] text-red-700">
+              {t(lang, "listLoadError", { e: seriesError })}
+            </p>
+          )}
+        </section>
 
         <div className="mt-8 overflow-x-auto">
           <table

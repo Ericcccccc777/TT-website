@@ -1,6 +1,8 @@
 import type { Locale } from "@/i18n/routing";
 import {
   BCP47,
+  DEMO_VIDEO,
+  DEMO_VIDEO_DESCRIPTION,
   GITHUB_URL,
   OG_IMAGE,
   SITE_ALTERNATE_NAMES,
@@ -56,7 +58,32 @@ export function softwareApplication(locale: Locale): JsonObject {
   };
 }
 
-/** WebSite + Organization + SoftwareApplication @graph for the home page. */
+/**
+ * The demo video node. Google only honours this markup when the video is
+ * actually on the page and prominent — the home page renders it inside the
+ * "How it works" section, so this node lives in homeGraph and nowhere else.
+ * thumbnailUrl must be absolute; the file is served from public/.
+ */
+export function videoObject(locale: Locale): JsonObject {
+  const base = siteUrl();
+  return {
+    "@type": "VideoObject",
+    "@id": `${base}/#demo-video`,
+    name: DEMO_VIDEO.title,
+    description: DEMO_VIDEO_DESCRIPTION[locale] ?? DEMO_VIDEO_DESCRIPTION.en,
+    thumbnailUrl: [`${base}${DEMO_VIDEO.thumbnail}`],
+    uploadDate: DEMO_VIDEO.uploadDate,
+    duration: DEMO_VIDEO.duration,
+    contentUrl: DEMO_VIDEO.watchUrl,
+    embedUrl: DEMO_VIDEO.embedUrl,
+    // The cut is English regardless of which locale's page embeds it.
+    inLanguage: DEMO_VIDEO.inLanguage,
+    publisher: { "@id": `${base}/#organization` },
+    about: { "@id": `${base}/#app` },
+  };
+}
+
+/** WebSite + Organization + SoftwareApplication + VideoObject @graph for the home page. */
 export function homeGraph(locale: Locale): JsonObject {
   const base = siteUrl();
   return {
@@ -81,6 +108,7 @@ export function homeGraph(locale: Locale): JsonObject {
         sameAs: [GITHUB_URL],
       },
       softwareApplication(locale),
+      videoObject(locale),
     ],
   };
 }

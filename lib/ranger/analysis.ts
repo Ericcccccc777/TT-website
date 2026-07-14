@@ -10,32 +10,83 @@ import type { HistoryEntry } from "./data";
  * ADVISORY: it helps the admin's eye, it does not punish anyone. Bans stay a
  * manual decision.
  *
- * Thresholds are deliberately conservative starting values — tune them as the
- * community's real usage distribution becomes clear (they are all in one place).
+ * Two independent tests run per row:
+ *
+ *   1. The JUMP CEILING — how much a real machine could have produced in the
+ *      elapsed time. Time-scaled, so hoarding does not read as cheating.
+ *   2. The BUCKET SUMMARY — four aggregate numbers the desktop client derives
+ *      from the Claude Code logs' own timestamps and uploads alongside the
+ *      score. Optional (older clients omit it); when present it is the sharper
+ *      test, because Σbuckets must equal the score delta the server itself
+ *      computed. A tampered garden.json moves the score but not the logs, so
+ *      the two stop agreeing.
+ *
+ * The client is untrusted, so a determined forger can fabricate a self-consistent
+ * summary; the ceiling therefore always stays in force as a backstop. What the
+ * summary buys is (a) honest heavy users stop being flagged, and (b) the cheapest
+ * cheat — editing the cumulative number in garden.json — becomes self-evident.
  */
 export const THRESHOLDS = {
-  // Calibrated to the desktop app's physics: score only advances when a human
-  // clicks a bubble (≤5 on screen, each expiring 5 min after its turn), one
-  // Claude message contributes at most ~its context window in cache_read
-  // (~1–1.3M tokens), and the client syncs the cumulative total ~every 30 min.
-  // So even an extreme, never-idle power user accrues only low tens of millions
-  // per active 30-min window; ~5–10M tokens/min is the implausible line.
+  // ── 1. Jump ceiling: BURST + RATE × gap ────────────────────────────────────
+  // Calibrated against a real heavy user's Claude Code logs (23 days, 7.6e9
+  // tokens counted the same way the app counts them — in + out + cache_read +
+  // cache_creation, where cache_read dominates):
   //
-  // Implied average rate = delta / interval.
-  HARD_RATE: 200_000, // tok/s (~12M/min avg) → suspicious. Physically unreachable sustained.
-  SOFT_RATE: 100_000, // tok/s (~6M/min avg) → watch.
-  // Absolute single-step jump (one sync window).
-  BIG_JUMP: 500_000_000, // ≥ +5e8 in ONE step → suspicious (far beyond a legit ~30-min window).
-  WATCH_JUMP: 150_000_000, // ≥ +1.5e8 in one step → watch (large; the "sudden big increase" signal).
-  // Relative explosion, guarded so early small-base growth doesn't cry wolf.
+  //     window    real max tokens
+  //      5 min          5.5e7
+  //     30 min          2.05e8
+  //      1 h            2.86e8
+  //      8 h            5.54e8
+  //     24 h            9.05e8
+  //      7 d            3.51e9
+  //
+  // The previous absolute thresholds (watch at ≥1.5e8, suspicious at ≥5e8, both
+  // blind to elapsed time) flagged that user's ORDINARY behaviour: a normal
+  // 8-hour workday genuinely produces 5.5e8 tokens, and the desktop app freezes
+  // bubble expiry while minimised, so a single click legitimately banks the whole
+  // day at once. Any usable test has to scale with time.
+  WATCH_BURST: 400_000_000, // 4e8 allowed regardless of gap …
+  WATCH_RATE: 20_000, // … plus 20K tok/s of gap  (≈1.8–2.4× the real ceiling)
+  SUS_BURST: 1_000_000_000, // 1e9 …
+  SUS_RATE: 50_000, // … plus 50K tok/s of gap   (≈4–5× the real ceiling)
+
+  // ── 2. Bucket summary ──────────────────────────────────────────────────────
+  // Real max for a single aligned 5-minute window in those same logs: 4.7e7.
+  BUCKET_SECONDS: 300,
+  BUCKET_WATCH: 100_000_000, // 1e8 inside one 5-min window → watch      (≈2×)
+  BUCKET_SUS: 200_000_000, // 2e8 inside one 5-min window → suspicious  (≈4×)
+  SUM_TOL: 1_000, // tokens of slack when checking Σbuckets == delta
+
+  // ── 3. Baseline plausibility ───────────────────────────────────────────────
+  // A first-ever upload has no predecessor to compare against, which is a hole:
+  // toggling the leaderboard off→on DELETEs the row, so the next upload arrives
+  // as a fresh INSERT and lands here with no ceiling applied. Known real peak
+  // lifetime total is ~2.3e9, so a brand-new row far above that wants a look.
+  BASELINE_WATCH: 5_000_000_000,
+  BASELINE_SUS: 20_000_000_000,
+
+  // ── 4. Unchanged from before ───────────────────────────────────────────────
   HUGE_PCT: 900, // grew > 9x (900%) in one step → watch …
   PCT_MIN_BASE: 100_000_000, // … but only when the prior score was already ≥ 1e8.
   // The ONE legit big jump: the v2→v3 metric migration multiplies a saved total
   // by exactly ×100. Treat newScore ≈ oldScore×100 as legitimate, not fabrication.
-  X100_TOL: 100, // tokens of rounding slack when matching the ×100 relationship.
+  X100_TOL: 100,
 } as const;
 
 export type Severity = "baseline" | "normal" | "watch" | "suspicious";
+
+/** Verdict on the four uploaded bucket numbers, or null when the client sent none. */
+export type BucketCheck = {
+  n: number; // how many 5-min windows the delta was spread across
+  max: number; // tokens in the busiest of them
+  sum: number; // Σ over all of them — must equal the server-computed delta
+  span: number; // seconds from the earliest window to the latest
+  ok: boolean; // every consistency test passed
+  sumMatches: boolean; // |sum − delta| ≤ SUM_TOL
+  impliedRate: number; // max ÷ 300s — peak tokens/sec inside one window
+  avgPerBucket: number;
+  problems: string[]; // why !ok, if it isn't
+};
 
 export type AnalyzedRow = HistoryEntry & {
   gapSeconds: number | null; // time since the previous change (null for the first/baseline row)
@@ -43,6 +94,8 @@ export type AnalyzedRow = HistoryEntry & {
   rate: number | null; // implied tokens/sec over the gap (null for baseline)
   rateLabel: string; // "2.6K tok/s" / "—"
   jumpPct: number | null; // delta / oldScore * 100 (null when oldScore is null/0)
+  ceiling: number | null; // the suspicious-level jump ceiling that applied (null for baseline)
+  bucket: BucketCheck | null; // null when the client uploaded no summary
   severity: Severity;
   acknowledged: boolean; // an admin marked this specific change reviewed-OK
   signals: string[]; // human-readable reasons for the severity
@@ -63,6 +116,7 @@ export type HistorySummary = {
   peakRateAt: string | null;
   largestJump: number | null;
   largestJumpAt: string | null;
+  bucketRows: number; // rows that carried a verifiable bucket summary
   watchCount: number;
   suspiciousCount: number;
   verdict: "clean" | "watch" | "suspicious";
@@ -101,8 +155,73 @@ export function fmtRate(tokPerSec: number): string {
   return `${compact(tokPerSec)} tok/s`;
 }
 
+export function fmtTokens(n: number): string {
+  return compact(n);
+}
+
 function fmtSigned(n: number): string {
   return (n > 0 ? "+" : "") + Math.round(n).toLocaleString("en");
+}
+
+/** How many tokens a real machine could plausibly have produced in `gapSeconds`. */
+function jumpCeiling(gapSeconds: number, tier: "watch" | "suspicious"): number {
+  const [burst, rate] =
+    tier === "watch"
+      ? [THRESHOLDS.WATCH_BURST, THRESHOLDS.WATCH_RATE]
+      : [THRESHOLDS.SUS_BURST, THRESHOLDS.SUS_RATE];
+  return burst + rate * Math.max(0, gapSeconds);
+}
+
+/**
+ * Cross-examine the four numbers the client uploaded against the delta the SERVER
+ * computed. `delta` is not client-supplied — it is `new_score − old_score` from
+ * two rows the database itself wrote — so `sum === delta` is a claim the client
+ * cannot dodge merely by inflating garden.json.
+ */
+function checkBuckets(e: HistoryEntry, delta: number): BucketCheck | null {
+  const { bktN: n, bktMax: max, bktSum: sum, bktSpan: span } = e;
+  // The client only asserts a summary when it can prove its own ledger accounts
+  // for the whole delta; a partial or desynced ledger is uploaded as nothing at
+  // all. So "absent" means "no evidence", never "suspicious".
+  if (n === null || max === null || sum === null || span === null) return null;
+
+  const problems: string[] = [];
+  const sumMatches = Math.abs(sum - delta) <= THRESHOLDS.SUM_TOL;
+
+  if (!sumMatches) {
+    problems.push(
+      `Bucket total (${fmtSigned(sum)}) does not match the score delta (${fmtSigned(delta)}) — ` +
+        `the uploaded score is not backed by the token log.`,
+    );
+  }
+  if (max > THRESHOLDS.BUCKET_SUS) {
+    problems.push(
+      `One 5-minute window holds ${fmtSigned(max)} tokens — beyond any real machine.`,
+    );
+  }
+  if (n > 0 && n * THRESHOLDS.BUCKET_SECONDS > span + THRESHOLDS.BUCKET_SECONDS) {
+    problems.push(
+      `${n} five-minute windows cannot fit inside a ${fmtGap(span)} span — the buckets are fabricated.`,
+    );
+  }
+  if (max > sum) {
+    problems.push("Busiest window exceeds the total — internally inconsistent.");
+  }
+  if (n <= 0 && sum > 0) {
+    problems.push("Tokens claimed with zero buckets — internally inconsistent.");
+  }
+
+  return {
+    n,
+    max,
+    sum,
+    span,
+    ok: problems.length === 0,
+    sumMatches,
+    impliedRate: max / THRESHOLDS.BUCKET_SECONDS,
+    avgPerBucket: n > 0 ? sum / n : 0,
+    problems,
+  };
 }
 
 export function analyzeHistory(
@@ -120,16 +239,34 @@ export function analyzeHistory(
 
     let rate: number | null = null;
     let jumpPct: number | null = null;
+    let ceiling: number | null = null;
+    let bucket: BucketCheck | null = null;
     const signals: string[] = [];
     let severity: Severity = "normal";
 
     if (isBaseline) {
+      // No predecessor ⇒ no ceiling to apply. All we can ask is whether the
+      // starting total is itself believable. This is the off→on re-register path,
+      // so it is not merely cosmetic.
       severity = "baseline";
       signals.push("Starting baseline — the accumulated total before per-change history began.");
+      if (e.newScore >= THRESHOLDS.BASELINE_SUS) {
+        severity = "suspicious";
+        signals.push(
+          `First-ever total is ${fmtSigned(e.newScore)} — far past any plausible lifetime usage.`,
+        );
+      } else if (e.newScore >= THRESHOLDS.BASELINE_WATCH) {
+        severity = "watch";
+        signals.push(
+          `First-ever total is ${fmtSigned(e.newScore)} — unusually high for a fresh registration.`,
+        );
+      }
     } else {
       const effGap = gapSeconds === null ? null : Math.max(gapSeconds, 1);
       if (effGap !== null) rate = e.delta / effGap;
       if (e.oldScore && e.oldScore > 0) jumpPct = (e.delta / e.oldScore) * 100;
+
+      bucket = checkBuckets(e, e.delta);
 
       const isX100 =
         e.oldScore !== null &&
@@ -142,32 +279,66 @@ export function analyzeHistory(
       } else if (isX100) {
         signals.push("Exact ×100 — matches the one-time v2→v3 metric migration (legit).");
       } else {
-        if (rate !== null && rate > THRESHOLDS.HARD_RATE) {
+        const gap = gapSeconds ?? 0;
+        const susCeiling = jumpCeiling(gap, "suspicious");
+        const watchCeiling = jumpCeiling(gap, "watch");
+        ceiling = susCeiling;
+
+        // ── The bucket summary is the sharpest test we have; it runs first. ──
+        if (bucket && !bucket.ok) {
           severity = "suspicious";
-          signals.push(`Implausible average rate (${fmtRate(rate)}) — above the physical ceiling.`);
+          signals.push(...bucket.problems);
+        } else if (bucket && bucket.max > THRESHOLDS.BUCKET_WATCH) {
+          severity = "watch";
+          signals.push(
+            `Busiest 5-minute window holds ${fmtSigned(bucket.max)} tokens ` +
+              `(${fmtRate(bucket.impliedRate)}) — high, but not impossible.`,
+          );
         }
-        if (e.delta >= THRESHOLDS.BIG_JUMP) {
+
+        // ── The time-scaled ceiling. Always in force: a forged-but-consistent
+        //    summary must not be able to launder an impossible jump. ──
+        if (e.delta > susCeiling) {
           severity = "suspicious";
-          signals.push(`Huge single jump (${fmtSigned(e.delta)}) — beyond a legit ~30-min window.`);
+          signals.push(
+            `Gained ${fmtSigned(e.delta)} in ${fmtGap(gap)} — over the ${fmtSigned(susCeiling)} ` +
+              `ceiling for that interval.`,
+          );
+        } else if (severity === "normal" && e.delta > watchCeiling) {
+          if (bucket?.ok) {
+            // Spread across enough real 5-minute windows to explain itself: this
+            // is the hoarded-bubble case the old absolute thresholds mangled.
+            signals.push(
+              `Large gain (${fmtSigned(e.delta)}) but accounted for: ${bucket.n} five-minute ` +
+                `windows over ${fmtGap(bucket.span)}, busiest ${fmtSigned(bucket.max)}, total matches.`,
+            );
+          } else {
+            severity = "watch";
+            signals.push(
+              `Gained ${fmtSigned(e.delta)} in ${fmtGap(gap)} — over the ${fmtSigned(watchCeiling)} ` +
+                `ceiling for that interval.`,
+            );
+          }
         }
-        if (severity === "normal" && rate !== null && rate > THRESHOLDS.SOFT_RATE) {
-          severity = "watch";
-          signals.push(`High burst rate (${fmtRate(rate)} over ${fmtGap(gapSeconds ?? 0)}).`);
-        }
-        if (severity === "normal" && e.delta >= THRESHOLDS.WATCH_JUMP) {
-          severity = "watch";
-          signals.push(`Large single jump (${fmtSigned(e.delta)}) over ${fmtGap(gapSeconds ?? 0)}.`);
-        }
+
         if (
           severity === "normal" &&
           jumpPct !== null &&
           jumpPct > THRESHOLDS.HUGE_PCT &&
-          (e.oldScore ?? 0) >= THRESHOLDS.PCT_MIN_BASE
+          (e.oldScore ?? 0) >= THRESHOLDS.PCT_MIN_BASE &&
+          !bucket?.ok
         ) {
           severity = "watch";
           signals.push(`Grew ${Math.round(jumpPct)}% in one step.`);
         }
-        if (severity === "normal") signals.push("Within normal bounds.");
+
+        if (severity === "normal" && signals.length === 0) {
+          signals.push(
+            bucket?.ok
+              ? `Within normal bounds — ${bucket.n} five-minute windows, total matches the delta.`
+              : "Within normal bounds.",
+          );
+        }
       }
     }
 
@@ -192,13 +363,15 @@ export function analyzeHistory(
       rate,
       rateLabel: rate === null ? "—" : fmtRate(rate),
       jumpPct,
+      ceiling,
+      bucket,
       severity,
       acknowledged,
       signals,
     };
   });
 
-  const real = analyzed.filter((r) => r.severity !== "baseline");
+  const real = analyzed.filter((r) => r.oldScore !== null);
   const totalGained = real.reduce((s, r) => s + Math.max(0, r.delta), 0);
 
   let peakRate: number | null = null;
@@ -241,6 +414,7 @@ export function analyzeHistory(
     peakRateAt,
     largestJump,
     largestJumpAt,
+    bucketRows: analyzed.filter((r) => r.bucket !== null).length,
     watchCount,
     suspiciousCount,
     verdict: suspiciousCount > 0 ? "suspicious" : watchCount > 0 ? "watch" : "clean",
