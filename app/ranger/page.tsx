@@ -59,7 +59,7 @@ export default async function RangerPage() {
 
   return (
     <main className="min-h-screen bg-surface-parchment">
-      <div className="mx-auto max-w-5xl px-6 py-12">
+      <div className="mx-auto w-[90%] max-w-[1600px] px-6 py-12">
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1
