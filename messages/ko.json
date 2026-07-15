@@ -49,6 +49,7 @@
     "guideLimits": "Claude Code 사용 한도",
     "guideCcusage": "ccusage 대안",
     "guideTrack": "Claude Code 사용량 추적",
+    "guideCodex": "Codex 사용량 추적",
     "copyright": "© {year} Poietic Studio. 모든 권리 보유.",
     "openSourceOnGithub": "GitHub에서 팔로우"
   },

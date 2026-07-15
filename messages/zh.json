@@ -49,6 +49,7 @@
     "guideLimits": "Claude Code 使用上限",
     "guideCcusage": "ccusage 替代方案",
     "guideTrack": "追踪 Claude Code 用量",
+    "guideCodex": "追踪 Codex 用量",
     "copyright": "© {year} Poietic Studio. 保留所有权利。",
     "openSourceOnGithub": "在 GitHub 上关注"
   },
