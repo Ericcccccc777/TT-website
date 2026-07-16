@@ -15,7 +15,8 @@ export type ArticleBlock =
   | { steps: string[] }
   | { table: { head: string[]; rows: string[][] } }
   | { callout: string }
-  | { code: string };
+  | { code: string }
+  | { img: { src: string; alt: string; width: number; height: number } };
 
 export type ArticleFaqItem = { q: string; a: string };
 
@@ -148,10 +149,29 @@ function Block({ block }: { block: ArticleBlock }) {
           fontWeight: 700,
           lineHeight: 1.8,
           border: "var(--border-pixel)",
+          // Wrap long lines (e.g. the badge Markdown one-liner) so the whole snippet is
+          // readable at a glance rather than clipped behind a horizontal scroll.
+          whiteSpace: "pre-wrap",
+          wordBreak: "break-all",
         }}
       >
         {block.code}
       </pre>
+    );
+  }
+  if ("img" in block) {
+    // Plain <img>: the badge is a live SVG endpoint (not a static asset next/image
+    // can optimize). max-width keeps it responsive; the intrinsic w/h avoid layout shift.
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={block.img.src}
+        alt={block.img.alt}
+        width={block.img.width}
+        height={block.img.height}
+        className="my-2 h-auto max-w-full"
+        style={{ imageRendering: "auto" }}
+      />
     );
   }
   return (

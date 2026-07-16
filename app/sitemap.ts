@@ -19,6 +19,7 @@ const INDEXABLE_PATHS: {
   { path: "/download", priority: 0.9, changeFrequency: "weekly" },
   { path: "/dashboard", priority: 0.8, changeFrequency: "monthly" },
   { path: "/leaderboard", priority: 0.7, changeFrequency: "hourly" },
+  { path: "/badge", priority: 0.6, changeFrequency: "monthly", lastmod: "2026-07-16" },
   // Guide / GEO content pages
   { path: "/claude-code-cost", priority: 0.6, changeFrequency: "monthly", lastmod: "2026-07-11" },
   {
