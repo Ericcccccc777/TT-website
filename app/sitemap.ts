@@ -39,6 +39,12 @@ const INDEXABLE_PATHS: {
     changeFrequency: "monthly",
     lastmod: "2026-07-11",
   },
+  {
+    path: "/codex-usage-tracker",
+    priority: 0.6,
+    changeFrequency: "monthly",
+    lastmod: "2026-07-15",
+  },
   { path: "/privacy", priority: 0.3, changeFrequency: "monthly", lastmod: "2026-07-08" },
   { path: "/security", priority: 0.3, changeFrequency: "monthly", lastmod: "2026-07-08" },
   { path: "/terms", priority: 0.3, changeFrequency: "monthly", lastmod: "2026-07-09" },

@@ -41,6 +41,7 @@ export function GET() {
 - Claude Code usage limits explained (Pro & Max): ${base}/en/claude-code-usage-limits
 - ccusage alternative — a visual GUI desktop app: ${base}/en/ccusage-alternative
 - How to track your Claude Code & Codex token usage: ${base}/en/track-claude-code-usage
+- Track your OpenAI Codex (Codex CLI) usage and cost: ${base}/en/codex-usage-tracker
 
 ## Available languages
 - Both the app UI and this website are available in English, 中文 (Chinese), 日本語 (Japanese), and 한국어 (Korean).

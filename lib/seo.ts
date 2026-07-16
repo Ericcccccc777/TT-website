@@ -525,6 +525,58 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
       ],
     },
   },
+  "/codex-usage-tracker": {
+    en: {
+      title: "OpenAI Codex Usage & Cost Tracker (Codex CLI) | Token Forest",
+      description:
+        "Track the OpenAI Codex CLI's token usage and cost. Where its logs live, what they record, why the numbers look huge, and how to read your spend offline — never your code.",
+      keywords: [
+        "codex usage tracker",
+        "openai codex cost",
+        "codex cli cost",
+        "track codex usage",
+        "codex token usage",
+        "openai codex token tracker",
+      ],
+    },
+    zh: {
+      title: "OpenAI Codex 用量与费用追踪（Codex CLI）| Token Forest",
+      description:
+        "追踪 OpenAI Codex CLI 的 token 用量与花费。日志在哪、记了什么、数字为什么看着吓人，以及如何离线看清开销——绝不读你的代码。",
+      keywords: [
+        "codex 用量统计",
+        "openai codex 费用",
+        "codex cli 费用",
+        "追踪 codex 用量",
+        "codex token 用量",
+        "codex 用量追踪",
+      ],
+    },
+    ja: {
+      title: "OpenAI Codex 使用量・コスト追跡（Codex CLI）| Token Forest",
+      description:
+        "OpenAI Codex CLI のトークン使用量とコストを追跡。ログの場所、記録される内容、数字が大きく見える理由、支出をオフラインで把握する方法——コードは読みません。",
+      keywords: [
+        "codex 使用量 トラッカー",
+        "openai codex コスト",
+        "codex cli 料金",
+        "codex 使用量 追跡",
+        "codex トークン 使用量",
+      ],
+    },
+    ko: {
+      title: "OpenAI Codex 사용량·비용 추적 (Codex CLI) | Token Forest",
+      description:
+        "OpenAI Codex CLI의 토큰 사용량과 비용을 추적하세요. 로그 위치, 기록 내용, 숫자가 커 보이는 이유, 지출을 오프라인으로 확인하는 방법——코드는 읽지 않습니다.",
+      keywords: [
+        "codex 사용량 추적",
+        "openai codex 비용",
+        "codex cli 비용",
+        "codex 사용량 트래커",
+        "codex 토큰 사용량",
+      ],
+    },
+  },
 };
 
 /** Resolve copy for a path+locale, falling back to English. */

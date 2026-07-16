@@ -86,6 +86,7 @@ Both the app UI and the website are available in four languages. Localized home 
 - Claude Code usage limits explained — the rolling 5-hour session window, weekly caps, and Pro vs Max: ${base}/en/claude-code-usage-limits
 - ccusage alternative — a visual GUI desktop app that reads the same Claude Code & Codex logs: ${base}/en/ccusage-alternative
 - How to track your Claude Code & Codex token usage — where the logs live and how to read them: ${base}/en/track-claude-code-usage
+- Track your OpenAI Codex (Codex CLI) usage and cost — the Codex CLI is OpenAI's terminal coding agent, not the deprecated 2021 Codex API model; this explains where it logs usage and how to read the cost: ${base}/en/codex-usage-tracker
 
 ## Demo video
 - Title: ${DEMO_VIDEO.title}

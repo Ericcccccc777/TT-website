@@ -30,6 +30,7 @@ export async function Footer() {
     { label: t("guideLimits"), href: "/claude-code-usage-limits" },
     { label: t("guideCcusage"), href: "/ccusage-alternative" },
     { label: t("guideTrack"), href: "/track-claude-code-usage" },
+    { label: t("guideCodex"), href: "/codex-usage-tracker" },
   ] as const;
 
   return (
