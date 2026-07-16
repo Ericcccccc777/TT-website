@@ -257,6 +257,37 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
         "Token Forest 최종 사용자 라이선스 계약: 앱 및 선택형 리더보드 서비스 사용 라이선스, 보증 부인, 책임 제한.",
     },
   },
+  "/badge": {
+    en: {
+      title: "Token Forest README Badge — Show Your Claude Code Stats",
+      description:
+        "A live GitHub README badge of your Token Forest — tree, tokens, and worldwide rank. Paste one line of Markdown; it updates itself as your tree grows.",
+      keywords: [
+        "token forest badge",
+        "github readme coding badge",
+        "claude code stats badge",
+        "coding stats readme",
+      ],
+    },
+    zh: {
+      title: "Token Forest README 徽章 — 秀出你的 Claude Code 数据",
+      description:
+        "一张实时的 GitHub README 徽章:你的树、token 总量、全球排名。贴一行 Markdown,它会随你的树成长自己更新。",
+      keywords: ["token forest 徽章", "github readme 徽章", "claude code 徽章", "编程数据徽章"],
+    },
+    ja: {
+      title: "Token Forest README バッジ — Claude Code の実績を表示",
+      description:
+        "あなたの Token Forest のライブ GitHub README バッジ——木・トークン・世界ランク。Markdown を 1 行貼るだけ、木が育つと自動更新。",
+      keywords: ["token forest バッジ", "github readme バッジ", "claude code バッジ"],
+    },
+    ko: {
+      title: "Token Forest README 배지 — Claude Code 통계 자랑하기",
+      description:
+        "당신의 Token Forest 실시간 GitHub README 배지——나무, 토큰, 세계 순위. Markdown 한 줄만 붙이면 나무가 자라며 스스로 업데이트됩니다.",
+      keywords: ["token forest 배지", "github readme 배지", "claude code 배지"],
+    },
+  },
   "/leaderboard": {
     en: {
       title: "Token Forest Global Leaderboard",
