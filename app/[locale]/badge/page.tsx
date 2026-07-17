@@ -14,7 +14,9 @@ const SNIPPET =
 // Screenshots live under /badge-guide/ (NOT /badge/, which is the live SVG
 // route app/badge/[userId]). src/dims are shared; alt is localized per doc.
 const IMG = {
-  example: { src: "/badge-guide/example.png", width: 922, height: 280 },
+  // The live badge endpoint's sample — always the current badge design, no stale
+  // screenshot to maintain. (menu/dialog stay static: they show the desktop app.)
+  example: { src: "/badge/demo.svg", width: 460, height: 140 },
   menu: { src: "/badge-guide/app-menu.png", width: 820, height: 670 },
   dialog: { src: "/badge-guide/setup-dialog.png", width: 860, height: 568 },
 } as const;
@@ -40,7 +42,7 @@ const EN: ArticleDoc = {
     {
       img: {
         ...IMG.example,
-        alt: "Example Token Forest badge — a pixel tree, a username, rank #1, and “Cactus · stage 7 · 7.6B tokens”.",
+        alt: "Example Token Forest badge: a pixel tree, a username, a bold token count, the tree species and stage, and worldwide rank.",
       },
     },
     { h2: "What it is" },
@@ -133,7 +135,7 @@ const ZH: ArticleDoc = {
     {
       img: {
         ...IMG.example,
-        alt: "Token Forest 徽章示例——一棵像素树、用户名、排名 #1,以及「Cactus · stage 7 · 7.6B tokens」。",
+        alt: "Token Forest 徽章示例:一棵像素树、用户名、加粗的 token 数量、树种与阶段,以及全球排名。",
       },
     },
     { h2: "它是什么" },
@@ -226,7 +228,7 @@ const JA: ArticleDoc = {
     {
       img: {
         ...IMG.example,
-        alt: "Token Forest バッジの例——ピクセルの木、ユーザー名、ランク #1、そして「Cactus · stage 7 · 7.6B tokens」。",
+        alt: "Token Forest バッジの例:ピクセルの木、ユーザー名、太字のトークン数、樹種と成長段階、そして世界ランク。",
       },
     },
     { h2: "これは何か" },
@@ -319,7 +321,7 @@ const KO: ArticleDoc = {
     {
       img: {
         ...IMG.example,
-        alt: "Token Forest 배지 예시——픽셀 나무, 사용자 이름, 순위 #1, 그리고 「Cactus · stage 7 · 7.6B tokens」.",
+        alt: "Token Forest 배지 예시: 픽셀 나무, 사용자 이름, 굵은 토큰 수, 수종과 단계, 그리고 세계 순위.",
       },
     },
     { h2: "이게 뭔가요" },

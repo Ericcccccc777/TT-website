@@ -52,7 +52,7 @@
     "guideCodex": "Codex 使用量を追跡",
     "copyright": "© {year} Poietic Studio. 無断転載を禁じます。",
     "openSourceOnGithub": "GitHub でフォロー",
-    "badge": "README バッジ"
+    "badge": "バッジを表示"
   },
   "Hero": {
     "ariaLabel": "ヒーローセクション",
@@ -295,7 +295,11 @@
     "relativeJustNow": "たった今",
     "relativeMinutes": "{n}分前",
     "relativeHours": "{n}時間前",
-    "relativeDays": "{n}日前"
+    "relativeDays": "{n}日前",
+    "badgeHeading": "バッジで見せびらかそう",
+    "badgeBody": "あなたの順位を GitHub プロフィール README 用のライブバッジに。木が育つにつれて自動更新されます。バッジはアプリ内でコピーします(ランキング → バッジ設定)。",
+    "badgeAlt": "ユーザー名、太字のトークン数、樹種と成長段階、世界ランクを示す Token Forest バッジの例。",
+    "badgeCta": "バッジの取得方法"
   },
   "DownloadPage": {
     "heroTreeAlt": "完全に成長した Token Forest アップルツリー",

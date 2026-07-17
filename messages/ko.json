@@ -52,7 +52,7 @@
     "guideCodex": "Codex 사용량 추적",
     "copyright": "© {year} Poietic Studio. 모든 권리 보유.",
     "openSourceOnGithub": "GitHub에서 팔로우",
-    "badge": "README 배지"
+    "badge": "배지 표시"
   },
   "Hero": {
     "ariaLabel": "히어로 섹션",
@@ -295,7 +295,11 @@
     "relativeJustNow": "방금 전",
     "relativeMinutes": "{n}분 전",
     "relativeHours": "{n}시간 전",
-    "relativeDays": "{n}일 전"
+    "relativeDays": "{n}일 전",
+    "badgeHeading": "배지로 자랑하세요",
+    "badgeBody": "당신의 순위를 GitHub 프로필 README용 실시간 배지로 만드세요. 나무가 자라면 스스로 갱신됩니다. 배지는 앱 안에서 복사합니다(리더보드 → 배지 설정).",
+    "badgeAlt": "사용자 이름, 굵은 토큰 수, 수종과 단계, 세계 순위를 보여주는 Token Forest 배지 예시.",
+    "badgeCta": "배지 받는 방법"
   },
   "DownloadPage": {
     "heroTreeAlt": "완전히 자란 Token Forest 사과나무",

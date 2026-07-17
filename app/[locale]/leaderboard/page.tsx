@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
 import { PixelCrown } from "@/components/pixel-crown";
@@ -413,6 +414,53 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
               </li>
             ))}
           </ol>
+        </div>
+
+        {/* ── Show your badge ── */}
+        <div
+          className="mt-10 rounded-[2px] bg-surface-card p-6"
+          style={{ border: "var(--border-pixel)" }}
+        >
+          <h2
+            className="mb-3 text-leaf-deep"
+            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h1)" }}
+          >
+            {t("badgeHeading")}
+          </h2>
+          <p
+            className="mb-4 text-text-muted-light"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "var(--text-small)",
+              lineHeight: 1.7,
+            }}
+          >
+            {t("badgeBody")}
+          </p>
+          {/* Live badge sample from the SVG endpoint — always the current design. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/badge/demo.svg"
+            alt={t("badgeAlt")}
+            width={460}
+            height={140}
+            className="h-auto w-full max-w-[460px] rounded-[2px]"
+          />
+          <div className="mt-5">
+            <Link
+              href="/badge"
+              className="inline-flex items-center gap-2 rounded-[2px] px-5 py-2.5 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-caption)",
+                background: "var(--color-leaf-deep)",
+                boxShadow: "var(--shadow-pixel)",
+                color: "var(--color-text-cream)",
+              }}
+            >
+              {t("badgeCta")}
+            </Link>
+          </div>
         </div>
       </div>
     </div>

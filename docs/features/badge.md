@@ -66,7 +66,7 @@ The `/badge` page walks a reader through the same flow, in their own language, w
 
 ## 6. Deferred / unresolved
 
-- The example badge shown on the page is a static screenshot, not the live `/badge/demo.svg`. Fine for now; revisit if the badge design changes.
+- (resolved) The example badge is now the live `/badge/demo.svg`, so it always shows the current design; there is no static screenshot to keep in sync.
 
 ## 7. Out of scope
 
@@ -77,6 +77,9 @@ The `/badge` page walks a reader through the same flow, in their own language, w
 - **The page quotes the real app labels per language, and shows real screenshots.** The earlier version described an invented menu label ("Copy my leaderboard badge") in English for all locales and named the wrong entry point; it would have sent players hunting for a control that does not read that way in their app. Rewritten 2026-07-17 to match the app (Leaderboard → Badge Setup → Copy My Leaderboard Badge), with the opt-in-first prerequisite made explicit. (CEO asked for a correct, illustrated, multi-language page.)
 - **Screenshots live under `/badge-guide/`, not `/badge/`** — the latter is the live SVG route `app/badge/[userId]`, which would try to serve a PNG name as a badge.
 - **The page is linked from the footer and listed in llms.txt / llms-full.txt** — it was previously reachable only via the sitemap.
+- **Badge layout (2026-07-17): the token count is the hero.** The stats row now leads with a bold, enlarged, green token count, with species and stage trailing it in muted small text (was `species · stage · tokens`, all one muted size). Applies to every live badge, since the SVG regenerates on each README view. Both the demo and the real-user path share one `badgeInner()` helper so they can't drift.
+- **The demo badge shows "Username" (not a fake person's name)** so it reads as a template of your own badge.
+- **A "Show your badge" section was added to the leaderboard page**, below "How to join", with the live sample and a link to `/badge` — the highest-intent entry point (a player looking at the standings is the one most likely to want the badge). The footer link was renamed from "README badge" to "Show your badge" (4 locales).
 
 ## 9. (Audit mode only) Code vs spec delta
 
