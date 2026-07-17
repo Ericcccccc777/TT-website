@@ -80,8 +80,7 @@
     "tryBubbleAria": "点击收集演示气泡",
     "videoHeading": "看看它实际的样子",
     "videoPlayLabel": "播放 Token Forest 演示视频(1 分 49 秒)",
-    "videoPrivacyNote": "点击播放后,视频会从 YouTube 加载,YouTube 可能会写入它自己的 cookie。在你点击之前,页面不会加载任何内容。",
-    "videoWatchOnYouTube": "在 YouTube 上观看"
+    "videoPrivacyNote": "点击播放后,视频会从 YouTube 加载,YouTube 可能会写入它自己的 cookie。在你点击之前,页面不会加载任何内容。"
   },
   "Features": {
     "heading": "特性",

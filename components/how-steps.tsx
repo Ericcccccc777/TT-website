@@ -37,6 +37,15 @@ interface HowStepsProps {
   uploadedZero: string;
   holdToGrow: string;
   bubbleAria: string;
+  /**
+   * Rendered between the three steps and the save-slot privacy note.
+   *
+   * The demo video lives here rather than above the steps: the steps *say* what the
+   * app does and animate it, so by the time a reader reaches the video they already
+   * know what they are about to watch. The privacy note stays last — it is the
+   * closing promise of the section, and it should not be interrupted by a player.
+   */
+  slot?: React.ReactNode;
 }
 
 // Token count-up sequence for demo 01 (uneven steps — reads as live traffic)
@@ -630,6 +639,7 @@ export function HowSteps({
   uploadedZero,
   holdToGrow,
   bubbleAria,
+  slot,
 }: HowStepsProps) {
   const reduced = usePrefersReducedMotion();
   const hydrated = useSyncExternalStore(
@@ -726,6 +736,8 @@ export function HowSteps({
           ))}
         </div>
       </div>
+
+      {slot}
 
       {/* Privacy note as a game save slot */}
       <div

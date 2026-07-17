@@ -24,8 +24,6 @@ interface VideoFacadeProps {
   playLabel: string;
   /** Small print: pressing play pulls the video from YouTube. */
   privacyNote: string;
-  /** Link text for the escape hatch to YouTube itself. */
-  watchOnYouTube: string;
 }
 
 /** Pixel play triangle, drawn crisp to match the site's sprite language. */
@@ -41,11 +39,11 @@ function PixelPlay({ width = 34 }: { width?: number }) {
   );
 }
 
-export function VideoFacade({ heading, playLabel, privacyNote, watchOnYouTube }: VideoFacadeProps) {
+export function VideoFacade({ heading, playLabel, privacyNote }: VideoFacadeProps) {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <div className="reveal mx-auto mb-16 max-w-3xl">
+    <div className="reveal mx-auto mt-16 max-w-3xl">
       <p
         className="mb-3 text-center text-leaf-deep"
         style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h1)", lineHeight: 1.3 }}
@@ -123,31 +121,23 @@ export function VideoFacade({ heading, playLabel, privacyNote, watchOnYouTube }:
         )}
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-        <p
-          style={{
-            fontFamily: "var(--font-body)",
-            fontSize: "var(--text-small)",
-            color: "var(--color-text-muted-light)",
-            lineHeight: 1.6,
-          }}
-        >
-          {privacyNote}
-        </p>
-        <a
-          href={DEMO_VIDEO.watchUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="whitespace-nowrap underline underline-offset-2 hover:text-leaf-deep"
-          style={{
-            fontFamily: "var(--font-body)",
-            fontSize: "var(--text-small)",
-            color: "var(--color-text-muted-light)",
-          }}
-        >
-          {watchOnYouTube} →
-        </a>
-      </div>
+      {/* Small print. Deliberately quiet — it is a disclosure, not a caption, and it sits
+          under a block whose whole point is that nothing has loaded yet. */}
+      <p
+        className="mt-2"
+        style={{
+          fontFamily: "var(--font-body)",
+          // Explicit 10px. The --text-* tokens are Tailwind @theme "size / line-height"
+          // pairs — valid as the `text-caption` class, but invalid (and ignored) as an
+          // inline font-size, so var(--text-caption) here silently fell back to the
+          // inherited body size instead of shrinking. This value actually renders small.
+          fontSize: "0.625rem",
+          color: "var(--color-text-muted-light)",
+          lineHeight: 1.6,
+        }}
+      >
+        {privacyNote}
+      </p>
     </div>
   );
 }

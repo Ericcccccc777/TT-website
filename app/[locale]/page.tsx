@@ -152,13 +152,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             </span>
           </h2>
 
-          <VideoFacade
-            heading={t("videoHeading")}
-            playLabel={t("videoPlayLabel")}
-            privacyNote={t("videoPrivacyNote")}
-            watchOnYouTube={t("videoWatchOnYouTube")}
-          />
-
           <HowSteps
             steps={[
               { num: "01", title: t("step01Title"), body: t("step01Body") },
@@ -170,6 +163,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             uploadedZero={t("uploadedZero")}
             holdToGrow={t("holdToGrow")}
             bubbleAria={t("tryBubbleAria")}
+            slot={
+              <VideoFacade
+                heading={t("videoHeading")}
+                playLabel={t("videoPlayLabel")}
+                privacyNote={t("videoPrivacyNote")}
+              />
+            }
           />
         </div>
       </section>
