@@ -127,7 +127,11 @@ export function VideoFacade({ heading, playLabel, privacyNote }: VideoFacadeProp
         className="mt-2"
         style={{
           fontFamily: "var(--font-body)",
-          fontSize: "var(--text-caption)",
+          // Explicit 10px. The --text-* tokens are Tailwind @theme "size / line-height"
+          // pairs — valid as the `text-caption` class, but invalid (and ignored) as an
+          // inline font-size, so var(--text-caption) here silently fell back to the
+          // inherited body size instead of shrinking. This value actually renders small.
+          fontSize: "0.625rem",
           color: "var(--color-text-muted-light)",
           lineHeight: 1.6,
         }}
