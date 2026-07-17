@@ -85,6 +85,24 @@ export const DEMO_VIDEO = {
   inLanguage: "en",
 } as const;
 
+/**
+ * The same demo, re-hosted on Bilibili (official PoieticStudio account) — the
+ * source shown by default on the Chinese page, because YouTube is unreachable in
+ * mainland China while Bilibili is not. The visitor can toggle between the two.
+ * Reuses DEMO_VIDEO's self-hosted poster, since it is the same footage.
+ */
+export const DEMO_VIDEO_BILIBILI = {
+  bvid: "BV1HoKn6jEp3",
+  watchUrl: "https://www.bilibili.com/video/BV1HoKn6jEp3/",
+  /** Bilibili iframe player base; the facade appends &autoplay=1 on click. */
+  embedUrl: "https://player.bilibili.com/player.html?bvid=BV1HoKn6jEp3&danmaku=0",
+} as const;
+
+/** Which video source a locale defaults to (only zh differs). */
+export function defaultVideoSource(locale: Locale): "youtube" | "bilibili" {
+  return locale === "zh" ? "bilibili" : "youtube";
+}
+
 /** VideoObject description, per locale. English is the guaranteed fallback. */
 export const DEMO_VIDEO_DESCRIPTION: Record<Locale, string> = {
   en: "A short demo of Token Forest: a pixel companion that sits above your taskbar and turns every Claude Code and Codex request into an energy bubble. Collect the bubbles and your tree grows, stage by stage, from a sprout into a fruit-bearing tree.",

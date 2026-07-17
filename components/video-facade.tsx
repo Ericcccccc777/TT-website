@@ -2,29 +2,48 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { DEMO_VIDEO } from "@/lib/seo";
+import { DEMO_VIDEO, DEMO_VIDEO_BILIBILI } from "@/lib/seo";
 
 /**
- * Click-to-load YouTube player ("facade" pattern).
+ * Click-to-load video player ("facade" pattern) with a YouTube + Bilibili source
+ * toggle.
  *
  * At rest this is just a self-hosted thumbnail and a pixel play button — no
- * iframe, no YouTube script, no third-party cookie. The embed is mounted only
- * when the visitor presses play, which keeps the home page's first paint inside
- * the project's interactive-in-2-3s floor and keeps the privacy-first promise
- * literally true for anyone who never plays the video.
+ * iframe, no third-party script, no third-party cookie. An embed is mounted only
+ * when the visitor presses play (or the source-switch button), which keeps the
+ * home page's first paint inside the project's interactive-in-2-3s floor and
+ * keeps the privacy-first promise literally true for anyone who never plays.
  *
- * The self-hosted thumbnail (rather than i.ytimg.com) means the block renders
- * even where YouTube's hosts are unreachable; on those networks the player
- * itself will still fail after the click, which we accept.
+ * `defaultSource` is the one the page arms first — Bilibili on the Chinese page
+ * (YouTube is unreachable in mainland China), YouTube elsewhere. Either way the
+ * switch button lets the visitor pick the other one, so a Chinese speaker abroad
+ * or an English-browser visitor inside China is never stuck with a dead player.
+ *
+ * The self-hosted thumbnail (rather than i.ytimg.com / a Bilibili cover) means
+ * the block renders even where a host is unreachable; only the player itself
+ * fails after the click on those networks, which we accept.
  */
+type Source = "youtube" | "bilibili";
+
 interface VideoFacadeProps {
   /** Section lead-in shown above the player. */
   heading: string;
   /** Accessible name for the play button. */
   playLabel: string;
-  /** Small print: pressing play pulls the video from YouTube. */
+  /** Small print: pressing play pulls the video from a third-party host. */
   privacyNote: string;
+  /** Source armed on first load (zh -> bilibili, others -> youtube). */
+  defaultSource: Source;
+  /** Switch-button label shown while Bilibili is active. */
+  switchToYoutube: string;
+  /** Switch-button label shown while YouTube is active. */
+  switchToBilibili: string;
 }
+
+const EMBED: Record<Source, string> = {
+  youtube: `${DEMO_VIDEO.embedUrl}?autoplay=1&rel=0&playsinline=1`,
+  bilibili: `${DEMO_VIDEO_BILIBILI.embedUrl}&autoplay=1&high_quality=1`,
+};
 
 /** Pixel play triangle, drawn crisp to match the site's sprite language. */
 function PixelPlay({ width = 34 }: { width?: number }) {
@@ -39,8 +58,19 @@ function PixelPlay({ width = 34 }: { width?: number }) {
   );
 }
 
-export function VideoFacade({ heading, playLabel, privacyNote }: VideoFacadeProps) {
+export function VideoFacade({
+  heading,
+  playLabel,
+  privacyNote,
+  defaultSource,
+  switchToYoutube,
+  switchToBilibili,
+}: VideoFacadeProps) {
+  const [source, setSource] = useState<Source>(defaultSource);
   const [playing, setPlaying] = useState(false);
+
+  const other: Source = source === "youtube" ? "bilibili" : "youtube";
+  const switchLabel = other === "youtube" ? switchToYoutube : switchToBilibili;
 
   return (
     <div className="reveal mx-auto mt-16 max-w-3xl">
@@ -62,8 +92,9 @@ export function VideoFacade({ heading, playLabel, privacyNote }: VideoFacadeProp
       >
         {playing ? (
           <iframe
+            key={source}
             className="absolute inset-0 h-full w-full"
-            src={`${DEMO_VIDEO.embedUrl}?autoplay=1&rel=0&playsinline=1`}
+            src={EMBED[source]}
             title={DEMO_VIDEO.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
@@ -121,10 +152,33 @@ export function VideoFacade({ heading, playLabel, privacyNote }: VideoFacadeProp
         )}
       </div>
 
+      {/* Source switch — pixel button in the site's secondary style. Switching
+          also starts playback of the chosen source (it is a deliberate click). */}
+      <div className="mt-3 flex justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            setSource(other);
+            setPlaying(true);
+          }}
+          className="inline-flex items-center gap-2 rounded-[2px] px-4 py-2 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          style={{
+            fontFamily: "var(--font-pixel)",
+            fontSize: "var(--text-caption)",
+            background: "var(--color-surface-card)",
+            border: "var(--border-pixel)",
+            boxShadow: "var(--shadow-pixel)",
+            color: "var(--color-text-forest)",
+          }}
+        >
+          {switchLabel}
+        </button>
+      </div>
+
       {/* Small print. Deliberately quiet — it is a disclosure, not a caption, and it sits
           under a block whose whole point is that nothing has loaded yet. */}
       <p
-        className="mt-2"
+        className="mt-3"
         style={{
           fontFamily: "var(--font-body)",
           // Explicit 10px. The --text-* tokens are Tailwind @theme "size / line-height"
@@ -134,6 +188,7 @@ export function VideoFacade({ heading, playLabel, privacyNote }: VideoFacadeProp
           fontSize: "0.625rem",
           color: "var(--color-text-muted-light)",
           lineHeight: 1.6,
+          textAlign: "center",
         }}
       >
         {privacyNote}

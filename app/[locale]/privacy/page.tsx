@@ -177,7 +177,7 @@ const EN: LegalDoc = {
           p: "This website uses no analytics, no advertising trackers, and no marketing cookies. Its hosting provider processes standard server logs (IP address, user agent, requested page, time) to serve and secure the site. The leaderboard page reads the public leaderboard rows described above; viewing it requires no login. If we ever add analytics or similar services, this notice will be updated first.",
         },
         {
-          p: "The home page shows a demo video hosted on YouTube. Nothing is fetched from YouTube until you press play: at rest the page shows only a still image served from this site. Once you press play, the video is loaded from YouTube's no-cookie player domain, and from that point YouTube may set its own cookies and receive your IP address under Google's privacy policy. The same applies if you follow the “Watch on YouTube” link next to the player, which takes you to YouTube directly. You can avoid YouTube entirely by using neither.",
+          p: "The home page shows a demo video. Nothing is fetched from any video host until you press play: at rest the page shows only a still image served from this site. When you press play — or use the button that switches the source — the video loads from YouTube (or, on the Chinese page, Bilibili by default), and from that point that service may set its own cookies and receive your IP address under its own privacy policy. You can avoid both entirely by not playing the video.",
         },
       ],
     },
@@ -394,7 +394,7 @@ const ZH: LegalDoc = {
           p: "本网站不使用分析工具、广告跟踪或营销 Cookie。托管商会为提供与保护服务处理标准服务器日志(IP、浏览器标识、请求页面、时间)。排行榜页面读取上述公开榜单数据,浏览无需登录。将来若引入 analytics 等服务,会先更新本声明。",
         },
         {
-          p: "首页展示了一段托管在 YouTube 上的演示视频。在你点击播放之前,页面不会向 YouTube 发起任何请求 —— 静止状态下显示的只是一张由本站提供的图片。一旦你点击播放,视频会从 YouTube 的 no-cookie 播放器域名加载,自那时起 YouTube 可能按 Google 的隐私政策写入它自己的 Cookie 并获取你的 IP 地址。播放器旁的「在 YouTube 上观看」链接同理——它会直接带你去 YouTube。两者都不使用,即可完全避开 YouTube。",
+          p: "首页展示了一段演示视频。在你点击播放之前,页面不会向任何视频平台发起请求 —— 静止状态下显示的只是一张由本站提供的图片。当你点击播放、或点击切换片源的按钮时,视频会从 YouTube(中文页默认从哔哩哔哩)加载,自那时起对应平台可能按其隐私政策写入它自己的 Cookie 并获取你的 IP 地址。只要不播放视频,即可完全避开两者。",
         },
       ],
     },
@@ -620,7 +620,7 @@ const JA: LegalDoc = {
           p: "本ウェブサイトは、アナリティクス、広告トラッカー、マーケティング Cookie を一切使用しません。ホスティングプロバイダーは、サイトの提供と保護のために標準的なサーバーログ(IP アドレス、ユーザーエージェント、要求されたページ、時刻)を処理します。リーダーボードのページは上記の公開リーダーボードの行を読み取り、閲覧にログインは不要です。将来アナリティクス等のサービスを追加する場合は、本通知を先に更新します。",
         },
         {
-          p: "ホームページには YouTube でホストされているデモ動画を掲載しています。再生ボタンを押すまで YouTube へのリクエストは一切発生せず、静止状態では当サイトから配信される静止画のみが表示されます。再生すると、動画は YouTube の no-cookie プレーヤードメインから読み込まれ、その時点以降、YouTube は Google のプライバシーポリシーに基づき独自の Cookie を設定し、IP アドレスを受け取る場合があります。プレーヤーの横にある「YouTube で見る」リンクも同様で、押すと YouTube に直接移動します。どちらも使わなければ、YouTube を完全に避けられます。",
+          p: "ホームページにはデモ動画を掲載しています。再生するまで、どの動画ホストへのリクエストも発生せず、静止状態では当サイトから配信される静止画のみが表示されます。再生ボタン、または再生元を切り替えるボタンを押すと、動画は YouTube(中国語ページでは既定で Bilibili)から読み込まれ、その時点以降、そのサービスは自社のプライバシーポリシーに基づき独自の Cookie を設定し、IP アドレスを受け取る場合があります。動画を再生しなければ、どちらも完全に避けられます。",
         },
       ],
     },
@@ -837,7 +837,7 @@ const KO: LegalDoc = {
           p: "본 웹사이트는 분석 도구, 광고 추적기, 마케팅 쿠키를 일절 사용하지 않습니다. 호스팅 제공업체는 사이트를 제공하고 보호하기 위해 표준 서버 로그(IP 주소, 사용자 에이전트, 요청한 페이지, 시각)를 처리합니다. 리더보드 페이지는 위에서 설명한 공개 리더보드 행을 읽으며, 열람에 로그인이 필요 없습니다. 향후 분석 등의 서비스를 추가할 경우 본 정책을 먼저 업데이트합니다.",
         },
         {
-          p: "홈페이지에는 YouTube에 호스팅된 데모 영상이 있습니다. 재생을 누르기 전까지 YouTube로 어떤 요청도 보내지 않으며, 정지 상태에서는 본 사이트가 제공하는 정지 이미지만 표시됩니다. 재생을 누르면 영상은 YouTube의 no-cookie 플레이어 도메인에서 불러와지고, 그 시점부터 YouTube가 Google 개인정보처리방침에 따라 자체 쿠키를 설정하고 IP 주소를 수신할 수 있습니다. 플레이어 옆의 「YouTube에서 보기」 링크도 마찬가지로 YouTube로 바로 이동합니다. 둘 다 사용하지 않으면 YouTube를 완전히 피할 수 있습니다.",
+          p: "홈페이지에는 데모 영상이 있습니다. 재생을 누르기 전까지 어떤 영상 호스트로도 요청을 보내지 않으며, 정지 상태에서는 본 사이트가 제공하는 정지 이미지만 표시됩니다. 재생 버튼 또는 소스 전환 버튼을 누르면 영상은 YouTube(중국어 페이지에서는 기본적으로 Bilibili)에서 불러와지고, 그 시점부터 해당 서비스가 자체 개인정보처리방침에 따라 쿠키를 설정하고 IP 주소를 수신할 수 있습니다. 영상을 재생하지 않으면 둘 다 완전히 피할 수 있습니다.",
         },
       ],
     },
