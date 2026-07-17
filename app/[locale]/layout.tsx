@@ -71,6 +71,14 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+// The four locales above are the ONLY valid values for this segment. Refusing
+// dynamic params means any other value (e.g. a browser hitting
+// /apple-touch-icon.png, which bypasses the i18n middleware as a dotted path
+// and would otherwise match [locale]="apple-touch-icon.png") is a 404 BEFORE
+// this subtree renders — so page-body Intl calls like toLocaleString(locale)
+// never run with a non-BCP-47 string and throw a 500.
+export const dynamicParams = false;
+
 // ── Metadata (site-wide defaults) ─────────────────────────────────────────────
 // Per-page identity (title/canonical/hreflang) lives in each page via
 // lib/seo's localizedMetadata; the home page owns the home title. This layer
