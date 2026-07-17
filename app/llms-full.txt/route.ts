@@ -88,6 +88,11 @@ Both the app UI and the website are available in four languages. Localized home 
 - How to track your Claude Code & Codex token usage — where the logs live and how to read them: ${base}/en/track-claude-code-usage
 - Track your OpenAI Codex (Codex CLI) usage and cost — the Codex CLI is OpenAI's terminal coding agent, not the deprecated 2021 Codex API model; this explains where it logs usage and how to read the cost: ${base}/en/codex-usage-tracker
 
+## README badge
+- A live, embeddable SVG badge showing a player's tree species, growth stage, total tokens, and worldwide rank. Developers paste it into their GitHub profile README (the username/username repo), where it updates itself from the leaderboard — no editing after the first paste.
+- You copy your own badge from inside the desktop app (menu: Leaderboard → Badge Setup → Copy My Leaderboard Badge); it only works after you opt into the leaderboard. The badge markdown is [![My Token Forest](${base}/badge/<your-id>.svg)](${base}/en/leaderboard).
+- Step-by-step guide with screenshots: ${base}/en/badge
+
 ## Demo video
 - Title: ${DEMO_VIDEO.title}
 - Length: 1 minute 49 seconds. Embedded on the home page (${base}/en); also on YouTube at ${DEMO_VIDEO.watchUrl}

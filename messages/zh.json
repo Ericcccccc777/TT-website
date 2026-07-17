@@ -51,7 +51,8 @@
     "guideTrack": "追踪 Claude Code 用量",
     "guideCodex": "追踪 Codex 用量",
     "copyright": "© {year} Poietic Studio. 保留所有权利。",
-    "openSourceOnGithub": "在 GitHub 上关注"
+    "openSourceOnGithub": "在 GitHub 上关注",
+    "badge": "README 徽章"
   },
   "Hero": {
     "ariaLabel": "英雄区域",

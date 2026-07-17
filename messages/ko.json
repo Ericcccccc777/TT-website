@@ -51,7 +51,8 @@
     "guideTrack": "Claude Code 사용량 추적",
     "guideCodex": "Codex 사용량 추적",
     "copyright": "© {year} Poietic Studio. 모든 권리 보유.",
-    "openSourceOnGithub": "GitHub에서 팔로우"
+    "openSourceOnGithub": "GitHub에서 팔로우",
+    "badge": "README 배지"
   },
   "Hero": {
     "ariaLabel": "히어로 섹션",

@@ -36,6 +36,9 @@ export function GET() {
 ## Leaderboard
 - Opt-in global leaderboard: ${base}/en/leaderboard
 
+## README badge
+- A live SVG badge (species, growth stage, total tokens, world rank) you paste into your GitHub profile README; it updates itself from the leaderboard. You copy your own badge from inside the app (menu: Leaderboard → Badge Setup). How-to: ${base}/en/badge
+
 ## Guides
 - How much does Claude Code cost? Token pricing explained: ${base}/en/claude-code-cost
 - Claude Code usage limits explained (Pro & Max): ${base}/en/claude-code-usage-limits

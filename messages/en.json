@@ -51,7 +51,8 @@
     "guideTrack": "Track Claude Code usage",
     "guideCodex": "Track Codex usage",
     "copyright": "© {year} Poietic Studio. All rights reserved.",
-    "openSourceOnGithub": "Follow on GitHub"
+    "openSourceOnGithub": "Follow on GitHub",
+    "badge": "README badge"
   },
   "Hero": {
     "ariaLabel": "Hero section",

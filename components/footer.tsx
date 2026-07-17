@@ -12,6 +12,7 @@ export async function Footer() {
     { label: t("download"), href: "/download" },
     { label: t("dashboard"), href: "/dashboard" },
     { label: t("leaderboard"), href: "/leaderboard" },
+    { label: t("badge"), href: "/badge" },
   ] as const;
 
   const PROJECT_LINKS = [

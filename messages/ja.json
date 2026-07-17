@@ -51,7 +51,8 @@
     "guideTrack": "Claude Code の使用量を追跡",
     "guideCodex": "Codex 使用量を追跡",
     "copyright": "© {year} Poietic Studio. 無断転載を禁じます。",
-    "openSourceOnGithub": "GitHub でフォロー"
+    "openSourceOnGithub": "GitHub でフォロー",
+    "badge": "README バッジ"
   },
   "Hero": {
     "ariaLabel": "ヒーローセクション",
