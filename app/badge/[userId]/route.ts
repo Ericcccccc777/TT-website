@@ -95,6 +95,20 @@ function neutralSvg(): string {
   return badgeSvg(inner, "Token Forest");
 }
 
+/**
+ * The badge interior. The token count is the hero — bold, large, and green so it
+ * reads at a glance; the species and stage trail it in muted small text.
+ */
+function badgeInner(username: string, rank: number, score: number, speciesStage: string): string {
+  return `
+  ${pixelTree(28, 42, 3)}
+  <text x="120" y="50" fill="${C.leaf}" font-size="13" font-weight="700" letter-spacing="1">TOKEN FOREST</text>
+  <text x="120" y="76" fill="${C.ink}" font-size="20" font-weight="700">${esc(username.slice(0, 22))}</text>
+  <rect x="${W - 92}" y="40" width="72" height="30" rx="6" fill="${C.leaf}"/>
+  <text x="${W - 56}" y="60" fill="#ffffff" font-size="17" font-weight="800" text-anchor="middle">#${rank}</text>
+  <text x="120" y="112"><tspan fill="${C.leaf}" font-size="22" font-weight="800">${compact(score)} tokens</tspan><tspan fill="${C.muted}" font-size="13" dx="7">· ${esc(speciesStage)}</tspan></text>`;
+}
+
 export async function GET(_req: Request, ctx: { params: Promise<{ userId: string }> }) {
   const { userId: raw } = await ctx.params;
   // The badge URL ends in .svg by convention; the route param captures it.
@@ -108,18 +122,14 @@ export async function GET(_req: Request, ctx: { params: Promise<{ userId: string
   };
 
   // A stable sample badge for the /badge landing page and docs — fixed, plausible data,
-  // tied to no real user (so it can't break or expose anyone).
+  // tied to no real user (so it can't break or expose anyone). "Username" is a
+  // placeholder so it reads as a template of what your own badge will look like.
   if (userId === "demo") {
-    const inner = `
-  ${pixelTree(28, 42, 3)}
-  <text x="120" y="52" fill="${C.leaf}" font-size="13" font-weight="700" letter-spacing="1">TOKEN FOREST</text>
-  <text x="120" y="80" fill="${C.ink}" font-size="22" font-weight="800">Ada Lovelace</text>
-  <rect x="${W - 92}" y="40" width="72" height="30" rx="6" fill="${C.leaf}"/>
-  <text x="${W - 56}" y="60" fill="#ffffff" font-size="17" font-weight="800" text-anchor="middle">#7</text>
-  <text x="120" y="108" fill="${C.muted}" font-size="14">Cherry · stage 8 · 2.3B tokens</text>`;
-    return new Response(badgeSvg(inner, "Ada Lovelace — Cherry · stage 8 · 2.3B tokens — #7 on Token Forest"), {
-      headers: svgHeaders,
-    });
+    const inner = badgeInner("Username", 1, 1_200_000_000, "Apple · stage 6");
+    return new Response(
+      badgeSvg(inner, "Username — 1.2B tokens · Apple · stage 6 — #1 on Token Forest"),
+      { headers: svgHeaders },
+    );
   }
 
   // Basic uuid sanity — avoids a pointless DB round-trip on garbage paths.
@@ -152,16 +162,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ userId: string
     const username = (row.username as string | null)?.trim() || "Anonymous";
     const species = title((row.tree as string | null) || "apple");
     const stage = Number(row.stage_index ?? 0);
-    const stats = `${species} · stage ${stage} · ${compact(score)} tokens`;
-    const label = `${username} — ${stats} — #${rank} on Token Forest`;
+    const speciesStage = `${species} · stage ${stage}`;
+    const label = `${username} — ${compact(score)} tokens · ${speciesStage} — #${rank} on Token Forest`;
 
-    const inner = `
-  ${pixelTree(28, 42, 3)}
-  <text x="120" y="52" fill="${C.leaf}" font-size="13" font-weight="700" letter-spacing="1">TOKEN FOREST</text>
-  <text x="120" y="80" fill="${C.ink}" font-size="22" font-weight="800">${esc(username.slice(0, 22))}</text>
-  <rect x="${W - 92}" y="40" width="72" height="30" rx="6" fill="${C.leaf}"/>
-  <text x="${W - 56}" y="60" fill="#ffffff" font-size="17" font-weight="800" text-anchor="middle">#${rank}</text>
-  <text x="120" y="108" fill="${C.muted}" font-size="14">${esc(stats)}</text>`;
+    const inner = badgeInner(username, rank, score, speciesStage);
 
     return new Response(badgeSvg(inner, label), { headers: svgHeaders });
   } catch {

@@ -51,7 +51,8 @@
     "guideTrack": "追踪 Claude Code 用量",
     "guideCodex": "追踪 Codex 用量",
     "copyright": "© {year} Poietic Studio. 保留所有权利。",
-    "openSourceOnGithub": "在 GitHub 上关注"
+    "openSourceOnGithub": "在 GitHub 上关注",
+    "badge": "展示徽章"
   },
   "Hero": {
     "ariaLabel": "英雄区域",
@@ -294,7 +295,11 @@
     "relativeJustNow": "刚刚",
     "relativeMinutes": "{n} 分钟前",
     "relativeHours": "{n} 小时前",
-    "relativeDays": "{n} 天前"
+    "relativeDays": "{n} 天前",
+    "badgeHeading": "用徽章秀出来",
+    "badgeBody": "把你的排名变成一枚实时徽章,贴到 GitHub 个人主页 README——它会随你的树成长自己更新。在 App 里复制你的徽章(排行榜 → 徽章设置)。",
+    "badgeAlt": "Token Forest 徽章示例,显示用户名、加粗的 token 数量、树种与阶段,以及全球排名。",
+    "badgeCta": "如何获取你的徽章"
   },
   "DownloadPage": {
     "heroTreeAlt": "Token Forest 成熟苹果树",

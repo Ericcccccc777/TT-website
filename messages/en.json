@@ -51,7 +51,8 @@
     "guideTrack": "Track Claude Code usage",
     "guideCodex": "Track Codex usage",
     "copyright": "© {year} Poietic Studio. All rights reserved.",
-    "openSourceOnGithub": "Follow on GitHub"
+    "openSourceOnGithub": "Follow on GitHub",
+    "badge": "Show your badge"
   },
   "Hero": {
     "ariaLabel": "Hero section",
@@ -294,7 +295,11 @@
     "relativeJustNow": "just now",
     "relativeMinutes": "{n}m ago",
     "relativeHours": "{n}h ago",
-    "relativeDays": "{n}d ago"
+    "relativeDays": "{n}d ago",
+    "badgeHeading": "Show it off with a badge",
+    "badgeBody": "Turn your standing into a live badge for your GitHub profile README — it updates itself as your tree grows. You copy yours from inside the app (Leaderboard → Badge Setup).",
+    "badgeAlt": "Example Token Forest badge showing a username, a bold token count, tree species and stage, and worldwide rank.",
+    "badgeCta": "How to get your badge"
   },
   "DownloadPage": {
     "heroTreeAlt": "Fully grown Token Forest apple tree",
