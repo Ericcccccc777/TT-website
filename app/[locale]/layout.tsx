@@ -71,13 +71,12 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-// The four locales above are the ONLY valid values for this segment. Refusing
-// dynamic params means any other value (e.g. a browser hitting
-// /apple-touch-icon.png, which bypasses the i18n middleware as a dotted path
-// and would otherwise match [locale]="apple-touch-icon.png") is a 404 BEFORE
-// this subtree renders — so page-body Intl calls like toLocaleString(locale)
-// never run with a non-BCP-47 string and throw a 500.
-export const dynamicParams = false;
+// NOTE: do NOT set `export const dynamicParams = false` here. These pages are ISR
+// (`revalidate = 60`); on the Netlify Next runtime dynamicParams=false makes even the
+// valid prerendered locales (en/zh/ja/ko) 404 in production (the 2026-07-17 outage).
+// Junk segments like /apple-touch-icon.png (dotted paths bypass the i18n middleware)
+// are instead 404'd by the `hasLocale(...) → notFound()` guard in each page/layout,
+// which runs BEFORE any toLocaleString(locale) so a non-BCP-47 tag never throws a 500.
 
 // ── Metadata (site-wide defaults) ─────────────────────────────────────────────
 // Per-page identity (title/canonical/hreflang) lives in each page via

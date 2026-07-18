@@ -1,6 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
+import { notFound } from "next/navigation";
+import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Hero } from "@/components/hero";
 import { HowSteps } from "@/components/how-steps";
@@ -21,7 +23,7 @@ import { TreeShowcase } from "@/components/tree-showcase";
 import { RoadmapSection } from "@/components/roadmap-section";
 import { getGlobalStats } from "@/lib/leaderboard";
 import type { Metadata } from "next";
-import type { Locale } from "@/i18n/routing";
+import { routing, type Locale } from "@/i18n/routing";
 import { localizedMetadata } from "@/lib/seo";
 import { HomeJsonLd } from "@/components/json-ld";
 
@@ -38,6 +40,9 @@ export async function generateMetadata({
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
+  // Junk single-segment paths (e.g. /apple-touch-icon.png) resolve here as [locale];
+  // 404 them BEFORE any toLocaleString(locale) below, which throws on a non-BCP-47 tag.
+  if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
   const [t, stats] = await Promise.all([getTranslations("HowItWorks"), getGlobalStats()]);
