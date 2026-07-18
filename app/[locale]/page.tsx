@@ -24,7 +24,7 @@ import { RoadmapSection } from "@/components/roadmap-section";
 import { getGlobalStats } from "@/lib/leaderboard";
 import type { Metadata } from "next";
 import { routing, type Locale } from "@/i18n/routing";
-import { localizedMetadata } from "@/lib/seo";
+import { defaultVideoSource, localizedMetadata } from "@/lib/seo";
 import { HomeJsonLd } from "@/components/json-ld";
 
 export const revalidate = 60;
@@ -173,6 +173,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 heading={t("videoHeading")}
                 playLabel={t("videoPlayLabel")}
                 privacyNote={t("videoPrivacyNote")}
+                defaultSource={defaultVideoSource(locale as Locale)}
+                switchToYoutube={t("videoSwitchToYoutube")}
+                switchToBilibili={t("videoSwitchToBilibili")}
               />
             }
           />

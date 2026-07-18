@@ -80,7 +80,9 @@
     "tryBubbleAria": "데모 버블 수집",
     "videoHeading": "실제 모습 보기",
     "videoPlayLabel": "Token Forest 데모 영상 재생 (1분 49초)",
-    "videoPrivacyNote": "재생을 누르면 영상이 YouTube에서 불러와지며, YouTube가 자체 쿠키를 설정할 수 있습니다. 누르기 전까지는 아무것도 불러오지 않습니다."
+    "videoPrivacyNote": "재생을 누르면 영상이 YouTube에서 불러와지며, YouTube가 자체 쿠키를 설정할 수 있습니다. 누르기 전까지는 아무것도 불러오지 않습니다.",
+    "videoSwitchToYoutube": "YouTube로 전환",
+    "videoSwitchToBilibili": "Bilibili로 전환"
   },
   "Features": {
     "heading": "기능",
