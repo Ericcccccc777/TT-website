@@ -10,7 +10,7 @@ import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 const EN: LegalDoc = {
   title: "Token Forest Privacy Notice",
   meta: [
-    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-14 · Effective at first public release",
+    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-19 · Effective at first public release",
     "Publisher: Poietic Studio",
   ],
   sections: [
@@ -75,6 +75,10 @@ const EN: LegalDoc = {
                 "account.json",
                 "Only if the leaderboard was enabled: anonymous user ID and Supabase session tokens",
               ],
+              [
+                "sync_error.json",
+                "Only if the leaderboard was enabled: the last leaderboard-sync error message and its timestamp (diagnostic only; never uploaded)",
+              ],
             ],
           },
         },
@@ -87,7 +91,16 @@ const EN: LegalDoc = {
       h: "Network behaviour",
       blocks: [
         {
-          p: "With the leaderboard off — the default — Token Forest makes no network requests at all. Growth, bubbles, the shop, capsule mode and the dashboard all work offline. Cost estimates use a bundled price table; nothing is looked up online.",
+          p: "By default Token Forest makes no network requests at all. Growth, bubbles, the shop, capsule mode and the dashboard all work offline. Cost estimates use a bundled price table.",
+        },
+        {
+          p: "Exactly two optional features can go online, and neither does anything until you act:",
+        },
+        {
+          list: [
+            "Leaderboard — off by default; see the next section.",
+            "Price-table update (v0.1.4+) — clicking “↻ Update prices” in the dashboard, or turning on “Auto-update prices” in Settings (off by default; when on, at most one check per day), downloads a single static file, https://tokenforest.com.au/pricing.json, so newly released models can be priced without waiting for an app update. This is a download only: the request carries no usage data, no identifiers and no account. The file is validated and cached locally; on any failure the app silently keeps using the bundled/cached table.",
+          ],
         },
         {
           p: "Menu items that open a web page (for example the leaderboard website) launch your default browser; the desktop app itself sends nothing in the background.",
@@ -114,6 +127,10 @@ const EN: LegalDoc = {
               ["Region — only if you picked one", "Yes (flag)"],
               ["Current tree species", "Yes"],
               ["App version", "No"],
+              [
+                "Previous anonymous ID — only after a session reset re-registers you; links your new row to the one it replaced so the stale one can be retired (v0.1.6+)",
+                "No",
+              ],
               ["Anti-cheat summary — four numbers, see below (v0.1.5+)", "No"],
               ["Server-generated created/updated timestamps", "May be shown"],
             ],
@@ -206,7 +223,7 @@ const EN: LegalDoc = {
             "Pause or turn off leaderboard sync at any time from the tree's menu.",
             "Change or blank your display name and region.",
             "Delete local data by deleting the app's data files / uninstalling.",
-            "Contact us to verify remote deletion.",
+            "Turning Off requests deletion of your leaderboard entry. If that request can't complete — you are offline, or the anonymous session has expired and can no longer authenticate — the entry may remain on the board until a later attempt succeeds (the app records the failure locally). Contact us to confirm or force its removal.",
           ],
         },
       ],
@@ -233,7 +250,7 @@ const EN: LegalDoc = {
 const ZH: LegalDoc = {
   title: "Token Forest 隐私声明",
   meta: [
-    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-14 · 首个公开版本发布时生效",
+    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-19 · 首个公开版本发布时生效",
     "发布者:Poietic Studio",
   ],
   sections: [
@@ -292,6 +309,10 @@ const ZH: LegalDoc = {
                 "聚合会话元数据:日志路径、项目名、分支、AI 标题、时间、模型、按日 token 汇总",
               ],
               ["account.json", "仅在开启过排行榜后存在:匿名用户 ID 与 Supabase 会话令牌"],
+              [
+                "sync_error.json",
+                "仅在开启过排行榜后存在:最近一次排行榜同步失败的错误信息与时间(仅用于诊断;从不上传)",
+              ],
             ],
           },
         },
@@ -304,7 +325,16 @@ const ZH: LegalDoc = {
       h: "默认网络行为",
       blocks: [
         {
-          p: "排行榜关闭(默认)时,Token Forest 不发出任何网络请求:成长、气泡、商店、胶囊模式、数据面板全部离线可用,成本估算使用内置价格表,不做任何在线查询。",
+          p: "默认情况下,Token Forest 不发出任何网络请求:成长、气泡、商店、胶囊模式、数据面板全部离线可用,成本估算使用内置价格表。",
+        },
+        {
+          p: "只有两个可选功能会联网,且在你主动操作之前都不会有任何动作:",
+        },
+        {
+          list: [
+            "排行榜 —— 默认关闭,见下一节。",
+            "价格表更新(v0.1.4+)—— 在数据面板点击「↻ 更新价格」,或在设置中打开「自动更新价格表」(默认关;开启后每日至多检查一次),会下载一个静态文件 https://tokenforest.com.au/pricing.json,让新发布的模型不用等 App 更新就能计价。这是纯下载:请求不携带任何用量数据、标识符或账号;文件经校验后缓存在本地,任何失败都会静默回退到内置/缓存价格表。",
+          ],
         },
         {
           p: "菜单中打开网页的入口(如排行榜网站)只是调用系统默认浏览器,桌面应用本身不在后台发送任何内容。",
@@ -331,6 +361,10 @@ const ZH: LegalDoc = {
               ["地区——仅在你主动选择后", "是(国旗)"],
               ["当前树种", "是"],
               ["App 版本号", "否"],
+              [
+                "上一个匿名 ID —— 仅在会话失效重新注册后:把新记录与被接替的旧记录关联,便于下架旧的(v0.1.6+)",
+                "否",
+              ],
               ["防作弊摘要——四个数字,见下(v0.1.5+)", "否"],
               ["服务端生成的创建/更新时间", "可能显示"],
             ],
@@ -423,7 +457,7 @@ const ZH: LegalDoc = {
             "随时在树的菜单中暂停或关闭同步;",
             "修改或清空昵称与地区;",
             "删除应用数据文件/卸载即删除本地数据;",
-            "联系我们确认远程记录已删除。",
+            "点「关闭」会请求删除你的排行榜记录。若此时离线,或匿名会话已失效无法鉴权,该记录可能会留在榜上,直到之后某次尝试成功为止(应用会在本地记录这次失败)。可联系我们确认或强制删除。",
           ],
         },
       ],
@@ -450,7 +484,7 @@ const ZH: LegalDoc = {
 const JA: LegalDoc = {
   title: "Token Forest プライバシー通知",
   meta: [
-    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-14 · 最初の公開リリース時に発効",
+    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-19 · 最初の公開リリース時に発効",
     "発行者:Poietic Studio",
   ],
   sections: [
@@ -515,6 +549,10 @@ const JA: LegalDoc = {
                 "account.json",
                 "リーダーボードを有効にした場合のみ:匿名ユーザー ID と Supabase のセッショントークン",
               ],
+              [
+                "sync_error.json",
+                "リーダーボードを有効にした場合のみ:最後のリーダーボード同期エラーのメッセージとその時刻(診断専用。アップロードされることはありません)",
+              ],
             ],
           },
         },
@@ -527,7 +565,16 @@ const JA: LegalDoc = {
       h: "ネットワーク動作",
       blocks: [
         {
-          p: "リーダーボードがオフのとき——これが既定です——Token Forest はネットワークリクエストを一切行いません。成長、バブル、ショップ、カプセルモード、ダッシュボードはすべてオフラインで動作します。費用の見積もりは同梱の価格表を使用し、オンラインでの照会は行いません。",
+          p: "既定では、Token Forest はネットワークリクエストを一切行いません。成長、バブル、ショップ、カプセルモード、ダッシュボードはすべてオフラインで動作します。費用の見積もりは同梱の価格表を使用します。",
+        },
+        {
+          p: "オンラインに接続しうる任意機能は正確に二つだけで、いずれもあなたが操作するまで何も行いません:",
+        },
+        {
+          list: [
+            "リーダーボード — 既定でオフ。次のセクションを参照してください。",
+            "価格表の更新(v0.1.4+)— ダッシュボードで「↻ 価格を更新」をクリックするか、設定で「価格表を自動更新」をオン(既定はオフ。オンでも 1 日に最大 1 回の確認)にすると、静的ファイル https://tokenforest.com.au/pricing.json を 1 つダウンロードし、新しく公開されたモデルをアプリ更新を待たずに価格計算できます。これはダウンロードのみです:リクエストは使用データ・識別子・アカウントを一切含みません。ファイルは検証のうえローカルにキャッシュされ、失敗時はアプリが同梱/キャッシュ済みの表を静かに使い続けます。",
+          ],
         },
         {
           p: "ウェブページを開くメニュー項目(例:リーダーボードのウェブサイト)は既定のブラウザーを起動するだけであり、デスクトップアプリ自体がバックグラウンドで何かを送信することはありません。",
@@ -557,6 +604,10 @@ const JA: LegalDoc = {
               ["地域——あなたが選択した場合のみ", "はい(国旗)"],
               ["現在の木の種類", "はい"],
               ["アプリのバージョン", "いいえ"],
+              [
+                "以前の匿名 ID — セッションがリセットされて再登録された場合にのみ。新しい記録を、それが置き換えた古い記録に結び付け、古い方を取り下げられるようにするためです(v0.1.6+)",
+                "いいえ",
+              ],
               ["不正防止サマリー——4 つの数値、下記参照(v0.1.5+)", "いいえ"],
               ["サーバーが生成する作成/更新のタイムスタンプ", "表示される場合あり"],
             ],
@@ -649,7 +700,7 @@ const JA: LegalDoc = {
             "木のメニューから、いつでもリーダーボードの同期を一時停止または停止する。",
             "表示名と地域を変更または空欄にする。",
             "アプリのデータファイルを削除/アンインストールして、ローカルデータを削除する。",
-            "リモートでの削除を確認するために当社に連絡する。",
+            "「オフ」にすると、あなたのリーダーボード記録の削除を要求します。オフラインである、または匿名セッションが期限切れで認証できなくなっているなどで要求が完了できない場合、後の試行が成功するまで記録がボードに残ることがあります(アプリはその失敗をローカルに記録します)。削除の確認や強制削除については当社にご連絡ください。",
           ],
         },
       ],
@@ -676,7 +727,7 @@ const JA: LegalDoc = {
 const KO: LegalDoc = {
   title: "Token Forest 개인정보 보호정책",
   meta: [
-    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-14 · 최초 공개 릴리스 시 발효",
+    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-19 · 최초 공개 릴리스 시 발효",
     "발행자: Poietic Studio",
   ],
   sections: [
@@ -735,6 +786,10 @@ const KO: LegalDoc = {
                 "집계된 세션 메타데이터: 로그 파일 경로, 프로젝트 이름, 브랜치, AI 제목, 시각, 모델, 일별 토큰 합계",
               ],
               ["account.json", "리더보드를 활성화한 경우에만: 익명 사용자 ID와 Supabase 세션 토큰"],
+              [
+                "sync_error.json",
+                "리더보드를 활성화한 경우에만: 마지막 리더보드 동기화 오류 메시지와 그 시각(진단용일 뿐이며 업로드되지 않습니다)",
+              ],
             ],
           },
         },
@@ -747,7 +802,16 @@ const KO: LegalDoc = {
       h: "네트워크 동작",
       blocks: [
         {
-          p: "리더보드가 꺼져 있을 때 — 기본값입니다 — Token Forest는 어떠한 네트워크 요청도 하지 않습니다. 성장, 버블, 상점, 캡슐 모드, 대시보드는 모두 오프라인에서 작동합니다. 비용 추정은 내장된 가격표를 사용하며, 온라인으로 조회하지 않습니다.",
+          p: "기본적으로 Token Forest는 어떠한 네트워크 요청도 하지 않습니다. 성장, 버블, 상점, 캡슐 모드, 대시보드는 모두 오프라인에서 작동합니다. 비용 추정은 내장된 가격표를 사용합니다.",
+        },
+        {
+          p: "온라인에 연결될 수 있는 선택 기능은 정확히 두 가지뿐이며, 둘 다 사용자가 조작하기 전에는 아무 일도 하지 않습니다:",
+        },
+        {
+          list: [
+            "리더보드 — 기본적으로 꺼짐. 다음 섹션을 참조하세요.",
+            "가격표 업데이트(v0.1.4+) — 대시보드에서 「↻ 가격 업데이트」를 클릭하거나 설정에서 「가격표 자동 업데이트」를 켜면(기본값은 꺼짐, 켜도 하루 최대 1회 확인) 정적 파일 https://tokenforest.com.au/pricing.json 하나를 내려받아, 새로 출시된 모델을 앱 업데이트를 기다리지 않고 가격 계산할 수 있습니다. 이는 다운로드일 뿐입니다: 요청은 사용 데이터, 식별자, 계정을 전혀 담지 않습니다. 파일은 검증 후 로컬에 캐시되며, 실패 시 앱은 내장/캐시된 표를 조용히 계속 사용합니다.",
+          ],
         },
         {
           p: "웹 페이지를 여는 메뉴 항목(예: 리더보드 웹사이트)은 기본 브라우저를 실행할 뿐이며, 데스크톱 앱 자체가 백그라운드에서 무언가를 전송하지 않습니다.",
@@ -774,6 +838,10 @@ const KO: LegalDoc = {
               ["지역 — 사용자가 선택한 경우에만", "예(국기)"],
               ["현재 나무 종류", "예"],
               ["앱 버전", "아니요"],
+              [
+                "이전 익명 ID — 세션이 재설정되어 다시 등록된 경우에만. 새 기록을 그것이 대체한 이전 기록과 연결해 오래된 기록을 내릴 수 있도록 합니다(v0.1.6+)",
+                "아니요",
+              ],
               ["부정행위 방지 요약——네 개의 숫자, 아래 참조(v0.1.5+)", "아니요"],
               ["서버가 생성한 생성/수정 타임스탬프", "표시될 수 있음"],
             ],
@@ -866,7 +934,7 @@ const KO: LegalDoc = {
             "나무 메뉴에서 언제든지 리더보드 동기화를 일시정지하거나 끕니다.",
             "표시 이름과 지역을 변경하거나 비웁니다.",
             "앱의 데이터 파일을 삭제/제거하여 로컬 데이터를 삭제합니다.",
-            "원격 삭제를 확인하기 위해 당사에 문의합니다.",
+            "「끄기」를 누르면 리더보드 기록의 삭제를 요청합니다. 오프라인이거나 익명 세션이 만료되어 더 이상 인증할 수 없는 등의 이유로 요청이 완료되지 못하면, 이후 어떤 시도가 성공할 때까지 기록이 보드에 남을 수 있습니다(앱은 이 실패를 로컬에 기록합니다). 삭제 확인이나 강제 삭제는 당사에 문의하세요.",
           ],
         },
       ],
