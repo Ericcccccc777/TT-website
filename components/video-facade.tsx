@@ -72,6 +72,10 @@ export function VideoFacade({
   const other: Source = source === "youtube" ? "bilibili" : "youtube";
   const switchLabel = other === "youtube" ? switchToYoutube : switchToBilibili;
 
+  // Only the Chinese page offers Bilibili (its default), so only it gets the
+  // source toggle. Everywhere else is YouTube-only with no switch button.
+  const showSwitch = defaultSource === "bilibili";
+
   return (
     <div className="reveal mx-auto mt-16 max-w-3xl">
       <p
@@ -152,28 +156,31 @@ export function VideoFacade({
         )}
       </div>
 
-      {/* Source switch — pixel button in the site's secondary style. Switching
-          also starts playback of the chosen source (it is a deliberate click). */}
-      <div className="mt-3 flex justify-center">
-        <button
-          type="button"
-          onClick={() => {
-            setSource(other);
-            setPlaying(true);
-          }}
-          className="inline-flex items-center gap-2 rounded-[2px] px-4 py-2 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-          style={{
-            fontFamily: "var(--font-pixel)",
-            fontSize: "var(--text-caption)",
-            background: "var(--color-surface-card)",
-            border: "var(--border-pixel)",
-            boxShadow: "var(--shadow-pixel)",
-            color: "var(--color-text-forest)",
-          }}
-        >
-          {switchLabel}
-        </button>
-      </div>
+      {/* Source switch — pixel button in the site's secondary style. Only on the
+          Chinese page (the only one that offers Bilibili). Switching also starts
+          playback of the chosen source (it is a deliberate click). */}
+      {showSwitch && (
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            onClick={() => {
+              setSource(other);
+              setPlaying(true);
+            }}
+            className="inline-flex items-center gap-2 rounded-[2px] px-4 py-2 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            style={{
+              fontFamily: "var(--font-pixel)",
+              fontSize: "var(--text-caption)",
+              background: "var(--color-surface-card)",
+              border: "var(--border-pixel)",
+              boxShadow: "var(--shadow-pixel)",
+              color: "var(--color-text-forest)",
+            }}
+          >
+            {switchLabel}
+          </button>
+        </div>
+      )}
 
       {/* Small print. Deliberately quiet — it is a disclosure, not a caption, and it sits
           under a block whose whole point is that nothing has loaded yet. */}

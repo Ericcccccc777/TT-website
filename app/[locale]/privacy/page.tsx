@@ -177,7 +177,7 @@ const EN: LegalDoc = {
           p: "This website uses no analytics, no advertising trackers, and no marketing cookies. Its hosting provider processes standard server logs (IP address, user agent, requested page, time) to serve and secure the site. The leaderboard page reads the public leaderboard rows described above; viewing it requires no login. If we ever add analytics or similar services, this notice will be updated first.",
         },
         {
-          p: "The home page shows a demo video. Nothing is fetched from any video host until you press play: at rest the page shows only a still image served from this site. When you press play — or use the button that switches the source — the video loads from YouTube (or, on the Chinese page, Bilibili by default), and from that point that service may set its own cookies and receive your IP address under its own privacy policy. You can avoid both entirely by not playing the video.",
+          p: "The home page shows a demo video hosted on YouTube. Nothing is fetched from YouTube until you press play: at rest the page shows only a still image served from this site. Once you press play, the video loads from YouTube's no-cookie player domain, and from that point YouTube may set its own cookies and receive your IP address under Google's privacy policy. You can avoid it entirely by not playing the video.",
         },
       ],
     },
@@ -620,7 +620,7 @@ const JA: LegalDoc = {
           p: "本ウェブサイトは、アナリティクス、広告トラッカー、マーケティング Cookie を一切使用しません。ホスティングプロバイダーは、サイトの提供と保護のために標準的なサーバーログ(IP アドレス、ユーザーエージェント、要求されたページ、時刻)を処理します。リーダーボードのページは上記の公開リーダーボードの行を読み取り、閲覧にログインは不要です。将来アナリティクス等のサービスを追加する場合は、本通知を先に更新します。",
         },
         {
-          p: "ホームページにはデモ動画を掲載しています。再生するまで、どの動画ホストへのリクエストも発生せず、静止状態では当サイトから配信される静止画のみが表示されます。再生ボタン、または再生元を切り替えるボタンを押すと、動画は YouTube(中国語ページでは既定で Bilibili)から読み込まれ、その時点以降、そのサービスは自社のプライバシーポリシーに基づき独自の Cookie を設定し、IP アドレスを受け取る場合があります。動画を再生しなければ、どちらも完全に避けられます。",
+          p: "ホームページには YouTube でホストされているデモ動画を掲載しています。再生するまで YouTube へのリクエストは発生せず、静止状態では当サイトから配信される静止画のみが表示されます。再生すると、動画は YouTube の no-cookie プレーヤードメインから読み込まれ、その時点以降、YouTube は Google のプライバシーポリシーに基づき独自の Cookie を設定し、IP アドレスを受け取る場合があります。動画を再生しなければ、これを完全に避けられます。",
         },
       ],
     },
@@ -837,7 +837,7 @@ const KO: LegalDoc = {
           p: "본 웹사이트는 분석 도구, 광고 추적기, 마케팅 쿠키를 일절 사용하지 않습니다. 호스팅 제공업체는 사이트를 제공하고 보호하기 위해 표준 서버 로그(IP 주소, 사용자 에이전트, 요청한 페이지, 시각)를 처리합니다. 리더보드 페이지는 위에서 설명한 공개 리더보드 행을 읽으며, 열람에 로그인이 필요 없습니다. 향후 분석 등의 서비스를 추가할 경우 본 정책을 먼저 업데이트합니다.",
         },
         {
-          p: "홈페이지에는 데모 영상이 있습니다. 재생을 누르기 전까지 어떤 영상 호스트로도 요청을 보내지 않으며, 정지 상태에서는 본 사이트가 제공하는 정지 이미지만 표시됩니다. 재생 버튼 또는 소스 전환 버튼을 누르면 영상은 YouTube(중국어 페이지에서는 기본적으로 Bilibili)에서 불러와지고, 그 시점부터 해당 서비스가 자체 개인정보처리방침에 따라 쿠키를 설정하고 IP 주소를 수신할 수 있습니다. 영상을 재생하지 않으면 둘 다 완전히 피할 수 있습니다.",
+          p: "홈페이지에는 YouTube에 호스팅된 데모 영상이 있습니다. 재생을 누르기 전까지 YouTube로 요청을 보내지 않으며, 정지 상태에서는 본 사이트가 제공하는 정지 이미지만 표시됩니다. 재생을 누르면 영상은 YouTube의 no-cookie 플레이어 도메인에서 불러와지고, 그 시점부터 YouTube가 Google 개인정보처리방침에 따라 자체 쿠키를 설정하고 IP 주소를 수신할 수 있습니다. 영상을 재생하지 않으면 이를 완전히 피할 수 있습니다.",
         },
       ],
     },
