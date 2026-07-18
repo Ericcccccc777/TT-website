@@ -84,15 +84,22 @@ function pixelTree(species: string, x: number, y: number, u = 3): string {
       ].join(""),
     cherry: () =>
       [
-        r(3, 0, 10, 3, C.blossom), // top blossom mound
-        r(1, 2, 14, 6, C.blossom), // main canopy
-        r(2, 7, 5, 2, C.blossom), // lower-left puff
-        r(9, 7, 5, 2, C.blossom), // lower-right puff
-        r(2, 2, 3, 3, C.blossomLight), // sunlit highlight
-        r(10, 3, 3, 2, C.blossomLight), // soft cluster
-        r(6, 5, 2, 2, C.blossomDeep), // deep blossom
-        r(11, 6, 1, 1, C.blossomDeep), // blossom speck
+        r(4, 0, 8, 2, C.blossom), // blossom cloud — crown
+        r(2, 1, 12, 3, C.blossom),
+        r(1, 3, 14, 3, C.blossom), // widest band
+        r(2, 6, 12, 2, C.blossom),
+        r(3, 8, 4, 2, C.blossom), // lower-left lobe
+        r(9, 8, 4, 2, C.blossom), // lower-right lobe
+        r(3, 1, 2, 2, C.blossomLight), // sunlit florets scattered through the bloom
+        r(8, 0, 2, 2, C.blossomLight),
+        r(11, 2, 2, 2, C.blossomLight),
+        r(5, 5, 2, 2, C.blossomLight),
+        r(10, 6, 2, 1, C.blossomLight),
+        r(9, 3, 2, 2, C.blossomDeep), // shadowed blossom clusters
+        r(2, 4, 2, 1, C.blossomDeep),
         r(7, 10, 2, 6, C.soil), // trunk
+        r(4, 12, 1, 1, C.blossomLight), // falling petals — the sakura touch
+        r(11, 13, 1, 1, C.blossom),
       ].join(""),
     cactus: () =>
       [
