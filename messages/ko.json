@@ -300,7 +300,11 @@
     "badgeHeading": "배지로 자랑하세요",
     "badgeBody": "당신의 순위를 GitHub 프로필 README용 실시간 배지로 만드세요. 나무가 자라면 스스로 갱신됩니다. 배지는 앱 안에서 복사합니다(리더보드 → 배지 설정).",
     "badgeAlt": "사용자 이름, 굵은 토큰 수, 수종과 단계, 세계 순위를 보여주는 Token Forest 배지 예시.",
-    "badgeCta": "배지 받는 방법"
+    "badgeCta": "배지 받는 방법",
+    "paginationPrev": "이전",
+    "paginationNext": "다음",
+    "paginationPageOf": "{page} / {total} 페이지",
+    "paginationLabel": "리더보드 페이지"
   },
   "DownloadPage": {
     "heroTreeAlt": "완전히 자란 Token Forest 사과나무",

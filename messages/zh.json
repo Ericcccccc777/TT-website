@@ -300,7 +300,11 @@
     "badgeHeading": "用徽章秀出来",
     "badgeBody": "把你的排名变成一枚实时徽章,贴到 GitHub 个人主页 README——它会随你的树成长自己更新。在 App 里复制你的徽章(排行榜 → 徽章设置)。",
     "badgeAlt": "Token Forest 徽章示例,显示用户名、加粗的 token 数量、树种与阶段,以及全球排名。",
-    "badgeCta": "如何获取你的徽章"
+    "badgeCta": "如何获取你的徽章",
+    "paginationPrev": "上一页",
+    "paginationNext": "下一页",
+    "paginationPageOf": "第 {page} / {total} 页",
+    "paginationLabel": "排行榜分页"
   },
   "DownloadPage": {
     "heroTreeAlt": "Token Forest 成熟苹果树",

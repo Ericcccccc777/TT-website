@@ -300,7 +300,11 @@
     "badgeHeading": "Show it off with a badge",
     "badgeBody": "Turn your standing into a live badge for your GitHub profile README — it updates itself as your tree grows. You copy yours from inside the app (Leaderboard → Badge Setup).",
     "badgeAlt": "Example Token Forest badge showing a username, a bold token count, tree species and stage, and worldwide rank.",
-    "badgeCta": "How to get your badge"
+    "badgeCta": "How to get your badge",
+    "paginationPrev": "Previous",
+    "paginationNext": "Next",
+    "paginationPageOf": "Page {page} of {total}",
+    "paginationLabel": "Leaderboard pages"
   },
   "DownloadPage": {
     "heroTreeAlt": "Fully grown Token Forest apple tree",
