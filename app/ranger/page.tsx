@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAdminUser } from "@/lib/ranger/auth";
-import { getRangerLeaderboard, getRangerTokenSeries } from "@/lib/ranger/data";
+import { getRangerLeaderboard, getRangerTokenSeries, type RangerRow } from "@/lib/ranger/data";
 import { getRangerLang, t } from "@/lib/ranger/i18n";
 import { RangerLoginForm } from "@/components/ranger/login-form";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
 import { ChartCard, Legend, MAX_SERIES, MultiLineChart } from "@/components/ranger/charts";
-import { banAction, signOutAction, unbanAction } from "./actions";
+import { banAction, deleteOrphanAction, signOutAction, unbanAction } from "./actions";
 
 // Admin console — never indexed, never cached, always request-time (cookies).
 export const metadata: Metadata = {
@@ -38,7 +38,11 @@ export default async function RangerPage() {
             <div>
               <h1
                 className="text-leaf-deep"
-                style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h1)", lineHeight: 1.3 }}
+                style={{
+                  fontFamily: "var(--font-pixel)",
+                  fontSize: "var(--text-h1)",
+                  lineHeight: 1.3,
+                }}
               >
                 {t(lang, "brand")}
               </h1>
@@ -55,13 +59,23 @@ export default async function RangerPage() {
   }
 
   // ── Signed in as admin → moderation table ──
-  const [{ rows, error }, { series, error: seriesError }] = await Promise.all([
+  const [{ rows, deletableOrphanIds, error }, { series, error: seriesError }] = await Promise.all([
     getRangerLeaderboard(),
     // Capped at MAX_SERIES: a 9th categorical hue is indistinguishable under colour-vision
     // deficiency, so the chart shows the leaders and the table below carries everyone else.
     getRangerTokenSeries(30, MAX_SERIES),
   ]);
   const bannedCount = rows.filter((r) => r.banned).length;
+
+  // Pair the rows a re-signup left behind: the new row carries prev_uid = the uid it replaced.
+  // prev_uid is an UNVERIFIED client claim, so ALL of the pairing UI is gated on `deletableOrphan`
+  // (computed server-side in getRangerLeaderboard from the one unforgeable signal — the old row's
+  // own staleness): both the "old row" badge/delete AND the counterpart "new" badge only show once
+  // the claimed predecessor is a genuine stale orphan. A forged pointer at a live victim shows
+  // nothing on either row. `supersededBy` (self-refs excluded) just supplies the successor's name.
+  const supersededBy = new Map<string, RangerRow>();
+  for (const r of rows) if (r.prevUid && r.prevUid !== r.userId) supersededBy.set(r.prevUid, r);
+  const deletableOrphan = new Set(deletableOrphanIds);
 
   return (
     <main className="min-h-screen bg-surface-parchment">
@@ -70,7 +84,11 @@ export default async function RangerPage() {
           <div>
             <h1
               className="text-leaf-deep"
-              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h1)", lineHeight: 1.3 }}
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-h1)",
+                lineHeight: 1.3,
+              }}
             >
               {t(lang, "brand")}
             </h1>
@@ -84,7 +102,11 @@ export default async function RangerPage() {
               <button
                 type="submit"
                 className="ranger-btn rounded-[2px] bg-surface-card px-4 py-2 text-text-forest shadow-pixel-sm"
-                style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-small)", border: "var(--border-pixel)" }}
+                style={{
+                  fontFamily: "var(--font-pixel)",
+                  fontSize: "var(--text-small)",
+                  border: "var(--border-pixel)",
+                }}
               >
                 {t(lang, "signOut")}
               </button>
@@ -108,7 +130,10 @@ export default async function RangerPage() {
             colour alone. Hidden (banned) players are drawn dashed, not dropped: they are
             exactly who you came here to look at. */}
         <section className="mt-8">
-          <ChartCard title={t(lang, "chCompare")} note={t(lang, "chCompareNote", { n: series.length })}>
+          <ChartCard
+            title={t(lang, "chCompare")}
+            note={t(lang, "chCompareNote", { n: series.length })}
+          >
             <MultiLineChart series={series} empty={t(lang, "chEmpty")} />
             {series.length > 0 && <Legend series={series} />}
           </ChartCard>
@@ -157,6 +182,26 @@ export default async function RangerPage() {
                     {r.banned && r.banReason && (
                       <div className="mt-0.5 text-[11px] opacity-70">{r.banReason}</div>
                     )}
+                    {r.prevUid && deletableOrphan.has(r.prevUid) && (
+                      <span
+                        className="ml-2 rounded-[2px] bg-leaf-deep px-1.5 py-0.5 text-[10px] text-text-cream"
+                        title={t(lang, "supersededNote", { id: r.prevUid })}
+                      >
+                        {t(lang, "newAcctBadge")} ·{" "}
+                        {t(lang, "supersededNote", { id: r.prevUid.slice(0, 8) })}
+                      </span>
+                    )}
+                    {deletableOrphan.has(r.userId) && (
+                      <span className="ml-2 rounded-[2px] bg-amber-600 px-1.5 py-0.5 text-[10px] text-white">
+                        {t(lang, "oldAcctBadge")} ·{" "}
+                        {t(lang, "replacedByNote", {
+                          name:
+                            supersededBy.get(r.userId)?.username ||
+                            supersededBy.get(r.userId)?.userId.slice(0, 8) ||
+                            "?",
+                        })}
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2 align-top" style={CELL}>
                     {fmtTokens(r.score)}
@@ -204,6 +249,19 @@ export default async function RangerPage() {
                           style={{ fontFamily: "var(--font-pixel)", fontSize: 10 }}
                         >
                           {t(lang, "hide")}
+                        </button>
+                      </form>
+                    )}
+                    {deletableOrphan.has(r.userId) && (
+                      <form action={deleteOrphanAction} className="mt-1.5">
+                        <input type="hidden" name="userId" value={r.userId} />
+                        <button
+                          type="submit"
+                          className="ranger-btn rounded-[2px] bg-red-800 px-3 py-1 text-white"
+                          style={{ fontFamily: "var(--font-pixel)", fontSize: 10 }}
+                          title={r.userId}
+                        >
+                          {t(lang, "deleteOrphan")}
                         </button>
                       </form>
                     )}

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
+import { ORPHAN_STALE_DAYS } from "@/lib/ranger/data";
 import {
   getAdminUser,
   getRangerServerClient,
@@ -94,6 +95,59 @@ export async function unbanAction(formData: FormData): Promise<void> {
 
   const db = getSupabaseAdminClient();
   const { error } = await db.from("leaderboard_bans").delete().eq("user_id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/ranger");
+  revalidatePublicBoards();
+}
+
+/**
+ * Delete a leaderboard row a re-signed-up client left orphaned (its new row carries prev_uid =
+ * this uid). SECURITY — the hard part: prev_uid AND the successor's score/created_at are ALL
+ * client-writable on the attacker's own row (RLS only pins auth.uid()=user_id; there is no INSERT
+ * trigger, so created_at can be forged to any value). So NOTHING on the successor can be trusted —
+ * an earlier version that gated on "successor is newer / higher-scored" was fully bypassable.
+ * The ONE unforgeable signal is the TARGET's own updated_at: the BEFORE-UPDATE trigger (0002)
+ * stamps it now() on every real sync, and an attacker can never write a victim's row (RLS). So the
+ * real gate is STALENESS — only delete a row that has not synced in ORPHAN_STALE_DAYS. An active /
+ * recently-synced row (incl. the live #1) can therefore NEVER be deleted, whatever a forged
+ * successor claims; and an idle-but-alive row deleted in error self-heals (its next sync re-inserts
+ * it under the same user_id). prev_uid only surfaces which stale rows look like dupes. (Residual:
+ * a legit user idle > ORPHAN_STALE_DAYS could still be targeted by a forged pointer; closing that
+ * needs the client to prove control of the old session with its signed token — a larger change.)
+ */
+export async function deleteOrphanAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const [target, successor] = await Promise.all([
+    db.from("leaderboard").select("updated_at").eq("user_id", userId).maybeSingle(),
+    db
+      .from("leaderboard")
+      .select("user_id")
+      .eq("prev_uid", userId)
+      .neq("user_id", userId) // ignore a self-referential row (prev_uid == its own uid)
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  if (target.error) throw new Error(target.error.message);
+  if (successor.error) throw new Error(successor.error.message);
+  if (!target.data) return; // already gone
+  if (!successor.data) throw new Error("Refusing to delete: nothing claims to supersede this row.");
+
+  const updatedAt = (target.data as { updated_at: string }).updated_at;
+  const stale = new Date(updatedAt).getTime() < Date.now() - ORPHAN_STALE_DAYS * 864e5;
+  if (!stale) {
+    throw new Error(
+      `Refusing to delete: this row synced within the last ${ORPHAN_STALE_DAYS} days, so it is active, not an orphan (prev_uid is only an unverified hint — a live row is never auto-deletable).`,
+    );
+  }
+
+  const { error } = await db.from("leaderboard").delete().eq("user_id", userId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/ranger");
