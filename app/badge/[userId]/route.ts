@@ -34,6 +34,17 @@ const C = {
   muted: "#5a6b5e",
   gold: "#c8943c",
   soil: "#7a5a3a",
+  // Per-species tree colors — the badge draws the owner's current/main tree.
+  blossom: "#f2a8c0", // cherry blossom pink
+  blossomLight: "#ffd8e6", // sunlit blossom highlight
+  blossomDeep: "#e07ba0", // deeper blossom cluster
+  cactus: "#5aa469", // saguaro body green
+  cactusDark: "#3f8552", // cactus rib shadow
+  cactusLight: "#7cc98a", // cactus rib highlight
+  bloom: "#ff5d73", // cactus crown flower
+  fir: "#2f6b3d", // evergreen fir green
+  ember: "#d1495b", // ornament red
+  snow: "#ffffff", // snow cap
 };
 
 /** XML-escape — the username is user-controlled and goes into SVG text; never inject it raw. */
@@ -57,17 +68,61 @@ function title(s: string): string {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
-/** A small pixel tree, drawn from the icon.svg geometry, translated into `x,y`. */
-function pixelTree(x: number, y: number, u = 3): string {
+/** A small pixel tree, per species — the badge shows the owner's current/main tree. Unknown/
+ *  missing species fall back to apple. All four sit on the same ~16×16 unit grid + baseline. */
+function pixelTree(species: string, x: number, y: number, u = 3): string {
   const r = (px: number, py: number, w: number, h: number, fill: string) =>
     `<rect x="${x + px * u}" y="${y + py * u}" width="${w * u}" height="${h * u}" fill="${fill}"/>`;
-  return [
-    r(2, 0, 12, 10, C.leaf), // canopy
-    r(1, 2, 14, 7, C.leaf),
-    r(2, 2, 3, 3, C.leafLight), // highlight
-    r(11, 4, 3, 3, C.gold), // apple
-    r(7, 10, 2, 6, C.soil), // trunk
-  ].join("");
+  const trees: Record<string, () => string> = {
+    apple: () =>
+      [
+        r(2, 0, 12, 10, C.leaf), // canopy
+        r(1, 2, 14, 7, C.leaf),
+        r(2, 2, 3, 3, C.leafLight), // highlight
+        r(11, 4, 3, 3, C.gold), // apple
+        r(7, 10, 2, 6, C.soil), // trunk
+      ].join(""),
+    cherry: () =>
+      [
+        r(3, 0, 10, 3, C.blossom), // top blossom mound
+        r(1, 2, 14, 6, C.blossom), // main canopy
+        r(2, 7, 5, 2, C.blossom), // lower-left puff
+        r(9, 7, 5, 2, C.blossom), // lower-right puff
+        r(2, 2, 3, 3, C.blossomLight), // sunlit highlight
+        r(10, 3, 3, 2, C.blossomLight), // soft cluster
+        r(6, 5, 2, 2, C.blossomDeep), // deep blossom
+        r(11, 6, 1, 1, C.blossomDeep), // blossom speck
+        r(7, 10, 2, 6, C.soil), // trunk
+      ].join(""),
+    cactus: () =>
+      [
+        r(6, 1, 4, 15, C.cactus), // main column (crown to base)
+        r(3, 4, 3, 4, C.cactus), // left arm, upturned
+        r(3, 7, 3, 2, C.cactus), // left arm elbow
+        r(10, 5, 3, 4, C.cactus), // right arm, upturned
+        r(9, 8, 3, 2, C.cactus), // right arm elbow
+        r(8, 3, 1, 12, C.cactusDark), // rib shadow
+        r(6.5, 2, 1, 7, C.cactusLight), // rib highlight
+        r(6.5, 0, 3, 2, C.bloom), // crown flower petals
+        r(7.5, 0.5, 1, 1, C.gold), // flower center
+      ].join(""),
+    christmas: () =>
+      [
+        r(7.5, 0, 1, 3, C.gold), // star (vertical bar)
+        r(6.5, 1, 3, 1, C.gold), // star (horizontal bar)
+        r(6, 3, 4, 2, C.fir), // tier 1 (top)
+        r(5, 5, 6, 2, C.fir), // tier 2
+        r(4, 7, 8, 2, C.fir), // tier 3
+        r(3, 9, 10, 2, C.fir), // tier 4
+        r(2, 11, 12, 2, C.fir), // tier 5 (base)
+        r(7, 13, 2, 3, C.soil), // trunk
+        r(6, 3, 2, 1, C.snow), // snow cap
+        r(9, 5, 1, 1, C.ember), // ornament (red)
+        r(5, 8, 1, 1, C.sky), // ornament (blue)
+        r(10, 11, 1, 1, C.gold), // ornament (gold)
+      ].join(""),
+  };
+  return (trees[species] ?? trees.apple)();
 }
 
 const W = 460;
@@ -88,7 +143,7 @@ function badgeSvg(inner: string, label: string): string {
 /** The neutral badge shown for unknown / not-opted-in / banned ids — no personal data. */
 function neutralSvg(): string {
   const inner = `
-  ${pixelTree(28, 40, 3)}
+  ${pixelTree("apple", 28, 40, 3)}
   <text x="120" y="58" fill="${C.leaf}" font-size="20" font-weight="700">Token Forest</text>
   <text x="120" y="84" fill="${C.muted}" font-size="14">Grow a tree from your Claude Code &amp; Codex tokens</text>
   <text x="120" y="108" fill="${C.gold}" font-size="13" font-weight="700">tokenforest.com.au</text>`;
@@ -99,9 +154,15 @@ function neutralSvg(): string {
  * The badge interior. The token count is the hero — bold, large, and green so it
  * reads at a glance; the species and stage trail it in muted small text.
  */
-function badgeInner(username: string, rank: number, score: number, speciesStage: string): string {
+function badgeInner(
+  username: string,
+  rank: number,
+  score: number,
+  speciesStage: string,
+  treeKey: string,
+): string {
   return `
-  ${pixelTree(28, 42, 3)}
+  ${pixelTree(treeKey, 28, 42, 3)}
   <text x="120" y="50" fill="${C.leaf}" font-size="13" font-weight="700" letter-spacing="1">TOKEN FOREST</text>
   <text x="120" y="76" fill="${C.ink}" font-size="20" font-weight="700">${esc(username.slice(0, 22))}</text>
   <rect x="${W - 92}" y="40" width="72" height="30" rx="6" fill="${C.leaf}"/>
@@ -125,7 +186,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ userId: string
   // tied to no real user (so it can't break or expose anyone). "Username" is a
   // placeholder so it reads as a template of what your own badge will look like.
   if (userId === "demo") {
-    const inner = badgeInner("Username", 1, 1_200_000_000, "Apple · stage 6");
+    const inner = badgeInner("Username", 1, 1_200_000_000, "Apple · stage 6", "apple");
     return new Response(
       badgeSvg(inner, "Username — 1.2B tokens · Apple · stage 6 — #1 on Token Forest"),
       { headers: svgHeaders },
@@ -153,19 +214,23 @@ export async function GET(_req: Request, ctx: { params: Promise<{ userId: string
 
     const score = Number(row.score ?? 0);
     // Rank = how many non-banned rows outscore me, + 1. Anon count → RLS excludes banned.
-    const { count } = await client
+    // Count on user_id, NOT "*": migration 0008 revoked the anon SELECT grant on the private bkt_*
+    // columns, so select("*") 401s → count comes back null → rank silently collapses to #1 for EVERYONE.
+    const { count, error: countErr } = await client
       .from("leaderboard")
-      .select("*", { count: "exact", head: true })
+      .select("user_id", { count: "exact", head: true })
       .gt("score", score);
+    if (countErr) throw countErr; // degrade to the neutral badge rather than render a wrong rank
     const rank = (count ?? 0) + 1;
 
     const username = (row.username as string | null)?.trim() || "Anonymous";
-    const species = title((row.tree as string | null) || "apple");
+    const treeKey = ((row.tree as string | null) || "apple").toLowerCase().trim();
+    const species = title(treeKey);
     const stage = Number(row.stage_index ?? 0);
     const speciesStage = `${species} · stage ${stage}`;
     const label = `${username} — ${compact(score)} tokens · ${speciesStage} — #${rank} on Token Forest`;
 
-    const inner = badgeInner(username, rank, score, speciesStage);
+    const inner = badgeInner(username, rank, score, speciesStage, treeKey);
 
     return new Response(badgeSvg(inner, label), { headers: svgHeaders });
   } catch {
