@@ -143,7 +143,7 @@ function badgeSvg(inner: string, label: string): string {
 /** The neutral badge shown for unknown / not-opted-in / banned ids — no personal data. */
 function neutralSvg(): string {
   const inner = `
-  ${pixelTree("apple", 28, 40, 3)}
+  ${pixelTree("apple", 28, 52, 3)}
   <text x="120" y="58" fill="${C.leaf}" font-size="20" font-weight="700">Token Forest</text>
   <text x="120" y="84" fill="${C.muted}" font-size="14">Grow a tree from your Claude Code &amp; Codex tokens</text>
   <text x="120" y="108" fill="${C.gold}" font-size="13" font-weight="700">tokenforest.com.au</text>`;
@@ -162,7 +162,7 @@ function badgeInner(
   treeKey: string,
 ): string {
   return `
-  ${pixelTree(treeKey, 28, 42, 3)}
+  ${pixelTree(treeKey, 28, 54, 3)}
   <text x="120" y="50" fill="${C.leaf}" font-size="13" font-weight="700" letter-spacing="1">TOKEN FOREST</text>
   <text x="120" y="76" fill="${C.ink}" font-size="20" font-weight="700">${esc(username.slice(0, 22))}</text>
   <rect x="${W - 92}" y="40" width="72" height="30" rx="6" fill="${C.leaf}"/>
