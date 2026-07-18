@@ -80,7 +80,9 @@
     "tryBubbleAria": "デモバブルを集める",
     "videoHeading": "実際の動きを見る",
     "videoPlayLabel": "Token Forest のデモ動画を再生(1 分 49 秒)",
-    "videoPrivacyNote": "再生すると動画は YouTube から読み込まれ、YouTube が独自の Cookie を設定する場合があります。再生するまでは何も読み込まれません。"
+    "videoPrivacyNote": "再生すると動画は YouTube から読み込まれ、YouTube が独自の Cookie を設定する場合があります。再生するまでは何も読み込まれません。",
+    "videoSwitchToYoutube": "YouTube に切り替え",
+    "videoSwitchToBilibili": "Bilibili に切り替え"
   },
   "Features": {
     "heading": "機能",
@@ -298,7 +300,11 @@
     "badgeHeading": "バッジで見せびらかそう",
     "badgeBody": "あなたの順位を GitHub プロフィール README 用のライブバッジに。木が育つにつれて自動更新されます。バッジはアプリ内でコピーします(ランキング → バッジ設定)。",
     "badgeAlt": "ユーザー名、太字のトークン数、樹種と成長段階、世界ランクを示す Token Forest バッジの例。",
-    "badgeCta": "バッジの取得方法"
+    "badgeCta": "バッジの取得方法",
+    "paginationPrev": "前へ",
+    "paginationNext": "次へ",
+    "paginationPageOf": "{page} / {total} ページ",
+    "paginationLabel": "リーダーボードのページ送り"
   },
   "DownloadPage": {
     "heroTreeAlt": "完全に成長した Token Forest アップルツリー",

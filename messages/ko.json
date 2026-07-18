@@ -80,7 +80,9 @@
     "tryBubbleAria": "데모 버블 수집",
     "videoHeading": "실제 모습 보기",
     "videoPlayLabel": "Token Forest 데모 영상 재생 (1분 49초)",
-    "videoPrivacyNote": "재생을 누르면 영상이 YouTube에서 불러와지며, YouTube가 자체 쿠키를 설정할 수 있습니다. 누르기 전까지는 아무것도 불러오지 않습니다."
+    "videoPrivacyNote": "재생을 누르면 영상이 YouTube에서 불러와지며, YouTube가 자체 쿠키를 설정할 수 있습니다. 누르기 전까지는 아무것도 불러오지 않습니다.",
+    "videoSwitchToYoutube": "YouTube로 전환",
+    "videoSwitchToBilibili": "Bilibili로 전환"
   },
   "Features": {
     "heading": "기능",
@@ -298,7 +300,11 @@
     "badgeHeading": "배지로 자랑하세요",
     "badgeBody": "당신의 순위를 GitHub 프로필 README용 실시간 배지로 만드세요. 나무가 자라면 스스로 갱신됩니다. 배지는 앱 안에서 복사합니다(리더보드 → 배지 설정).",
     "badgeAlt": "사용자 이름, 굵은 토큰 수, 수종과 단계, 세계 순위를 보여주는 Token Forest 배지 예시.",
-    "badgeCta": "배지 받는 방법"
+    "badgeCta": "배지 받는 방법",
+    "paginationPrev": "이전",
+    "paginationNext": "다음",
+    "paginationPageOf": "{page} / {total} 페이지",
+    "paginationLabel": "리더보드 페이지"
   },
   "DownloadPage": {
     "heroTreeAlt": "완전히 자란 Token Forest 사과나무",

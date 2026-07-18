@@ -2,22 +2,33 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getLeaderboard, getGlobalStats } from "@/lib/leaderboard";
+import { getLeaderboard, getGlobalStats, LEADERBOARD_PAGE_SIZE } from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
 import { PixelCrown } from "@/components/pixel-crown";
 import type { Locale } from "@/i18n/routing";
-import { localizedMetadata } from "@/lib/seo";
+import { localizedMetadata, localizedUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/json-ld";
-
-export const revalidate = 60;
+import { redirect } from "next/navigation";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ page?: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return localizedMetadata("/leaderboard", locale as Locale);
+  const base = localizedMetadata("/leaderboard", locale as Locale);
+  const pageParam = Number((await searchParams).page);
+  const page = Number.isInteger(pageParam) && pageParam > 1 ? pageParam : 1;
+  if (page === 1) return base;
+  // Paginated views (?page=2, …) are low-value for search and would read as thin
+  // duplicates of page one, so they self-canonical and stay out of the index.
+  return {
+    ...base,
+    alternates: { canonical: `${localizedUrl("/leaderboard", locale as Locale)}?page=${page}` },
+    robots: { index: false, follow: true },
+  };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -89,16 +100,35 @@ const MEDAL: Record<number, string> = {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function LeaderboardPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function LeaderboardPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ page?: string }>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [t, tnav, ts, [{ entries, error }, stats]] = await Promise.all([
+  const pageParam = Number((await searchParams).page);
+  const page = Number.isInteger(pageParam) && pageParam > 1 ? pageParam : 1;
+
+  const [t, tnav, ts, [{ entries, total, error }, stats]] = await Promise.all([
     getTranslations("LeaderboardPage"),
     getTranslations("TopBar"),
     getTranslations("TreeShowcase"),
-    Promise.all([getLeaderboard(), getGlobalStats()]),
+    Promise.all([getLeaderboard(page), getGlobalStats()]),
   ]);
+
+  const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
+
+  // A manually-typed ?page beyond the last page → send them to the last page,
+  // so the pager never shows "Page 3 of 2" over an empty table.
+  if (page > totalPages) {
+    redirect(`/${locale}/leaderboard${totalPages > 1 ? `?page=${totalPages}` : ""}`);
+  }
+
+  const offset = (page - 1) * LEADERBOARD_PAGE_SIZE;
 
   // Localised species names (reused from the homepage showcase), for the tree popup.
   const speciesLabel = (kind: string): string =>
@@ -261,7 +291,7 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
                 </thead>
                 <tbody>
                   {entries.map((entry, i) => {
-                    const rank = i + 1;
+                    const rank = offset + i + 1;
                     const medalColor = MEDAL[rank];
                     // The user's trees for the popup — main (current) tree first.
                     const treeViews = entry.trees.map((tv) => {
@@ -367,6 +397,29 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
           </div>
         )}
 
+        {/* Pagination — only when there is more than one page (50 per page) */}
+        {totalPages > 1 && (
+          <nav
+            className="mt-6 flex items-center justify-center gap-3"
+            aria-label={t("paginationLabel")}
+            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
+          >
+            <PagerLink
+              href={page - 1 <= 1 ? "/leaderboard" : `/leaderboard?page=${page - 1}`}
+              disabled={page <= 1}
+              label={`← ${t("paginationPrev")}`}
+            />
+            <span className="whitespace-nowrap text-text-muted-light">
+              {t("paginationPageOf", { page, total: totalPages })}
+            </span>
+            <PagerLink
+              href={`/leaderboard?page=${page + 1}`}
+              disabled={page >= totalPages}
+              label={`${t("paginationNext")} →`}
+            />
+          </nav>
+        )}
+
         {/* ── How to join ── */}
         <div
           className="mt-10 rounded-[2px] bg-surface-card p-6"
@@ -468,6 +521,40 @@ export default async function LeaderboardPage({ params }: { params: Promise<{ lo
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
+
+/** A pager control: a pixel Link, or a dimmed non-interactive span at the ends. */
+function PagerLink({ href, disabled, label }: { href: string; disabled: boolean; label: string }) {
+  const shared = "inline-flex items-center rounded-[2px] px-4 py-2";
+  if (disabled) {
+    return (
+      <span
+        aria-disabled="true"
+        className={`${shared} cursor-not-allowed opacity-40`}
+        style={{
+          background: "var(--color-surface-card)",
+          border: "var(--border-pixel)",
+          color: "var(--color-text-muted-light)",
+        }}
+      >
+        {label}
+      </span>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      className={`${shared} transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none`}
+      style={{
+        background: "var(--color-surface-card)",
+        border: "var(--border-pixel)",
+        boxShadow: "var(--shadow-pixel)",
+        color: "var(--color-text-forest)",
+      }}
+    >
+      {label}
+    </Link>
+  );
+}
 
 function StatChip({
   label,

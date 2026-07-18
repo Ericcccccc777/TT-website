@@ -1,5 +1,11 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
+/** How long a row must sit un-synced before /ranger treats it as an abandoned orphan (safe to
+ *  delete). The row's own updated_at is the only orphan signal an attacker cannot forge (they
+ *  can't write a victim's row), so this staleness — not the client-writable prev_uid/score — is
+ *  the gate. Single source of truth shared by the UI and deleteOrphanAction. */
+export const ORPHAN_STALE_DAYS = 14;
+
 /**
  * One leaderboard row as the admin sees it — includes fields hidden from the
  * public board (user_id) plus the ban status. SERVER-ONLY: uses the service
@@ -16,6 +22,7 @@ export type RangerRow = {
   banned: boolean;
   banReason: string | null;
   bannedAt: string | null;
+  prevUid: string | null; // the uid this row superseded (set when a dead session re-signed-up), else null
 };
 
 /**
@@ -23,21 +30,25 @@ export type RangerRow = {
  * cheating-suspects-visible, sorted by score desc, each annotated with its ban
  * status. Bypasses RLS via the service role key.
  */
-export async function getRangerLeaderboard(): Promise<{ rows: RangerRow[]; error: string | null }> {
+export async function getRangerLeaderboard(): Promise<{
+  rows: RangerRow[];
+  deletableOrphanIds: string[];
+  error: string | null;
+}> {
   try {
     const admin = getSupabaseAdminClient();
 
     const [lb, bans] = await Promise.all([
       admin
         .from("leaderboard")
-        .select("user_id, username, score, tree, region, updated_at, created_at")
+        .select("user_id, username, score, tree, region, updated_at, created_at, prev_uid")
         .order("score", { ascending: false })
         .limit(500),
       admin.from("leaderboard_bans").select("user_id, reason, created_at"),
     ]);
 
-    if (lb.error) return { rows: [], error: lb.error.message };
-    if (bans.error) return { rows: [], error: bans.error.message };
+    if (lb.error) return { rows: [], deletableOrphanIds: [], error: lb.error.message };
+    if (bans.error) return { rows: [], deletableOrphanIds: [], error: bans.error.message };
 
     const banByUser = new Map(
       (bans.data ?? []).map((b) => [
@@ -59,12 +70,24 @@ export async function getRangerLeaderboard(): Promise<{ rows: RangerRow[]; error
         banned: !!ban,
         banReason: ban?.reason ?? null,
         bannedAt: ban?.created_at ?? null,
+        prevUid: (r.prev_uid as string | null) ?? null,
       };
     });
 
-    return { rows, error: null };
+    // Which rows an admin may hard-delete as an abandoned orphan: something else claims to
+    // supersede them (prev_uid, self-refs excluded) AND the row has itself gone stale. The row's
+    // own updated_at is the only orphan signal an attacker cannot forge (they can't write a
+    // victim's row), so a live/recent row is never deletable. Mirrors deleteOrphanAction's gate.
+    const supersededUids = new Set<string>();
+    for (const r of rows) if (r.prevUid && r.prevUid !== r.userId) supersededUids.add(r.prevUid);
+    const staleBefore = Date.now() - ORPHAN_STALE_DAYS * 864e5;
+    const deletableOrphanIds = rows
+      .filter((r) => supersededUids.has(r.userId) && new Date(r.updatedAt).getTime() < staleBefore)
+      .map((r) => r.userId);
+
+    return { rows, deletableOrphanIds, error: null };
   } catch (e) {
-    return { rows: [], error: e instanceof Error ? e.message : String(e) };
+    return { rows: [], deletableOrphanIds: [], error: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -132,7 +155,7 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
     const [lb, ban, histWide] = await Promise.all([
       admin
         .from("leaderboard")
-        .select("user_id, username, score, tree, region, updated_at, created_at")
+        .select("user_id, username, score, tree, region, updated_at, created_at, prev_uid")
         .eq("user_id", userId)
         .maybeSingle(),
       admin
@@ -147,7 +170,8 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
 
     if (lb.error) return { row: null, history: [], acknowledgedIds: [], error: lb.error.message };
     if (ban.error) return { row: null, history: [], acknowledgedIds: [], error: ban.error.message };
-    if (hist.error) return { row: null, history: [], acknowledgedIds: [], error: hist.error.message };
+    if (hist.error)
+      return { row: null, history: [], acknowledgedIds: [], error: hist.error.message };
 
     const r = lb.data;
     const b = ban.data as { reason: string | null; created_at: string } | null;
@@ -163,14 +187,14 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
           banned: !!b,
           banReason: b?.reason ?? null,
           bannedAt: b?.created_at ?? null,
+          prevUid: (r.prev_uid as string | null) ?? null,
         }
       : null;
 
     // `num` keeps "column absent (pre-0008)" and "column present but NULL (client
     // sent no summary)" collapsed into the same null — analysis treats both as
     // "no evidence" anyway.
-    const num = (v: unknown): number | null =>
-      v === null || v === undefined ? null : Number(v);
+    const num = (v: unknown): number | null => (v === null || v === undefined ? null : Number(v));
 
     // Cast via unknown: the select string is built at runtime (wide vs. pre-0008
     // fallback), so the client can't infer a row type from it.
