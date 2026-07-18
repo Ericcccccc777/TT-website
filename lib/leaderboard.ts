@@ -74,25 +74,39 @@ export type GlobalStats = {
 
 // ── getLeaderboard ────────────────────────────────────────────────────────────
 
+/** Leaderboard rows per page. Page 2 shows ranks 51–100, etc. */
+export const LEADERBOARD_PAGE_SIZE = 50;
+
 /**
- * Fetches the top 100 leaderboard entries, ordered by score descending.
- * Reads the `leaderboard` table via the anon client (RLS: public read policy).
- * Returns an empty array on error so the page degrades gracefully.
+ * One page of leaderboard entries (score descending) plus the total number of
+ * ranked players, for the pager. Reads the `leaderboard` table via the anon
+ * client, so the RLS public-read policy excludes banned/hidden rows from BOTH
+ * the returned rows and the count — pagination is over visible players only.
+ * Returns empty + total 0 on error so the page degrades gracefully.
+ *
+ * The page reads this per request (it is a paginated, dynamically-rendered
+ * route), which also means a ban takes effect on the very next view.
  */
-export async function getLeaderboard(): Promise<{
+export async function getLeaderboard(page = 1): Promise<{
   entries: LeaderboardEntry[];
+  total: number;
   error: string | null;
 }> {
+  const p = Number.isInteger(page) && page > 0 ? page : 1;
+  const from = (p - 1) * LEADERBOARD_PAGE_SIZE;
+  const to = from + LEADERBOARD_PAGE_SIZE - 1;
   try {
     const client = getSupabaseServerClient();
-    const { data, error } = await client
+    const { data, count, error } = await client
       .from("leaderboard")
-      .select("id, username, score, stage_index, tree, region, trees, created_at, updated_at")
+      .select("id, username, score, stage_index, tree, region, trees, created_at, updated_at", {
+        count: "exact",
+      })
       .order("score", { ascending: false })
-      .limit(100);
+      .range(from, to);
 
     if (error) {
-      return { entries: [], error: error.message };
+      return { entries: [], total: 0, error: error.message };
     }
 
     // Normalise the extension columns: older/synthetic rows may have null
@@ -112,9 +126,9 @@ export async function getLeaderboard(): Promise<{
       };
     }) as LeaderboardEntry[];
 
-    return { entries, error: null };
+    return { entries, total: count ?? 0, error: null };
   } catch (e) {
-    return { entries: [], error: e instanceof Error ? e.message : String(e) };
+    return { entries: [], total: 0, error: e instanceof Error ? e.message : String(e) };
   }
 }
 

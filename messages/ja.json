@@ -298,7 +298,11 @@
     "badgeHeading": "バッジで見せびらかそう",
     "badgeBody": "あなたの順位を GitHub プロフィール README 用のライブバッジに。木が育つにつれて自動更新されます。バッジはアプリ内でコピーします(ランキング → バッジ設定)。",
     "badgeAlt": "ユーザー名、太字のトークン数、樹種と成長段階、世界ランクを示す Token Forest バッジの例。",
-    "badgeCta": "バッジの取得方法"
+    "badgeCta": "バッジの取得方法",
+    "paginationPrev": "前へ",
+    "paginationNext": "次へ",
+    "paginationPageOf": "{page} / {total} ページ",
+    "paginationLabel": "リーダーボードのページ送り"
   },
   "DownloadPage": {
     "heroTreeAlt": "完全に成長した Token Forest アップルツリー",
