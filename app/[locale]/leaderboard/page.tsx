@@ -8,8 +8,7 @@ import { PixelCrown } from "@/components/pixel-crown";
 import type { Locale } from "@/i18n/routing";
 import { localizedMetadata, localizedUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/json-ld";
-
-export const revalidate = 60;
+import { redirect } from "next/navigation";
 
 export async function generateMetadata({
   params,
@@ -121,8 +120,15 @@ export default async function LeaderboardPage({
     Promise.all([getLeaderboard(page), getGlobalStats()]),
   ]);
 
-  const offset = (page - 1) * LEADERBOARD_PAGE_SIZE;
   const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
+
+  // A manually-typed ?page beyond the last page → send them to the last page,
+  // so the pager never shows "Page 3 of 2" over an empty table.
+  if (page > totalPages) {
+    redirect(`/${locale}/leaderboard${totalPages > 1 ? `?page=${totalPages}` : ""}`);
+  }
+
+  const offset = (page - 1) * LEADERBOARD_PAGE_SIZE;
 
   // Localised species names (reused from the homepage showcase), for the tree popup.
   const speciesLabel = (kind: string): string =>
