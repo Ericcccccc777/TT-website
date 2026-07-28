@@ -32,6 +32,8 @@
 --              honest max 337 · cheat up to 860
 --   wallclock  increase / GREATEST(seconds since previous event, bkt_span)
 --              honest max 334 · cheat median 515, max 1,004
+--   impossible_windows  Σ(bkt_n × 300) > account lifetime + 24h grace
+--              honest max 23% · a forged 83-hour span in a young account reads 346%
 --   relaunder  a non-first INSERT that raises the total
 --              honest accounts have exactly one INSERT (their first); the cheat
 --              run has six, two carrying +41M and +302M with no evidence at all
@@ -137,7 +139,8 @@ grant usage on schema private to service_role;
 -- by peak or rate as well).
 create or replace function private.hold_reasons(
     p_bkt_max bigint, p_bkt_n integer, p_bkt_sum bigint,
-    p_true_delta bigint, p_is_relaunder boolean, p_elapsed double precision)
+    p_true_delta bigint, p_is_relaunder boolean, p_elapsed double precision,
+    p_window_load double precision default null)
   returns text[]
   language sql
   immutable
@@ -157,8 +160,49 @@ as $$
     union all
     select 'relaunder'
       where p_is_relaunder and p_true_delta > 0
+    union all
+    -- p_window_load = Σ(bkt_n × 300) over the account's whole history, divided by
+    -- the time it has existed plus a day's grace. Every 5-minute bucket is a
+    -- distinct, non-overlapping slice of real time, so their total cannot exceed
+    -- how long the account has been alive — and the denominator comes from server
+    -- timestamps, which the client cannot touch.
+    --
+    -- This exists because `wallclock` alone was defeatable. bkt_span is
+    -- client-supplied, and GREATEST(elapsed, bkt_span) — added to stop a real
+    -- false positive — let an attacker claim a huge span and switch the rule off.
+    -- A payload of n=1000 / span=83h / max=1e6 / sum=1e9 slips past peak, rate AND
+    -- wallclock simultaneously. It cannot slip past this: 83 hours of claimed
+    -- buckets in a young account reads 346%.
+    --
+    -- The grace covers the honest case it would otherwise catch — the app running
+    -- for hours before the player switches the leaderboard on, so the first sync
+    -- carries a backlog older than the account. Live board: heaviest honest
+    -- account 23%, so the 100% line has 4.3x of headroom.
+    select 'impossible_windows'
+      where p_window_load is not null and p_window_load > 1.0
   ) t;
 $$;
+
+
+-- Σ(bkt_n × 300) for the account, over its lifetime + a day's grace. NULL when
+-- the account has no bucket evidence at all (nothing to measure).
+create or replace function private.window_load(p_user_id uuid, p_extra_n integer)
+  returns double precision
+  language sql
+  stable
+  security definer
+  set search_path = ''
+as $$
+  select case when coalesce(sum(h.bkt_n), 0) + coalesce(p_extra_n, 0) = 0 then null
+              else (coalesce(sum(h.bkt_n), 0) + coalesce(p_extra_n, 0)) * 300.0
+                   / (greatest(extract(epoch from (now() - min(h.at))), 0) + 86400.0)
+         end
+  from public.leaderboard_history h
+  where h.user_id = p_user_id;
+$$;
+
+revoke all on function private.window_load(uuid, integer) from public;
+grant execute on function private.window_load(uuid, integer) to service_role;
 
 -- ── 3. Intake: raw in, public out, history written, holds applied ────────────
 -- This replaces 0010's capture_leaderboard_history_update. Same trigger point
@@ -196,7 +240,8 @@ begin
       new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, false,
       case when v_prev_at is null then null
            else greatest(extract(epoch from (now() - v_prev_at)),
-                         coalesce(new.bkt_span, 0)) end);
+                         coalesce(new.bkt_span, 0)) end,
+      private.window_load(new.user_id, new.bkt_n));
 
     insert into public.leaderboard_history
       (user_id, old_score, new_score, delta, true_delta, reason,
@@ -208,13 +253,16 @@ begin
        array_length(v_why, 1) is not null,
        case when array_length(v_why, 1) is null then null else v_why end);
 
-    if array_length(v_why, 1) is not null and v_delta > 0 then
-      new.held_tokens := coalesce(old.held_tokens, 0) + v_delta;
-    end if;
   end if;
 
+  -- Base on OLD, never on NEW: the BEFORE INSERT trigger has already overwritten
+  -- new.held_tokens on the upsert path, and its rebuilt value must not be added
+  -- to on top of itself.
+  new.held_tokens := coalesce(old.held_tokens, 0)
+                   + case when array_length(v_why, 1) is not null and v_delta > 0
+                          then v_delta else 0 end;
   new.raw_score := v_raw_new;
-  new.score     := greatest(v_raw_new - coalesce(new.held_tokens, 0), 0);
+  new.score     := greatest(v_raw_new - new.held_tokens, 0);
 
   -- Consume the evidence (0010's reasoning, unchanged): the live row must never
   -- carry a summary at rest, or a later change that did not refresh it would get
@@ -261,7 +309,8 @@ begin
                   new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, true,
                   case when v_prev_at is null then null
                        else greatest(extract(epoch from (now() - v_prev_at)),
-                                     coalesce(new.bkt_span, 0)) end) end;
+                                     coalesce(new.bkt_span, 0)) end,
+                  private.window_load(new.user_id, new.bkt_n)) end;
 
   insert into public.leaderboard_history
     (user_id, old_score, new_score, delta, true_delta, reason,
@@ -273,24 +322,41 @@ begin
      array_length(v_why, 1) is not null,
      case when array_length(v_why, 1) is null then null else v_why end);
 
-  if array_length(v_why, 1) is not null and v_delta > 0 then
-    -- MUST set the guard: this UPDATE touches `score`, so without it the BEFORE
-    -- UPDATE capture trigger would read the already-reduced public figure as a
-    -- fresh client total, write a bogus negative event, overwrite raw_score and
-    -- subtract the hold a second time (caught in review).
-    perform set_config('tokenforest.admin_adjust', '1', true);
-    update public.leaderboard
-       set held_tokens = held_tokens + v_delta,
-           score = greatest(raw_score - (held_tokens + v_delta), 0)
-     where user_id = new.user_id;
-    perform set_config('tokenforest.admin_adjust', '0', true);
-  end if;
+  -- Always run, not only when holding: the BEFORE INSERT trigger deliberately
+  -- leaves `score` at the raw figure, and a re-entry may already carry rebuilt
+  -- holds that must be applied even when this event itself is clean.
+  -- The guard is mandatory — this UPDATE touches `score`, and without it the
+  -- BEFORE UPDATE capture would read the reduced figure as a fresh client total,
+  -- write a bogus negative event and subtract the hold twice.
+  perform set_config('tokenforest.admin_adjust', '1', true);
+  update public.leaderboard
+     set held_tokens = held_tokens
+                     + case when array_length(v_why, 1) is not null and v_delta > 0
+                            then v_delta else 0 end,
+         score = greatest(raw_score - (held_tokens
+                     + case when array_length(v_why, 1) is not null and v_delta > 0
+                            then v_delta else 0 end), 0)
+   where user_id = new.user_id;
+  perform set_config('tokenforest.admin_adjust', '0', true);
 
   return null;   -- AFTER trigger
 end;
 $$;
 
--- BEFORE INSERT: same raw/public split as the update path.
+-- BEFORE INSERT. It records the raw total and rebuilds any surviving holds, but
+-- it must NOT reduce `score` here.
+--
+-- PostgreSQL fires BEFORE INSERT triggers on an INSERT ... ON CONFLICT DO UPDATE
+-- *before* it detects the conflict, so on every client upsert this runs first and
+-- whatever it leaves in NEW is what the BEFORE UPDATE trigger then sees. An
+-- earlier version reduced `score` here, so capture read an already-reduced figure
+-- as the client's raw total and every subsequent delta drifted downwards — the
+-- raw total fell to 101.6e6 while the client was uploading 202.1e6. Caught by an
+-- end-to-end probe, not by review.
+--
+-- So: raw and held here, reduction in the AFTER INSERT trigger (genuine inserts)
+-- or in capture_leaderboard_history_update (the conflict path), each of which
+-- owns exactly one of the two routes.
 create or replace function public.leaderboard_intake_insert()
   returns trigger
   language plpgsql
@@ -301,10 +367,9 @@ declare
   v_held bigint;
 begin
   -- Withdrawing deletes the row but NOT the history, so re-enabling would
-  -- otherwise arrive with held_tokens = 0 and quietly republish every gain we
-  -- had held — making "turn it off and on again" a complete bypass, via exactly
-  -- the path the cheat run already used (caught in review). Rebuild the held
-  -- total from the surviving history instead of trusting the incoming row.
+  -- otherwise arrive with held_tokens = 0 and quietly republish every held gain,
+  -- making "turn it off and on again" a complete bypass via the very path the
+  -- cheat run already used. Rebuild from the surviving history instead.
   select coalesce(sum(greatest(coalesce(h.true_delta, h.delta), 0)), 0)
     into v_held
   from public.leaderboard_history h
@@ -312,7 +377,6 @@ begin
 
   new.raw_score := new.score;
   new.held_tokens := v_held;
-  new.score := greatest(new.raw_score - new.held_tokens, 0);
   return new;
 end;
 $$;
@@ -377,8 +441,9 @@ begin
 end;
 $$;
 
-drop function if exists private.hold_reasons(bigint, integer, bigint, bigint, boolean);  -- earlier signature
-revoke all on function private.hold_reasons(bigint, integer, bigint, bigint, boolean, double precision) from public;
+drop function if exists private.hold_reasons(bigint, integer, bigint, bigint, boolean);                    -- earlier signature
+drop function if exists private.hold_reasons(bigint, integer, bigint, bigint, boolean, double precision);  -- earlier signature
+revoke all on function private.hold_reasons(bigint, integer, bigint, bigint, boolean, double precision, double precision) from public;
 revoke all on function public.release_leaderboard_event(bigint, text) from public;
 revoke all on function public.hold_leaderboard_event(bigint, text) from public;
 grant execute on function public.release_leaderboard_event(bigint, text) to service_role;
@@ -451,7 +516,8 @@ begin
                                   h.reason = 'insert',
                                   case when v_prev_at is null then null
                                        else greatest(extract(epoch from (h.at - v_prev_at)),
-                                                     coalesce(h.bkt_span, 0)) end)
+                                                     coalesce(h.bkt_span, 0)) end,
+                                  private.window_load(h.user_id, 0))
       end;
       v_first := false;
 
