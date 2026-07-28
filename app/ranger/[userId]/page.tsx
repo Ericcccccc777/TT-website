@@ -15,7 +15,14 @@ import {
 import { getRangerLang, t, type Key, type Lang } from "@/lib/ranger/i18n";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
 import { BarsChart, ChartCard, CumulativeChart } from "@/components/ranger/charts";
-import { acknowledgeAction, banAction, unacknowledgeAction, unbanAction } from "../actions";
+import {
+  acknowledgeAction,
+  banAction,
+  holdEventAction,
+  releaseEventAction,
+  unacknowledgeAction,
+  unbanAction,
+} from "../actions";
 
 // Admin detail view — never indexed, never cached, always request-time (cookies).
 export const metadata: Metadata = {
@@ -380,6 +387,12 @@ export default async function RangerUserPage({
           <Panel title={t(lang, "sectAccount")} className="mt-6">
             <dl className="grid grid-cols-2 gap-x-8 gap-y-4 px-5 py-4 font-body text-small text-text-muted-light sm:grid-cols-3">
               <Field label={t(lang, "fTokens")} value={fmtTokens(row.score)} />
+              {row.heldTokens > 0 && (
+                <Field
+                  label="held (not counted)"
+                  value={`−${fmtTokens(row.heldTokens)}  ·  raw ${fmtTokens(row.rawScore)}`}
+                />
+              )}
               <Field label={t(lang, "fRegion")} value={row.region || "—"} />
               <Field label={t(lang, "fMainTree")} value={row.tree || "—"} />
               <Field label={t(lang, "fFirstSeen")} value={fmtWhen(row.createdAt)} />
@@ -562,6 +575,41 @@ export default async function RangerUserPage({
                                 style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
                               >
                                 {t(lang, "markOk")}
+                              </button>
+                            </form>
+                          )}
+                          {/* Quarantine (0016). Held increases are not in the
+                              player's public score; releasing one puts it back.
+                              Distinct from "mark ok" above, which only silences
+                              the severity badge and moves no tokens. */}
+                          {h.quarantined ? (
+                            <div className="mt-1.5">
+                              <div className="text-[10px] text-amber-800">
+                                held −{(h.trueDelta ?? h.delta).toLocaleString()}
+                                {h.holdReasons.length > 0 ? ` · ${h.holdReasons.join(" ")}` : ""}
+                                {h.decidedBy ? ` · by ${h.decidedBy}` : ""}
+                              </div>
+                              <form action={releaseEventAction} className="mt-1">
+                                <input type="hidden" name="eventId" value={h.id} />
+                                <input type="hidden" name="userId" value={userId} />
+                                <button
+                                  type="submit"
+                                  className="ranger-btn rounded-[2px] bg-leaf-deep px-2 py-0.5 text-[10px] text-text-cream"
+                                >
+                                  Release (count it)
+                                </button>
+                              </form>
+                            </div>
+                          ) : (
+                            <form action={holdEventAction} className="mt-1.5">
+                              <input type="hidden" name="eventId" value={h.id} />
+                              <input type="hidden" name="userId" value={userId} />
+                              <button
+                                type="submit"
+                                className="ranger-btn rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                                style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
+                              >
+                                Hold (stop counting)
                               </button>
                             </form>
                           )}

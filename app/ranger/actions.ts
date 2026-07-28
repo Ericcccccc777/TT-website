@@ -209,3 +209,49 @@ export async function setRangerLangAction(formData: FormData): Promise<void> {
   });
   revalidatePath("/ranger", "layout");
 }
+
+/**
+ * Count a held score increase after all (migration 0016). The tokens go back
+ * into the player's public score immediately; the event is marked as decided by
+ * a human, so re-evaluation leaves it alone from then on. Admin-only.
+ */
+export async function releaseEventAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const eventId = Number(formData.get("eventId"));
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!Number.isFinite(eventId)) throw new Error("Missing eventId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.rpc("release_leaderboard_event", {
+    p_id: eventId,
+    p_admin: admin.email ?? "admin",
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/ranger");
+  if (userId) revalidatePath(`/ranger/${userId}`);
+  revalidatePublicBoards();   // the score just went up in public
+}
+
+/** Stop counting an increase the rules let through. Admin-only. */
+export async function holdEventAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const eventId = Number(formData.get("eventId"));
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!Number.isFinite(eventId)) throw new Error("Missing eventId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.rpc("hold_leaderboard_event", {
+    p_id: eventId,
+    p_admin: admin.email ?? "admin",
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/ranger");
+  if (userId) revalidatePath(`/ranger/${userId}`);
+  revalidatePublicBoards();
+}

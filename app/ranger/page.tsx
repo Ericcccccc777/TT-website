@@ -66,6 +66,9 @@ export default async function RangerPage() {
     getRangerTokenSeries(30, MAX_SERIES),
   ]);
   const bannedCount = rows.filter((r) => r.banned).length;
+  // Quarantine (0016): accounts with score increases we are not counting. They
+  // are still on the board — only the held tokens are missing from their total.
+  const heldRows = rows.filter((r) => r.heldTokens > 0);
 
   // Pair the rows a re-signup left behind: the new row carries prev_uid = the uid it replaced.
   // prev_uid is an UNVERIFIED client claim, so ALL of the pairing UI is gated on `deletableOrphan`
@@ -94,6 +97,11 @@ export default async function RangerPage() {
             </h1>
             <p className="mt-1 font-body text-small text-[var(--color-text-muted-light)]">
               {t(lang, "listStats", { n: rows.length, m: bannedCount, email: admin.email ?? "" })}
+              {heldRows.length > 0 && (
+                <span className="ml-2 rounded-[2px] bg-amber-700 px-1.5 py-0.5 text-[10px] text-white">
+                  {heldRows.length} with held gains
+                </span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -181,6 +189,14 @@ export default async function RangerPage() {
                     )}
                     {r.banned && r.banReason && (
                       <div className="mt-0.5 text-[11px] opacity-70">{r.banReason}</div>
+                    )}
+                    {r.heldTokens > 0 && (
+                      <span
+                        className="ml-2 rounded-[2px] bg-amber-700 px-1.5 py-0.5 text-[10px] text-white"
+                        title={`raw ${r.rawScore.toLocaleString()} · held ${r.heldTokens.toLocaleString()}`}
+                      >
+                        −{r.heldTokens.toLocaleString()} held
+                      </span>
                     )}
                     {r.prevUid && deletableOrphan.has(r.prevUid) && (
                       <span
