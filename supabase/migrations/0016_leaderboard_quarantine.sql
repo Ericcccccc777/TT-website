@@ -30,7 +30,7 @@
 --              honest max 184,736 · cheat 286,121
 --   rate       bkt_sum / (bkt_n × 5min) > 400 M/hour
 --              honest max 337 · cheat up to 860
---   wallclock  increase / seconds since the previous event > 600 M/hour
+--   wallclock  increase / GREATEST(seconds since previous event, bkt_span)
 --              honest max 334 · cheat median 515, max 1,004
 --   relaunder  a non-first INSERT that raises the total
 --              honest accounts have exactly one INSERT (their first); the cheat
@@ -116,15 +116,25 @@ create index if not exists leaderboard_history_quarantined_idx
 create schema if not exists private;
 grant usage on schema private to service_role;
 
--- p_elapsed = seconds since this account's previous event, from the SERVER's
--- clock. It is the only input here the client does not supply, and therefore the
--- only rule it cannot switch off: `peak` and `rate` both read bkt_* values the
--- client PATCHes, so simply omitting the summary — or sending bkt_sum = 0 with a
--- huge bkt_n — would slip any gain past them (caught in review). `wallclock`
--- still applies, and converts "omit the evidence" from a free bypass into "then
--- wait": at the threshold below, a 1e9 gain needs 1.7 hours of real time.
--- Honest maximum measured on the live board is 334 M/h; the cheat run reached
--- 1,004 with a median of 515.
+-- p_elapsed = seconds since this account's previous event, on the SERVER's clock.
+-- It is the only input the client does not supply, and therefore the only rule it
+-- cannot switch off: `peak` and `rate` both read bkt_* values the client PATCHes,
+-- so omitting the summary — or sending bkt_sum = 0 with a huge bkt_n — would slip
+-- a gain past both. `wallclock` still applies, turning "omit the evidence" from a
+-- free bypass into "then wait".
+--
+-- The caller passes GREATEST(elapsed, bkt_span), not elapsed alone. Elapsed alone
+-- is wrong and a live probe caught it holding an ordinary 5e5 gain: the wall-clock
+-- gap measures the time between two SYNCS, while the tokens were burned earlier.
+-- A player who keeps the app in capsule form all day hoards bubbles — expiry is
+-- frozen there (buckets.py) — then collects them at once, so a legitimate 8-hour
+-- burn lands in one 30-minute sync window. bkt_span is exactly the span those
+-- tokens were actually spent over, which is why 0008 uploads it. When it is
+-- absent, elapsed stands alone and the rule bites as before.
+--
+-- Honest maximum on the live board is 334 M/h under both forms; the cheat run
+-- reached 1,004 (930 under this form, with every one of those events still held
+-- by peak or rate as well).
 create or replace function private.hold_reasons(
     p_bkt_max bigint, p_bkt_n integer, p_bkt_sum bigint,
     p_true_delta bigint, p_is_relaunder boolean, p_elapsed double precision)
@@ -185,7 +195,8 @@ begin
     v_why := private.hold_reasons(
       new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, false,
       case when v_prev_at is null then null
-           else extract(epoch from (now() - v_prev_at)) end);
+           else greatest(extract(epoch from (now() - v_prev_at)),
+                         coalesce(new.bkt_span, 0)) end);
 
     insert into public.leaderboard_history
       (user_id, old_score, new_score, delta, true_delta, reason,
@@ -249,7 +260,8 @@ begin
                 else private.hold_reasons(
                   new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, true,
                   case when v_prev_at is null then null
-                       else extract(epoch from (now() - v_prev_at)) end) end;
+                       else greatest(extract(epoch from (now() - v_prev_at)),
+                                     coalesce(new.bkt_span, 0)) end) end;
 
   insert into public.leaderboard_history
     (user_id, old_score, new_score, delta, true_delta, reason,
@@ -438,7 +450,8 @@ begin
         else private.hold_reasons(h.bkt_max, h.bkt_n, h.bkt_sum, v_delta,
                                   h.reason = 'insert',
                                   case when v_prev_at is null then null
-                                       else extract(epoch from (h.at - v_prev_at)) end)
+                                       else greatest(extract(epoch from (h.at - v_prev_at)),
+                                                     coalesce(h.bkt_span, 0)) end)
       end;
       v_first := false;
 
