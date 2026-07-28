@@ -222,7 +222,9 @@ export default async function RangerUserPage({
     display = display.filter((r) => r.severity === "watch" || r.severity === "suspicious");
   }
   if (sort === "jump") {
-    display = [...display].filter((r) => !isBaseline(r)).sort((a, b) => b.delta - a.delta);
+    display = [...display]
+      .filter((r) => !isBaseline(r))
+      .sort((a, b) => (b.trueDelta ?? b.delta) - (a.trueDelta ?? a.delta));
   } else if (sort === "rate") {
     display = [...display]
       .filter((r) => !isBaseline(r))
@@ -274,9 +276,9 @@ export default async function RangerUserPage({
   const changes = asc.filter((r) => !isBaseline(r));
   const deltaBars = changes.map((r) => ({
     t: ms(r.at),
-    v: Math.max(0, r.delta),
+    v: Math.max(0, r.trueDelta ?? r.delta),
     severity: r.severity,
-    label: `${fmtWhen(r.at)} · ${fmtSigned(r.delta)} over ${r.gapLabel}`,
+    label: `${fmtWhen(r.at)} · ${fmtSigned(r.trueDelta ?? r.delta)} over ${r.gapLabel}`,
   }));
 
   // 3. THE judgement chart: each gain as a % of what was physically possible in the time
@@ -288,9 +290,9 @@ export default async function RangerUserPage({
     .filter((r) => r.ceiling !== null && r.ceiling > 0)
     .map((r) => ({
       t: ms(r.at),
-      v: (Math.max(0, r.delta) / (r.ceiling as number)) * 100,
+      v: (Math.max(0, r.trueDelta ?? r.delta) / (r.ceiling as number)) * 100,
       severity: r.severity,
-      label: `${fmtWhen(r.at)} · ${Math.round((Math.max(0, r.delta) / (r.ceiling as number)) * 100)}% of the ${fmtSigned(r.ceiling as number)} ceiling for ${r.gapLabel}`,
+      label: `${fmtWhen(r.at)} · ${Math.round((Math.max(0, r.trueDelta ?? r.delta) / (r.ceiling as number)) * 100)}% of the ${fmtSigned(r.ceiling as number)} ceiling for ${r.gapLabel}`,
     }));
 
   // 4. The evidence: the busiest 5-minute window inside each gain. Only rows whose client
@@ -550,9 +552,9 @@ export default async function RangerUserPage({
                         </td>
                         <td
                           className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
-                          style={{ color: h.delta < 0 ? "#b91c1c" : "var(--color-text-forest)" }}
+                          style={{ color: (h.trueDelta ?? h.delta) < 0 ? "#b91c1c" : "var(--color-text-forest)" }}
                         >
-                          {fmtSigned(h.delta)}
+                          {fmtSigned(h.trueDelta ?? h.delta)}
                         </td>
                         <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
                           {h.rateLabel}

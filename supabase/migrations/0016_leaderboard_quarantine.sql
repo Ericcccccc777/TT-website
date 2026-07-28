@@ -23,16 +23,24 @@
 -- log. What is left is throughput: a fabricated run must either look physically
 -- impossible or throttle itself to human speed, and throttling is the cost.
 --
--- ── THE THREE RULES, AND THE FOUR THAT WERE THROWN OUT ───────────────────────
+-- ── THE FOUR RULES, AND THE FOUR THAT WERE THROWN OUT ────────────────────────
 -- Calibrated per-event against the live board (265 events, 20 accounts).
 --
 --   peak       bkt_max/300 > 250,000 tok/s
 --              honest max 184,736 · cheat 286,121
 --   rate       bkt_sum / (bkt_n × 5min) > 400 M/hour
 --              honest max 337 · cheat up to 860
+--   wallclock  increase / seconds since the previous event > 600 M/hour
+--              honest max 334 · cheat median 515, max 1,004
 --   relaunder  a non-first INSERT that raises the total
 --              honest accounts have exactly one INSERT (their first); the cheat
 --              run has six, two carrying +41M and +302M with no evidence at all
+--
+-- `wallclock` is the load-bearing one. The other three all read values the
+-- client supplies, so omitting the summary switches them off; the server's own
+-- clock cannot be switched off, and it is what turns cheating from free into
+-- slow. The other three still earn their place by catching a throttled run that
+-- stays under the wall-clock ceiling.
 --
 -- `rate` divides EVIDENCED tokens by EVIDENCED windows. Using the raw increase
 -- instead looked obvious and was wrong: the honest developer account's first
@@ -52,8 +60,8 @@
 --     (upgraded mid-stream, closed between collecting and syncing), and it is
 --     common. Only the INSERT form of it (relaunder) is specific enough to use.
 --
--- Replayed over the live board: 0 events held for honest accounts, 8 events and
--- 94% of the gains held for the authorised cheat run.
+-- Replayed over the live board: 0 events held for honest accounts, 9 events and
+-- 99% of the gains held for the authorised cheat run.
 --
 -- ── HOW THE NUMBERS FLOW ─────────────────────────────────────────────────────
 --   raw_score    what the client says its total is. Client-owned.
@@ -108,9 +116,18 @@ create index if not exists leaderboard_history_quarantined_idx
 create schema if not exists private;
 grant usage on schema private to service_role;
 
+-- p_elapsed = seconds since this account's previous event, from the SERVER's
+-- clock. It is the only input here the client does not supply, and therefore the
+-- only rule it cannot switch off: `peak` and `rate` both read bkt_* values the
+-- client PATCHes, so simply omitting the summary — or sending bkt_sum = 0 with a
+-- huge bkt_n — would slip any gain past them (caught in review). `wallclock`
+-- still applies, and converts "omit the evidence" from a free bypass into "then
+-- wait": at the threshold below, a 1e9 gain needs 1.7 hours of real time.
+-- Honest maximum measured on the live board is 334 M/h; the cheat run reached
+-- 1,004 with a median of 515.
 create or replace function private.hold_reasons(
     p_bkt_max bigint, p_bkt_n integer, p_bkt_sum bigint,
-    p_true_delta bigint, p_is_relaunder boolean)
+    p_true_delta bigint, p_is_relaunder boolean, p_elapsed double precision)
   returns text[]
   language sql
   immutable
@@ -123,6 +140,10 @@ as $$
     select 'rate'
       where p_bkt_n is not null and p_bkt_n > 0 and p_bkt_sum is not null
         and p_bkt_sum / (p_bkt_n * 300.0 / 3600.0) > 400000000
+    union all
+    select 'wallclock'
+      where p_elapsed is not null and p_elapsed > 0 and p_true_delta > 0
+        and p_true_delta / (p_elapsed / 3600.0) > 600000000
     union all
     select 'relaunder'
       where p_is_relaunder and p_true_delta > 0
@@ -146,6 +167,7 @@ declare
   v_raw_old bigint := coalesce(old.raw_score, old.score, 0);
   v_delta   bigint;
   v_why     text[];
+  v_prev_at timestamptz;
 begin
   -- An admin adjustment writes `score` directly and must not be mistaken for a
   -- client sync. release/hold set this for the duration of their statement.
@@ -156,7 +178,14 @@ begin
   v_delta := v_raw_new - v_raw_old;
 
   if v_delta <> 0 then
-    v_why := private.hold_reasons(new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, false);
+    select h.at into v_prev_at
+    from public.leaderboard_history h
+    where h.user_id = new.user_id order by h.id desc limit 1;
+
+    v_why := private.hold_reasons(
+      new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, false,
+      case when v_prev_at is null then null
+           else extract(epoch from (now() - v_prev_at)) end);
 
     insert into public.leaderboard_history
       (user_id, old_score, new_score, delta, true_delta, reason,
@@ -200,9 +229,10 @@ create or replace function public.capture_leaderboard_history_insert()
   set search_path = ''
 as $$
 declare
-  v_prev  bigint;
-  v_delta bigint;
-  v_why   text[];
+  v_prev    bigint;
+  v_delta   bigint;
+  v_why     text[];
+  v_prev_at timestamptz;
 begin
   select h.new_score into v_prev
   from public.leaderboard_history h
@@ -210,10 +240,16 @@ begin
   order by h.id desc
   limit 1;
 
+  select h.at into v_prev_at
+  from public.leaderboard_history h
+  where h.user_id = new.user_id order by h.id desc limit 1;
+
   v_delta := new.raw_score - coalesce(v_prev, 0);
   v_why := case when v_prev is null then '{}'::text[]
-                else private.hold_reasons(new.bkt_max, new.bkt_n, new.bkt_sum,
-                                          v_delta, true) end;
+                else private.hold_reasons(
+                  new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, true,
+                  case when v_prev_at is null then null
+                       else extract(epoch from (now() - v_prev_at)) end) end;
 
   insert into public.leaderboard_history
     (user_id, old_score, new_score, delta, true_delta, reason,
@@ -226,10 +262,16 @@ begin
      case when array_length(v_why, 1) is null then null else v_why end);
 
   if array_length(v_why, 1) is not null and v_delta > 0 then
+    -- MUST set the guard: this UPDATE touches `score`, so without it the BEFORE
+    -- UPDATE capture trigger would read the already-reduced public figure as a
+    -- fresh client total, write a bogus negative event, overwrite raw_score and
+    -- subtract the hold a second time (caught in review).
+    perform set_config('tokenforest.admin_adjust', '1', true);
     update public.leaderboard
        set held_tokens = held_tokens + v_delta,
            score = greatest(raw_score - (held_tokens + v_delta), 0)
      where user_id = new.user_id;
+    perform set_config('tokenforest.admin_adjust', '0', true);
   end if;
 
   return null;   -- AFTER trigger
@@ -311,7 +353,8 @@ begin
 end;
 $$;
 
-revoke all on function private.hold_reasons(bigint, integer, bigint, bigint, boolean) from public;
+drop function if exists private.hold_reasons(bigint, integer, bigint, bigint, boolean);  -- earlier signature
+revoke all on function private.hold_reasons(bigint, integer, bigint, bigint, boolean, double precision) from public;
 revoke all on function public.release_leaderboard_event(bigint, text) from public;
 revoke all on function public.hold_leaderboard_event(bigint, text) from public;
 grant execute on function public.release_leaderboard_event(bigint, text) to service_role;
@@ -359,9 +402,10 @@ declare
   v_why text[];
   v_held bigint;
   v_first boolean;
+  v_prev_at timestamptz;
 begin
   for u in select user_id, raw_score from public.leaderboard loop
-    v_prev := 0; v_held := 0; v_first := true;
+    v_prev := 0; v_held := 0; v_first := true; v_prev_at := null;
     for h in
       select * from public.leaderboard_history
       where user_id = u.user_id order by id asc
@@ -373,13 +417,16 @@ begin
         if h.quarantined then v_held := v_held + greatest(v_delta, 0); end if;
         update public.leaderboard_history set true_delta = v_delta where id = h.id;
         v_first := false;
+        v_prev_at := h.at;
         continue;
       end if;
 
       v_why := case
         when h.reason = 'insert' and v_first then '{}'::text[]
         else private.hold_reasons(h.bkt_max, h.bkt_n, h.bkt_sum, v_delta,
-                                  h.reason = 'insert')
+                                  h.reason = 'insert',
+                                  case when v_prev_at is null then null
+                                       else extract(epoch from (h.at - v_prev_at)) end)
       end;
       v_first := false;
 
@@ -392,6 +439,7 @@ begin
       if array_length(v_why, 1) is not null then
         v_held := v_held + greatest(v_delta, 0);
       end if;
+      v_prev_at := h.at;
     end loop;
 
     perform set_config('tokenforest.admin_adjust', '1', true);

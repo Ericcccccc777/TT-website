@@ -263,10 +263,15 @@ export function analyzeHistory(
       }
     } else {
       const effGap = gapSeconds === null ? null : Math.max(gapSeconds, 1);
-      if (effGap !== null) rate = e.delta / effGap;
-      if (e.oldScore && e.oldScore > 0) jumpPct = (e.delta / e.oldScore) * 100;
+      // trueDelta over delta wherever available (migration 0016): a re-insert
+      // restates the WHOLE score as `delta`, so rate/jump/bucket checks computed
+      // from it read a lifetime of tokens as one instant gain and invent
+      // suspicion for anyone who merely toggled the leaderboard off and on.
+      const gain = e.trueDelta ?? e.delta;
+      if (effGap !== null) rate = gain / effGap;
+      if (e.oldScore && e.oldScore > 0) jumpPct = (gain / e.oldScore) * 100;
 
-      bucket = checkBuckets(e, e.delta);
+      bucket = checkBuckets(e, gain);
 
       const isX100 =
         e.oldScore !== null &&
