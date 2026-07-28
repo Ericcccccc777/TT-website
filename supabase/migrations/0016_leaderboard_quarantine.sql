@@ -285,9 +285,21 @@ create or replace function public.leaderboard_intake_insert()
   security definer
   set search_path = ''
 as $$
+declare
+  v_held bigint;
 begin
+  -- Withdrawing deletes the row but NOT the history, so re-enabling would
+  -- otherwise arrive with held_tokens = 0 and quietly republish every gain we
+  -- had held — making "turn it off and on again" a complete bypass, via exactly
+  -- the path the cheat run already used (caught in review). Rebuild the held
+  -- total from the surviving history instead of trusting the incoming row.
+  select coalesce(sum(greatest(coalesce(h.true_delta, h.delta), 0)), 0)
+    into v_held
+  from public.leaderboard_history h
+  where h.user_id = new.user_id and h.quarantined;
+
   new.raw_score := new.score;
-  new.held_tokens := coalesce(new.held_tokens, 0);
+  new.held_tokens := v_held;
   new.score := greatest(new.raw_score - new.held_tokens, 0);
   return new;
 end;
