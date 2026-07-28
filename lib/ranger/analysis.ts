@@ -278,7 +278,7 @@ export function analyzeHistory(
         e.oldScore > 0 &&
         Math.abs(e.newScore - e.oldScore * 100) <= THRESHOLDS.X100_TOL;
 
-      if (e.delta < 0) {
+      if (gain < 0) {
         severity = "suspicious";
         signals.push("Score DECREASED — scores normally only grow; a drop is a tamper signal.");
       } else if (isX100) {
@@ -303,24 +303,24 @@ export function analyzeHistory(
 
         // ── The time-scaled ceiling. Always in force: a forged-but-consistent
         //    summary must not be able to launder an impossible jump. ──
-        if (e.delta > susCeiling) {
+        if (gain > susCeiling) {
           severity = "suspicious";
           signals.push(
-            `Gained ${fmtSigned(e.delta)} in ${fmtGap(gap)} — over the ${fmtSigned(susCeiling)} ` +
+            `Gained ${fmtSigned(gain)} in ${fmtGap(gap)} — over the ${fmtSigned(susCeiling)} ` +
               `ceiling for that interval.`,
           );
-        } else if (severity === "normal" && e.delta > watchCeiling) {
+        } else if (severity === "normal" && gain > watchCeiling) {
           if (bucket?.ok) {
             // Spread across enough real 5-minute windows to explain itself: this
             // is the hoarded-bubble case the old absolute thresholds mangled.
             signals.push(
-              `Large gain (${fmtSigned(e.delta)}) but accounted for: ${bucket.n} five-minute ` +
+              `Large gain (${fmtSigned(gain)}) but accounted for: ${bucket.n} five-minute ` +
                 `windows over ${fmtGap(bucket.span)}, busiest ${fmtSigned(bucket.max)}, total matches.`,
             );
           } else {
             severity = "watch";
             signals.push(
-              `Gained ${fmtSigned(e.delta)} in ${fmtGap(gap)} — over the ${fmtSigned(watchCeiling)} ` +
+              `Gained ${fmtSigned(gain)} in ${fmtGap(gap)} — over the ${fmtSigned(watchCeiling)} ` +
                 `ceiling for that interval.`,
             );
           }
@@ -377,7 +377,8 @@ export function analyzeHistory(
   });
 
   const real = analyzed.filter((r) => r.oldScore !== null);
-  const totalGained = real.reduce((s, r) => s + Math.max(0, r.delta), 0);
+  // trueDelta throughout (0016): `delta` restates the whole score on a re-insert.
+  const totalGained = real.reduce((s, r) => s + Math.max(0, r.trueDelta ?? r.delta), 0);
 
   let peakRate: number | null = null;
   let peakRateAt: string | null = null;
@@ -388,8 +389,9 @@ export function analyzeHistory(
       peakRate = r.rate;
       peakRateAt = r.at;
     }
-    if (largestJump === null || r.delta > largestJump) {
-      largestJump = r.delta;
+    const g = r.trueDelta ?? r.delta;
+    if (largestJump === null || g > largestJump) {
+      largestJump = g;
       largestJumpAt = r.at;
     }
   }
