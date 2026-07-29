@@ -61,6 +61,23 @@ one cannot, and it is what makes cheating slow rather than free.
 Players are never told. Their row stays, their uploads keep succeeding, and no
 error is returned.
 
+## Reading a hold, and spotting a throttled run
+
+Each held gain carries the machine's reasons as codes — `peak`, `rate`,
+`wallclock`, `impossible_windows`, `relaunder`. The player page spells each one
+out in a sentence: what the rule measured, and how it compares to the heaviest
+honest account on the board, so the verdict can be judged without opening the
+migration.
+
+Separately, the page may show **Possible throttling — nothing was held**. A cheat
+that paces itself just under every ceiling trips no rule, so it produces no held
+rows and the page would otherwise look clean. This reports the shape across
+events instead: what share of gains sat at or above 60% of a limit. Real work is
+bursty and rarely comes close; a governed loop parks near the line and stays
+there. It needs at least four measurable events with over half of them hugging,
+it ignores gains that were already held, and **it holds nothing** — it exists
+only to point a human at an account. Treat it as a shape, not as proof.
+
 ## Known limitation (accepted for this version)
 
 If a cheater completely reinstalls the app and re-registers, they receive a

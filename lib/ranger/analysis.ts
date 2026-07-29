@@ -448,7 +448,7 @@ export const HOLD_REASON_TEXT: Record<string, { short: string; why: string }> = 
   },
   wallclock: {
     short: "Gained faster than the clock allows",
-    why: "The score rose faster than real time passed since this account's previous gain (over 600M/hour). This is the one signal the client cannot switch off, because the denominator is the server's own clock.",
+    why: "The score rose faster than 600M/hour, measured over whichever is longer: the server's own gap since this account's previous gain, or the burn span the client reported. The client half of that can be inflated to soften this rule — which is what impossible_windows exists to catch.",
   },
   relaunder: {
     short: "Re-added the row to skip the evidence",
@@ -497,10 +497,17 @@ export function detectThrottling(rows: AnalyzedRow[]): ThrottleVerdict {
   let hugging = 0;
   let measured = 0;
   for (const r of rows) {
+    // Held events are excluded: they already have a verdict, and counting them
+    // would let this panel claim "nothing was held" on an account that plainly
+    // had something held.
+    if (r.quarantined) continue;
     const loads = ceilingLoads(r, r.trueDelta ?? r.delta, r.gapSeconds ?? null);
     if (!loads.length) continue;
     measured += 1;
-    if (Math.max(...loads) >= 0.6 && Math.max(...loads) < 1) hugging += 1;
+    // No upper bound. The rules hold only on STRICTLY exceeding a threshold, so
+    // a load of exactly 1 is both legal and the most perfectly throttled value
+    // there is — excluding it would leave a gap sitting on the line itself.
+    if (Math.max(...loads) >= 0.6) hugging += 1;
   }
   const ratio = measured ? hugging / measured : 0;
   // Needs a run, not a coincidence: 4+ events and over half of them hugging.
