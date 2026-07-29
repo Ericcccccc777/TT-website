@@ -85,8 +85,15 @@ export type BucketCheck = {
   sumMatches: boolean; // |sum − delta| ≤ SUM_TOL
   impliedRate: number; // max ÷ 300s — peak tokens/sec inside one window
   avgPerBucket: number;
-  problems: string[]; // why !ok, if it isn't
+  problems: Signal[]; // why !ok, if it isn't
 };
+
+/**
+ * A reason, not a sentence. The analyser runs on the server with no notion of
+ * the admin's language, so it emits a key plus its numbers and the page renders
+ * it through lib/ranger/i18n. Adding a language never touches this file.
+ */
+export type Signal = { key: string; p?: Record<string, string | number> };
 
 export type AnalyzedRow = HistoryEntry & {
   gapSeconds: number | null; // time since the previous change (null for the first/baseline row)
@@ -98,7 +105,7 @@ export type AnalyzedRow = HistoryEntry & {
   bucket: BucketCheck | null; // null when the client uploaded no summary
   severity: Severity;
   acknowledged: boolean; // an admin marked this specific change reviewed-OK
-  signals: string[]; // human-readable reasons for the severity
+  signals: Signal[]; // structured reasons; rendered per-language by the page
 };
 
 export type HistorySummary = {
@@ -185,30 +192,23 @@ function checkBuckets(e: HistoryEntry, delta: number): BucketCheck | null {
   // all. So "absent" means "no evidence", never "suspicious".
   if (n === null || max === null || sum === null || span === null) return null;
 
-  const problems: string[] = [];
+  const problems: Signal[] = [];
   const sumMatches = Math.abs(sum - delta) <= THRESHOLDS.SUM_TOL;
 
   if (!sumMatches) {
-    problems.push(
-      `Bucket total (${fmtSigned(sum)}) does not match the score delta (${fmtSigned(delta)}) — ` +
-        `the uploaded score is not backed by the token log.`,
-    );
+    problems.push({ key: "sigSumMismatch", p: { sum: fmtSigned(sum), delta: fmtSigned(delta) } });
   }
   if (max > THRESHOLDS.BUCKET_SUS) {
-    problems.push(
-      `One 5-minute window holds ${fmtSigned(max)} tokens — beyond any real machine.`,
-    );
+    problems.push({ key: "sigWindowImpossible", p: { max: fmtSigned(max) } });
   }
   if (n > 0 && n * THRESHOLDS.BUCKET_SECONDS > span + THRESHOLDS.BUCKET_SECONDS) {
-    problems.push(
-      `${n} five-minute windows cannot fit inside a ${fmtGap(span)} span — the buckets are fabricated.`,
-    );
+    problems.push({ key: "sigWindowsDontFit", p: { n, span: fmtGap(span) } });
   }
   if (max > sum) {
-    problems.push("Busiest window exceeds the total — internally inconsistent.");
+    problems.push({ key: "sigMaxOverSum" });
   }
   if (n <= 0 && sum > 0) {
-    problems.push("Tokens claimed with zero buckets — internally inconsistent.");
+    problems.push({ key: "sigZeroBuckets" });
   }
 
   return {
@@ -241,7 +241,7 @@ export function analyzeHistory(
     let jumpPct: number | null = null;
     let ceiling: number | null = null;
     let bucket: BucketCheck | null = null;
-    const signals: string[] = [];
+    const signals: Signal[] = [];
     let severity: Severity = "normal";
 
     if (isBaseline) {
@@ -249,17 +249,13 @@ export function analyzeHistory(
       // starting total is itself believable. This is the off→on re-register path,
       // so it is not merely cosmetic.
       severity = "baseline";
-      signals.push("Starting baseline — the accumulated total before per-change history began.");
+      signals.push({ key: "sigBaseline" });
       if (e.newScore >= THRESHOLDS.BASELINE_SUS) {
         severity = "suspicious";
-        signals.push(
-          `First-ever total is ${fmtSigned(e.newScore)} — far past any plausible lifetime usage.`,
-        );
+        signals.push({ key: "sigBaselineSus", p: { v: fmtSigned(e.newScore) } });
       } else if (e.newScore >= THRESHOLDS.BASELINE_WATCH) {
         severity = "watch";
-        signals.push(
-          `First-ever total is ${fmtSigned(e.newScore)} — unusually high for a fresh registration.`,
-        );
+        signals.push({ key: "sigBaselineWatch", p: { v: fmtSigned(e.newScore) } });
       }
     } else {
       const effGap = gapSeconds === null ? null : Math.max(gapSeconds, 1);
@@ -280,9 +276,9 @@ export function analyzeHistory(
 
       if (gain < 0) {
         severity = "suspicious";
-        signals.push("Score DECREASED — scores normally only grow; a drop is a tamper signal.");
+        signals.push({ key: "sigDecreased" });
       } else if (isX100) {
-        signals.push("Exact ×100 — matches the one-time v2→v3 metric migration (legit).");
+        signals.push({ key: "sigX100" });
       } else {
         const gap = gapSeconds ?? 0;
         const susCeiling = jumpCeiling(gap, "suspicious");
@@ -295,34 +291,37 @@ export function analyzeHistory(
           signals.push(...bucket.problems);
         } else if (bucket && bucket.max > THRESHOLDS.BUCKET_WATCH) {
           severity = "watch";
-          signals.push(
-            `Busiest 5-minute window holds ${fmtSigned(bucket.max)} tokens ` +
-              `(${fmtRate(bucket.impliedRate)}) — high, but not impossible.`,
-          );
+          signals.push({
+            key: "sigBusyWindow",
+            p: { max: fmtSigned(bucket.max), rate: fmtRate(bucket.impliedRate) },
+          });
         }
 
         // ── The time-scaled ceiling. Always in force: a forged-but-consistent
         //    summary must not be able to launder an impossible jump. ──
         if (gain > susCeiling) {
           severity = "suspicious";
-          signals.push(
-            `Gained ${fmtSigned(gain)} in ${fmtGap(gap)} — over the ${fmtSigned(susCeiling)} ` +
-              `ceiling for that interval.`,
-          );
+          signals.push({
+            key: "sigOverCeiling",
+            p: { gain: fmtSigned(gain), gap: fmtGap(gap), ceiling: fmtSigned(susCeiling) },
+          });
         } else if (severity === "normal" && gain > watchCeiling) {
           if (bucket?.ok) {
             // Spread across enough real 5-minute windows to explain itself: this
             // is the hoarded-bubble case the old absolute thresholds mangled.
-            signals.push(
-              `Large gain (${fmtSigned(gain)}) but accounted for: ${bucket.n} five-minute ` +
-                `windows over ${fmtGap(bucket.span)}, busiest ${fmtSigned(bucket.max)}, total matches.`,
-            );
+            signals.push({
+              key: "sigLargeButAccounted",
+              p: {
+                gain: fmtSigned(gain), n: bucket.n,
+                span: fmtGap(bucket.span), max: fmtSigned(bucket.max),
+              },
+            });
           } else {
             severity = "watch";
-            signals.push(
-              `Gained ${fmtSigned(gain)} in ${fmtGap(gap)} — over the ${fmtSigned(watchCeiling)} ` +
-                `ceiling for that interval.`,
-            );
+            signals.push({
+              key: "sigOverCeiling",
+              p: { gain: fmtSigned(gain), gap: fmtGap(gap), ceiling: fmtSigned(watchCeiling) },
+            });
           }
         }
 
@@ -334,14 +333,14 @@ export function analyzeHistory(
           !bucket?.ok
         ) {
           severity = "watch";
-          signals.push(`Grew ${Math.round(jumpPct)}% in one step.`);
+          signals.push({ key: "sigGrewPct", p: { pct: Math.round(jumpPct) } });
         }
 
         if (severity === "normal" && signals.length === 0) {
           signals.push(
             bucket?.ok
-              ? `Within normal bounds — ${bucket.n} five-minute windows, total matches the delta.`
-              : "Within normal bounds.",
+              ? { key: "sigNormalWithBuckets", p: { n: bucket.n } }
+              : { key: "sigNormal" },
           );
         }
       }
@@ -350,14 +349,14 @@ export function analyzeHistory(
     // A server-set flag (from the future DB gate) always escalates to suspicious.
     if (e.flagged && severity !== "suspicious") {
       severity = "suspicious";
-      signals.unshift(`Server-flagged${e.reason ? `: ${e.reason}` : ""}.`);
+      signals.unshift({ key: "sigServerFlagged", p: { reason: e.reason ?? "" } });
     }
 
     // An admin can acknowledge a flagged row as reviewed-OK → it renders normal
     // and leaves the flagged counts.
     const acknowledged = acknowledgedIds.has(e.id);
     if (acknowledged && (severity === "watch" || severity === "suspicious")) {
-      signals.unshift("Reviewed OK — cleared by an admin.");
+      signals.unshift({ key: "sigReviewedOk" });
       severity = "normal";
     }
 
@@ -436,35 +435,19 @@ export function analyzeHistory(
 // row cannot tell from `peak,rate` what actually happened, and a patient cheat
 // that stays just under every threshold produces no held rows at all.
 
-/** Plain-English rendering of a machine hold reason. */
-export const HOLD_REASON_TEXT: Record<string, { short: string; why: string }> = {
-  peak: {
-    short: "Impossible burst",
-    why: "One 5-minute window holds more tokens than any real session has produced (over 250k/second). The busiest honest account on this board peaks at 185k/second.",
-  },
-  rate: {
-    short: "Too fast for the time it claims",
-    why: "The tokens it says it burned do not fit in the number of 5-minute windows it reports (over 400M/hour). Heaviest honest account: 337M/hour.",
-  },
-  wallclock: {
-    short: "Gained faster than the clock allows",
-    why: "The part of the gain that no bucket accounts for arrived faster than 600M/hour of real elapsed time. Buckets can vouch for the tokens they cover and nothing else, so the rest is measured against the server's own clock — the one input a client cannot touch. Heaviest honest remainder on this board: 334M/hour.",
-  },
-  relaunder: {
-    short: "Re-added the row to skip the evidence",
-    why: "Switching the leaderboard off deletes the row; switching it back on re-inserts it, and an insert carries no anti-cheat summary. This gain arrived through that gap. Honest accounts insert exactly once, when they first join.",
-  },
-  impossible_windows: {
-    short: "Claims more active time than the account has existed",
-    why: "Every 5-minute window is a distinct slice of real time, so their total cannot exceed the account's age. This one claims more (with a day of grace allowed for an app that ran before the leaderboard was switched on).",
-  },
+/** Machine hold code -> i18n keys. The sentences live in lib/ranger/i18n. */
+export const HOLD_REASON_KEYS: Record<string, { short: string; why: string }> = {
+  peak: { short: "hrPeak", why: "hrPeakWhy" },
+  rate: { short: "hrRate", why: "hrRateWhy" },
+  wallclock: { short: "hrWallclock", why: "hrWallclockWhy" },
+  relaunder: { short: "hrRelaunder", why: "hrRelaunderWhy" },
+  impossible_windows: { short: "hrWindows", why: "hrWindowsWhy" },
 };
 
 export function explainHold(reasons: string[]): { short: string; why: string }[] {
-  return reasons.map(
-    (r) => HOLD_REASON_TEXT[r] ?? { short: r, why: "Unrecognised rule — check the migration." },
-  );
+  return reasons.map((r) => HOLD_REASON_KEYS[r] ?? { short: "hrUnknown", why: "hrUnknown" });
 }
+
 
 /** How close an event sat to each ceiling, 0..1+ (1 = exactly at the limit). */
 function ceilingLoads(e: HistoryEntry, gain: number, gapSeconds: number | null): number[] {
@@ -480,11 +463,10 @@ function ceilingLoads(e: HistoryEntry, gain: number, gapSeconds: number | null):
 }
 
 export type ThrottleVerdict = {
-  hugging: number;    // events sitting in the 60–100% band of some ceiling
+  hugging: number;    // events sitting at or above 60% of some ceiling
   measured: number;   // events where any ceiling could be measured at all
   ratio: number;
   suspicious: boolean;
-  note: string;
 };
 
 /**
@@ -513,13 +495,5 @@ export function detectThrottling(rows: AnalyzedRow[]): ThrottleVerdict {
   const ratio = measured ? hugging / measured : 0;
   // Needs a run, not a coincidence: 4+ events and over half of them hugging.
   const suspicious = measured >= 4 && ratio > 0.5;
-  return {
-    hugging,
-    measured,
-    ratio,
-    suspicious,
-    note: suspicious
-      ? `${hugging} of ${measured} measurable gains sat at 60–100% of a limit without crossing it. Real usage is bursty and rarely comes close; a run this consistent looks governed — as if something is pacing itself just under the line.`
-      : `${hugging} of ${measured} measurable gains came within 60% of a limit.`,
-  };
+  return { hugging, measured, ratio, suspicious };
 }

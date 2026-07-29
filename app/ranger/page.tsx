@@ -99,7 +99,7 @@ export default async function RangerPage() {
               {t(lang, "listStats", { n: rows.length, m: bannedCount, email: admin.email ?? "" })}
               {heldRows.length > 0 && (
                 <span className="ml-2 rounded-[2px] bg-amber-700 px-1.5 py-0.5 text-[10px] text-white">
-                  {heldRows.length} with held gains
+                  {t(lang, "qWithHeld", { n: heldRows.length })}
                 </span>
               )}
             </p>
@@ -193,9 +193,9 @@ export default async function RangerPage() {
                     {r.heldTokens > 0 && (
                       <span
                         className="ml-2 rounded-[2px] bg-amber-700 px-1.5 py-0.5 text-[10px] text-white"
-                        title={`raw ${r.rawScore.toLocaleString()} · held ${r.heldTokens.toLocaleString()}`}
+                        title={`${t(lang, "qRawTotal")} ${r.rawScore.toLocaleString()} · ${t(lang, "qHeld")} ${r.heldTokens.toLocaleString()}`}
                       >
-                        −{r.heldTokens.toLocaleString()} held
+                        −{r.heldTokens.toLocaleString()} {t(lang, "qHeld")}
                       </span>
                     )}
                     {r.prevUid && deletableOrphan.has(r.prevUid) && (

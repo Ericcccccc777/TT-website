@@ -2207,6 +2207,27 @@ body {
   filter: brightness(0.9);
 }
 
+/* Primary ranger actions (Release / Hold). They lift on hover so the two
+   irreversible-looking buttons feel deliberately distinct from the ghost
+   controls beside them, and settle back on :active via the shared rule above.
+   Disabled buttons must not move — a mixed selection greys both out, and a
+   button that still reacts reads as clickable. */
+.ranger-btn-lift:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 0 0 color-mix(in srgb, var(--color-soil) 55%, transparent);
+}
+
+.ranger-btn-lift:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ranger-btn-lift:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
 .ranger-btn:focus-visible {
   outline: 2px solid var(--color-accent-gold);
   outline-offset: 1px;
