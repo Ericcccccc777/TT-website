@@ -430,3 +430,88 @@ export function analyzeHistory(
   // Return newest-first for display.
   return { rows: [...analyzed].reverse(), summary };
 }
+
+// ── Quarantine explanations + throttling detection (migration 0016) ──────────
+// Two separate jobs, both aimed at the same problem: an admin looking at a held
+// row cannot tell from `peak,rate` what actually happened, and a patient cheat
+// that stays just under every threshold produces no held rows at all.
+
+/** Plain-English rendering of a machine hold reason. */
+export const HOLD_REASON_TEXT: Record<string, { short: string; why: string }> = {
+  peak: {
+    short: "Impossible burst",
+    why: "One 5-minute window holds more tokens than any real session has produced (over 250k/second). The busiest honest account on this board peaks at 185k/second.",
+  },
+  rate: {
+    short: "Too fast for the time it claims",
+    why: "The tokens it says it burned do not fit in the number of 5-minute windows it reports (over 400M/hour). Heaviest honest account: 337M/hour.",
+  },
+  wallclock: {
+    short: "Gained faster than the clock allows",
+    why: "The score rose faster than real time passed since this account's previous gain (over 600M/hour). This is the one signal the client cannot switch off, because the denominator is the server's own clock.",
+  },
+  relaunder: {
+    short: "Re-added the row to skip the evidence",
+    why: "Switching the leaderboard off deletes the row; switching it back on re-inserts it, and an insert carries no anti-cheat summary. This gain arrived through that gap. Honest accounts insert exactly once, when they first join.",
+  },
+  impossible_windows: {
+    short: "Claims more active time than the account has existed",
+    why: "Every 5-minute window is a distinct slice of real time, so their total cannot exceed the account's age. This one claims more (with a day of grace allowed for an app that ran before the leaderboard was switched on).",
+  },
+};
+
+export function explainHold(reasons: string[]): { short: string; why: string }[] {
+  return reasons.map(
+    (r) => HOLD_REASON_TEXT[r] ?? { short: r, why: "Unrecognised rule — check the migration." },
+  );
+}
+
+/** How close an event sat to each ceiling, 0..1+ (1 = exactly at the limit). */
+function ceilingLoads(e: HistoryEntry, gain: number, gapSeconds: number | null): number[] {
+  const out: number[] = [];
+  if (e.bktMax !== null) out.push(e.bktMax / 300 / 250_000);
+  if (e.bktN && e.bktSum !== null) out.push(e.bktSum / ((e.bktN * 300) / 3600) / 400e6);
+  if (gapSeconds && gain > 0) {
+    const den = Math.max(gapSeconds, e.bktSpan ?? 0);
+    if (den > 0) out.push(gain / (den / 3600) / 600e6);
+  }
+  return out;
+}
+
+export type ThrottleVerdict = {
+  hugging: number;    // events sitting in the 60–100% band of some ceiling
+  measured: number;   // events where any ceiling could be measured at all
+  ratio: number;
+  suspicious: boolean;
+  note: string;
+};
+
+/**
+ * A cheat that throttles itself never trips a rule, so no single event looks
+ * wrong. What it cannot hide is the SHAPE: real work varies wildly and rarely
+ * approaches the ceiling, while a governed loop parks just underneath it and
+ * stays there. This reports that shape; it holds nothing by itself, it only
+ * tells a human where to look.
+ */
+export function detectThrottling(rows: AnalyzedRow[]): ThrottleVerdict {
+  let hugging = 0;
+  let measured = 0;
+  for (const r of rows) {
+    const loads = ceilingLoads(r, r.trueDelta ?? r.delta, r.gapSeconds ?? null);
+    if (!loads.length) continue;
+    measured += 1;
+    if (Math.max(...loads) >= 0.6 && Math.max(...loads) < 1) hugging += 1;
+  }
+  const ratio = measured ? hugging / measured : 0;
+  // Needs a run, not a coincidence: 4+ events and over half of them hugging.
+  const suspicious = measured >= 4 && ratio > 0.5;
+  return {
+    hugging,
+    measured,
+    ratio,
+    suspicious,
+    note: suspicious
+      ? `${hugging} of ${measured} measurable gains sat at 60–100% of a limit without crossing it. Real usage is bursty and rarely comes close; a run this consistent looks governed — as if something is pacing itself just under the line.`
+      : `${hugging} of ${measured} measurable gains came within 60% of a limit.`,
+  };
+}

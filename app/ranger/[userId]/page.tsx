@@ -6,6 +6,8 @@ import { getAdminUser } from "@/lib/ranger/auth";
 import { getRangerUserDetail } from "@/lib/ranger/data";
 import {
   analyzeHistory,
+  detectThrottling,
+  explainHold,
   fmtGap,
   fmtRate,
   THRESHOLDS,
@@ -210,6 +212,10 @@ export default async function RangerUserPage({
 
   const { row, history, acknowledgedIds, error } = await getRangerUserDetail(userId);
   const { rows, summary } = analyzeHistory(history, new Set(acknowledgedIds));
+  // A throttled cheat trips no rule — every gain sits just under every ceiling —
+  // so it produces no held rows at all. This looks at the shape across events
+  // instead. It holds nothing; it only points a human at the account.
+  const throttle = detectThrottling(rows);
 
   // Filter + sort. Baseline rows are excluded from the jump/rate sorts because their
   // "delta" is the whole accumulated pre-history total, not a single step — it would
@@ -588,9 +594,16 @@ export default async function RangerUserPage({
                             <div className="mt-1.5">
                               <div className="text-[10px] text-amber-800">
                                 held −{(h.trueDelta ?? h.delta).toLocaleString()}
-                                {h.holdReasons.length > 0 ? ` · ${h.holdReasons.join(" ")}` : ""}
                                 {h.decidedBy ? ` · by ${h.decidedBy}` : ""}
                               </div>
+                              {/* The machine's codes mean nothing to a human at
+                                  a glance; spell out what actually happened. */}
+                              {explainHold(h.holdReasons).map((r) => (
+                                <div key={r.short} className="mt-0.5 text-[10px] leading-snug">
+                                  <span className="font-semibold text-amber-900">{r.short}</span>
+                                  <span className="text-text-muted-light"> — {r.why}</span>
+                                </div>
+                              ))}
                               <form action={releaseEventAction} className="mt-1">
                                 <input type="hidden" name="eventId" value={h.id} />
                                 <input type="hidden" name="userId" value={userId} />
@@ -661,6 +674,23 @@ export default async function RangerUserPage({
             >
               {t(lang, "decision")}
             </h2>
+            {/* A throttled cheat trips no rule — every gain sits just under every
+                ceiling — so it produces no held rows and this page would otherwise
+                look clean. Reported as a shape across events, never as a hold. */}
+            {throttle.suspicious && (
+              <div
+                className="mt-3 rounded-[2px] bg-surface-parchment p-3"
+                style={{ border: "var(--border-pixel)" }}
+              >
+                <div className="text-small font-semibold text-amber-900">
+                  Possible throttling — nothing was held
+                </div>
+                <div className="mt-1 text-[11px] leading-snug text-text-muted-light">
+                  {throttle.note} Every individual gain stayed legal, so no rule fired and no
+                  tokens were withheld. This is a shape, not proof — judge it yourself.
+                </div>
+              </div>
+            )}
             <div className="mt-3">
               {row.banned ? (
                 <form action={unbanAction}>
