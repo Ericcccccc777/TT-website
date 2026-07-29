@@ -53,10 +53,11 @@ the four candidate signals that were tested and discarded, and the live-board
 calibration are all in the header of
 `supabase/migrations/0016_leaderboard_quarantine.sql`.
 
-The load-bearing rule is the wall-clock ceiling — increase divided by seconds
-elapsed on the *server's* clock. Every other signal reads numbers the client
-supplies and can therefore be switched off by simply not supplying them; this
-one cannot, and it is what makes cheating slow rather than free.
+The load-bearing rule is the wall-clock ceiling. It takes the part of a gain
+that no bucket accounts for and divides it by seconds elapsed on the *server's*
+clock. Every other signal reads numbers the client supplies and can be switched
+off by not supplying them; the remainder and the clock are both outside the
+client's reach, which is what makes cheating slow rather than free.
 
 Players are never told. Their row stays, their uploads keep succeeding, and no
 error is returned.

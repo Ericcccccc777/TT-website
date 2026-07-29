@@ -448,7 +448,7 @@ export const HOLD_REASON_TEXT: Record<string, { short: string; why: string }> = 
   },
   wallclock: {
     short: "Gained faster than the clock allows",
-    why: "The score rose faster than 600M/hour, measured over whichever is longer: the server's own gap since this account's previous gain, or the burn span the client reported. The client half of that can be inflated to soften this rule — which is what impossible_windows exists to catch.",
+    why: "The part of the gain that no bucket accounts for arrived faster than 600M/hour of real elapsed time. Buckets can vouch for the tokens they cover and nothing else, so the rest is measured against the server's own clock — the one input a client cannot touch. Heaviest honest remainder on this board: 334M/hour.",
   },
   relaunder: {
     short: "Re-added the row to skip the evidence",
@@ -471,9 +471,10 @@ function ceilingLoads(e: HistoryEntry, gain: number, gapSeconds: number | null):
   const out: number[] = [];
   if (e.bktMax !== null) out.push(e.bktMax / 300 / 250_000);
   if (e.bktN && e.bktSum !== null) out.push(e.bktSum / ((e.bktN * 300) / 3600) / 400e6);
-  if (gapSeconds && gain > 0) {
-    const den = Math.max(gapSeconds, e.bktSpan ?? 0);
-    if (den > 0) out.push(gain / (den / 3600) / 600e6);
+  if (gapSeconds && gapSeconds > 0) {
+    // Mirrors the DB rule: only the part no bucket vouches for.
+    const remainder = gain - (e.bktSum ?? 0);
+    if (remainder > 0) out.push(remainder / (gapSeconds / 3600) / 600e6);
   }
   return out;
 }

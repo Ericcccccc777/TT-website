@@ -119,24 +119,32 @@ create schema if not exists private;
 grant usage on schema private to service_role;
 
 -- p_elapsed = seconds since this account's previous event, on the SERVER's clock.
--- It is the only input the client does not supply, and therefore the only rule it
--- cannot switch off: `peak` and `rate` both read bkt_* values the client PATCHes,
--- so omitting the summary — or sending bkt_sum = 0 with a huge bkt_n — would slip
--- a gain past both. `wallclock` still applies, turning "omit the evidence" from a
--- free bypass into "then wait".
+-- Nothing here comes from the client, which is what makes `wallclock` the rule an
+-- attacker cannot switch off: `peak` and `rate` both read bkt_* values the client
+-- PATCHes, so omitting the summary slips a gain past both.
 --
--- The caller passes GREATEST(elapsed, bkt_span), not elapsed alone. Elapsed alone
--- is wrong and a live probe caught it holding an ordinary 5e5 gain: the wall-clock
--- gap measures the time between two SYNCS, while the tokens were burned earlier.
--- A player who keeps the app in capsule form all day hoards bubbles — expiry is
--- frozen there (buckets.py) — then collects them at once, so a legitimate 8-hour
--- burn lands in one 30-minute sync window. bkt_span is exactly the span those
--- tokens were actually spent over, which is why 0008 uploads it. When it is
--- absent, elapsed stands alone and the rule bites as before.
+-- It judges only p_true_delta MINUS p_bkt_sum — the part of the gain no bucket
+-- vouches for. Two wrong versions preceded this one, and both are worth knowing:
 --
--- Honest maximum on the live board is 334 M/h under both forms; the cheat run
--- reached 1,004 (930 under this form, with every one of those events still held
--- by peak or rate as well).
+--   Judging the whole gain against elapsed held an ordinary 5e5 upload in a live
+--   probe. Elapsed measures the gap between two SYNCS, while the tokens were
+--   burned earlier: a player who keeps the app in capsule form hoards bubbles
+--   (expiry is frozen there, see buckets.py) and collects a legitimate 8-hour
+--   burn into one 30-minute window.
+--
+--   Flooring the denominator at bkt_span fixed that but handed the rule to the
+--   client, since bkt_span is client-supplied. bkt_n=1 with an enormous span
+--   defeats wallclock while staying far under impossible_windows, which counts
+--   bkt_n × 300 and never looks at span at all.
+--
+-- Splitting the gain settles both. Buckets speak for the tokens they account for
+-- and for nothing else, so the evidenced part is `rate`'s business and the
+-- remainder — which has no time evidence whatsoever — is measured against real
+-- elapsed time. A fully evidenced hoard has no remainder and is never touched;
+-- the span-inflation payload above leaves 9.67e8 unevidenced and reads 1,934 M/h.
+--
+-- Live board: 89 honest events carry an unevidenced remainder, the largest at
+-- 334 M/h, so the 600 M/h line keeps 1.8x of headroom with nothing held.
 create or replace function private.hold_reasons(
     p_bkt_max bigint, p_bkt_n integer, p_bkt_sum bigint,
     p_true_delta bigint, p_is_relaunder boolean, p_elapsed double precision,
@@ -154,9 +162,14 @@ as $$
       where p_bkt_n is not null and p_bkt_n > 0 and p_bkt_sum is not null
         and p_bkt_sum / (p_bkt_n * 300.0 / 3600.0) > 400000000
     union all
+    -- Judges ONLY the part of the gain no bucket vouches for, against the
+    -- server's gap alone. Buckets can speak for the tokens they account for
+    -- (bkt_sum) and for nothing else, so the remainder has no time evidence at
+    -- all and real elapsed time is the only thing left to measure it by.
     select 'wallclock'
-      where p_elapsed is not null and p_elapsed > 0 and p_true_delta > 0
-        and p_true_delta / (p_elapsed / 3600.0) > 600000000
+      where p_elapsed is not null and p_elapsed > 0
+        and p_true_delta - coalesce(p_bkt_sum, 0) > 0
+        and (p_true_delta - coalesce(p_bkt_sum, 0)) / (p_elapsed / 3600.0) > 600000000
     union all
     select 'relaunder'
       where p_is_relaunder and p_true_delta > 0
@@ -239,8 +252,7 @@ begin
     v_why := private.hold_reasons(
       new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, false,
       case when v_prev_at is null then null
-           else greatest(extract(epoch from (now() - v_prev_at)),
-                         coalesce(new.bkt_span, 0)) end,
+           else extract(epoch from (now() - v_prev_at)) end,
       private.window_load(new.user_id, new.bkt_n));
 
     insert into public.leaderboard_history
@@ -308,8 +320,7 @@ begin
                 else private.hold_reasons(
                   new.bkt_max, new.bkt_n, new.bkt_sum, v_delta, true,
                   case when v_prev_at is null then null
-                       else greatest(extract(epoch from (now() - v_prev_at)),
-                                     coalesce(new.bkt_span, 0)) end,
+                       else extract(epoch from (now() - v_prev_at)) end,
                   private.window_load(new.user_id, new.bkt_n)) end;
 
   insert into public.leaderboard_history
@@ -515,8 +526,7 @@ begin
         else private.hold_reasons(h.bkt_max, h.bkt_n, h.bkt_sum, v_delta,
                                   h.reason = 'insert',
                                   case when v_prev_at is null then null
-                                       else greatest(extract(epoch from (h.at - v_prev_at)),
-                                                     coalesce(h.bkt_span, 0)) end,
+                                       else extract(epoch from (h.at - v_prev_at)) end,
                                   private.window_load(h.user_id, 0))
       end;
       v_first := false;
