@@ -24,12 +24,19 @@ this must say so, the way the dashboard footer already does.
 
 ## Three decisions worth knowing
 
-**The server multiplies; the client never sends money.** Money computed on the
-client would be one more forgeable field, and an easier one than tokens — 100
-tokens paired with $99999 walks past all five rules in migration 0016, because
-those measure token throughput and none of them looks at a dollar figure.
-Uploading tokens alone keeps cheating on the surface that is already watched, and
-adds no new field, so the privacy notice and consent dialog are unaffected.
+**The server multiplies; the client never sends money.** A dollar figure computed
+on the client would be a forgeable field that nothing checks — 100 tokens paired
+with $99999 walks past all five rules in migration 0016, because those measure
+token throughput and none of them looks at money. Keeping the multiplication on
+the server also means no new field leaves the machine, so the privacy notice and
+consent dialog are unaffected.
+
+It is worth being exact about how much this buys, because an earlier draft of
+this document overstated it. Moving the arithmetic server-side removes the
+*unbounded* lie. It does not make value as trustworthy as tokens: the client
+still chooses which model and which rate tier each token is filed under, and
+those are the multiplicands. See "What this does and does not buy" below for the
+measured size of that gap.
 
 **Current prices for everyone, not each user's historical rates.** Freezing each
 gain at the price on the day it was collected sounds fairer and is not: two
@@ -44,6 +51,98 @@ moves the token board and leaves the value board alone. `unpriced_tokens` says
 how much is in that state, so a page can render `≥ $X` rather than implying
 precision. Nothing is stored, so when the price finally lands, that history
 becomes valuable on its own.
+
+## What the database will accept as model usage
+
+Migration 0019 enforces two invariants on `leaderboard_models`. A write that
+breaks either is rejected outright — the client sees an error and retries on the
+next sync; nothing partial is stored.
+
+| invariant | enforced by |
+|---|---|
+| `input + output + cache_read + cache_write_5m + cache_write_1h = tokens` | `CHECK` constraint |
+| Σ `tokens` over an account's rows ≤ that account's `raw_score` | deferred constraint trigger |
+
+**Why this exists.** The claim that "the server multiplies, so cheating stays on
+the token surface 0016 already watches" was false as originally shipped. 0015
+grants a player `UPDATE` on their own rows, nothing tied the component columns to
+`tokens` or to any score, and `leaderboard_value` prices those columns directly.
+So `update leaderboard_models set input = 10^15` bought an arbitrary public dollar
+figure **with the score untouched** — and all five rules in 0016 read score
+deltas, so none of them fire. That is the rejected "client sends money" design
+re-entering through a side door: the client wasn't sending dollars, it was
+sending the multiplicands, unbounded.
+
+The cap uses `raw_score`, not `score`: the view already scales by
+`hold_ratio = score / raw_score`, so capping on `score` would punish one
+withholding twice. An account with no `leaderboard` row caps at zero — otherwise
+"write model rows, never write a score row" is a path around every audit.
+
+**What this does and does not buy.** These constraints bind the *quantity* of
+tokens. They do not bind their *attribution*, and that distinction decides
+whether a public value board is meaningful at all.
+
+An earlier version of this document claimed that inflating value is never easier
+than inflating score. **That was wrong.** Holding the total fixed, a player may
+relabel a row to a costlier model and shift its tokens into the costliest slot —
+RLS permits it, the sanitizer permits it, both constraints above permit it, and
+the view prices those columns directly.
+
+The spread in the shipped table runs from `$0.0028/M` (deepseek-chat cache reads)
+to `$180/M` (gpt-5.5-pro output): a factor of **64,286**. Measured against the
+largest real account: its public value today is `$7.44`; relabelled to the
+costliest tier, within every constraint and with the score untouched, it becomes
+`$2,132,427`.
+
+So while cheating the token board is worth one point per point, cheating the
+value board is worth up to sixty thousand. No database constraint fixes this —
+attribution comes from the client and there is nothing to check it against. The
+honest options are to keep valuation private to each player (where lying to
+yourself earns nothing) or to publish it while stating plainly that it is
+self-reported. What 0019 still buys is real but narrower: the crudest forgery —
+`set input = 10^15` — is gone, and no account can claim more tokens than the
+score it was audited on.
+
+**Two details that are load-bearing.**
+
+The trigger is `DEFERRABLE INITIALLY DEFERRED`. A client upsert carries up to 30
+rows and the trigger fires per row; an immediate trigger would see a half-applied
+snapshot and reject a legal one — moving usage from model A to model B looks like
+double-counting until both rows land.
+
+It locks the account's `leaderboard` row before aggregating. Without the lock two
+concurrent writes for different models each see only their own row, both pass,
+and the committed total exceeds the cap — parallel requests would be a way
+straight through it.
+
+**A falling score is left to heal itself.** Scores do fall legitimately — an older
+save restored, a model ledger cleared by the corruption guard — and for one sync
+interval the old model rows can add up to more than the new ceiling.
+
+The obvious fix is a trigger that clears the model rows when `raw_score` drops.
+That version was written, and it deadlocks. It makes the score transaction lock
+the parent row and then the model rows, while a model transaction locks model
+rows and takes the parent lock at commit — opposite orders, one cycle, and
+PostgreSQL kills a legitimate sync. Moving the model side's parent lock into a
+`BEFORE` trigger does not help: an `UPDATE` locks the target row before `BEFORE
+ROW` triggers run, so the order cannot be inverted from there. Both shapes
+reproduce locally.
+
+It is unnecessary anyway. Because the client deletes stale rows before writing
+new ones, the surviving rows are exactly the new snapshot and the insert sets
+them to the new values — the total at commit *is* the new snapshot's total, which
+is bounded by the new score. The next sync always converges; there is no state
+where the ceiling drops and uploads are wedged forever. The cost is a window of
+at most one sync interval where the value board reads slightly high, on an event
+that is already rare. That is a better trade than a guaranteed deadlock.
+
+**The client uploads in a specific order because of this**: stale rows are
+deleted *before* new ones are written. The reverse order makes the outgoing rows
+and the incoming rows coexist for an instant, doubling the total and bouncing a
+perfectly legal snapshot. That DELETE also filters on `cache_write_1h`, a
+no-op predicate whose only job is to make the statement fail on a pre-0017
+schema — otherwise the delete succeeds, the following insert degrades on the
+missing column, and the rows are gone with no way to put them back.
 
 ## How held gains are handled
 
