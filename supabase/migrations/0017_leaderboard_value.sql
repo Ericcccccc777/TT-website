@@ -31,14 +31,19 @@
 -- there is nothing to backfill.
 --
 -- ── KEEPING THE TWO PRICE TABLES IN STEP ─────────────────────────────────────
--- The desktop app refreshes its own copy from tokenforest.com.au/pricing.json;
--- this table is seeded by hand from the same file via 0018. They are the same
--- source but not the same act: after changing pricing.json, regenerate 0018 and
--- run it, or the board keeps ranking on yesterday's rates while every tree
--- already shows today's.
+-- The desktop app refreshes its own copy from tokenforest.com.au/pricing.json.
+-- This table reads the very same URL, once a day, on its own — see 0018. There
+-- is no second act to remember and therefore nothing to forget: publish the file
+-- and both consumers follow.
+--
+-- (An earlier draft seeded this table from a generated SQL file that had to be
+-- re-run by hand after every price change. It was never run even once, and by
+-- the time anyone checked, the app bundled 96 models, the website served 77, and
+-- this table held none. That is the failure mode 0018 exists to remove.)
 --
 -- ⚠️ Must be run by hand in the Supabase SQL Editor. Idempotent — safe to re-run.
--- Assumes 0001–0016 applied. Run 0018 (generated price data) after this.
+-- Assumes 0001–0016 applied. Run 0018 (daily price autosync) after this — this
+-- migration only creates the empty table; 0018 is what fills it.
 
 -- ── 1. Split the cache-write column ──────────────────────────────────────────
 -- 0015 stored one cache_write figure. Cache writes are billed at two rates by
@@ -84,9 +89,9 @@ end
 $$;
 
 -- ── 2. Price table ───────────────────────────────────────────────────────────
--- Same unit as pricing.json: USD per 1,000,000 tokens. Rows are seeded by 0018,
--- which is generated from Token-Forest/src/dashboard/pricing.json — that file is
--- the single source of truth for prices, here and in the desktop app.
+-- Same unit as pricing.json: USD per 1,000,000 tokens. Created empty here and
+-- filled by 0018, which pulls https://www.tokenforest.com.au/pricing.json daily
+-- — the same file the desktop app downloads, so the two cannot drift apart.
 create table if not exists public.model_prices (
   model           text primary key,
   provider        text    not null,
