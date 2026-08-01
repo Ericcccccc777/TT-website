@@ -125,7 +125,7 @@ relabel a row to a costlier model and shift its tokens into the costliest slot �
 RLS permits it, the sanitizer permits it, both constraints above permit it, and
 the view prices those columns directly.
 
-The spread in the shipped table runs from `$0.0028/M` (deepseek-chat cache reads)
+The spread in the shipped table runs from `$0.0028/M` (deepseek-v4-flash cache reads)
 to `$180/M` (gpt-5.5-pro output): a factor of **64,286**. Measured against the
 largest real account: its public value today is `$7.44`; relabelled to the
 costliest tier, within every constraint and with the score untouched, it becomes
@@ -208,6 +208,29 @@ order by v.value_usd desc;
 
 Bans (0005) and hidden rows (0016) are filtered by the base tables' own policies
 — the view is `security_invoker`, so it inherits them rather than restating them.
+
+## Removing a model does not reach installed clients
+
+`publish_pricing.py` can drop a row — retired models are deleted rather than left
+to rot — but a deletion only lands on Supabase and on fresh installs. The desktop
+updater merges the downloaded table *over* its bundled one (`merge_pricing` is a
+per-model `dict.update`), so a model the bundle still knows about keeps its old
+price no matter what the published file omits.
+
+Concretely: after a deletion the server treats those tokens as unpriced while an
+older client still prices them, and the tree number stops matching the board
+number — the one guarantee this feature makes.
+
+It has bitten nobody so far, and not by luck alone: the deletion policy is
+"only models that are already retired", and every model removed on 2026-08-02
+had retired before per-model attribution shipped on 2026-07-29, so no save file
+can hold tokens against them. That reasoning does not generalise. Deleting a
+model people actually used would diverge immediately.
+
+Fixing it properly needs an ordering signal finer than `_updated` (a monotonic
+revision, or explicit removal tombstones in the published file) — a format
+change, deliberately not made yet. Until then, treat "delete a live model" as
+unsupported.
 
 ## Keeping prices current
 

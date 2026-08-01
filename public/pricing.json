@@ -12,27 +12,6 @@
       "cache_write_1h": 1.6,
       "cache_read": 0.08
     },
-    "claude-3-5-sonnet": {
-      "input": 3.0,
-      "output": 15.0,
-      "cache_write_5m": 3.75,
-      "cache_write_1h": 6.0,
-      "cache_read": 0.3
-    },
-    "claude-3-haiku": {
-      "input": 0.25,
-      "output": 1.25,
-      "cache_write_5m": 0.3,
-      "cache_write_1h": 0.5,
-      "cache_read": 0.03
-    },
-    "claude-3-opus": {
-      "input": 15.0,
-      "output": 75.0,
-      "cache_write_5m": 18.75,
-      "cache_write_1h": 30.0,
-      "cache_read": 1.5
-    },
     "claude-fable-5": {
       "input": 10.0,
       "output": 50.0,
@@ -133,16 +112,16 @@
       "cache_write_5m": 6.25
     },
     "gpt-5.6-terra": {
-      "input": 2.5,
-      "output": 15.0,
-      "cache_read": 0.25,
-      "cache_write_5m": 3.125
+      "input": 2.0,
+      "output": 12.0,
+      "cache_read": 0.2,
+      "cache_write_5m": 2.5
     },
     "gpt-5.6-luna": {
-      "input": 1.0,
-      "output": 6.0,
-      "cache_read": 0.1,
-      "cache_write_5m": 1.25
+      "input": 0.2,
+      "output": 1.2,
+      "cache_read": 0.02,
+      "cache_write_5m": 0.25
     },
     "gpt-5.5": {
       "input": 5.0,
@@ -171,11 +150,6 @@
     "gpt-5.4-pro": {
       "input": 30.0,
       "output": 180.0
-    },
-    "gpt-5.3-codex": {
-      "input": 1.75,
-      "output": 14.0,
-      "cache_read": 0.175
     }
   },
   "gemini": {
@@ -195,9 +169,9 @@
       "cache_read": 0.025
     },
     "gemini-2.5-pro": {
-      "input": 2.5,
-      "output": 15.0,
-      "cache_read": 0.25
+      "input": 1.25,
+      "output": 10.0,
+      "cache_read": 0.125
     },
     "gemini-2.5-flash-lite": {
       "input": 0.1,
@@ -209,54 +183,52 @@
     "grok-4.5": {
       "input": 2.0,
       "output": 6.0,
-      "cache_read": 0.5
+      "cache_read": 0.3
     },
     "grok-4.3": {
       "input": 1.25,
       "output": 2.5,
       "cache_read": 0.2
     },
-    "grok-4.1-fast": {
-      "input": 0.2,
-      "output": 0.5
-    },
     "grok-build-0.1": {
       "input": 1.0,
-      "output": 2.0
+      "output": 2.0,
+      "cache_read": 0.2
     }
   },
   "mistral": {
     "mistral-large": {
-      "input": 2.0,
-      "output": 6.0
+      "input": 0.5,
+      "output": 1.5,
+      "cache_read": 0.05
     },
     "mistral-medium": {
-      "input": 0.4,
-      "output": 2.0
+      "input": 1.5,
+      "output": 7.5,
+      "cache_read": 0.15
     },
     "mistral-small": {
-      "input": 0.1,
-      "output": 0.3
+      "input": 0.15,
+      "output": 0.6,
+      "cache_read": 0.015
     },
     "codestral": {
       "input": 0.3,
       "output": 0.9
     },
     "ministral-8b": {
-      "input": 0.1,
-      "output": 0.1
+      "input": 0.15,
+      "output": 0.15,
+      "cache_read": 0.015
     },
     "ministral-3b": {
-      "input": 0.04,
-      "output": 0.04
+      "input": 0.1,
+      "output": 0.1,
+      "cache_read": 0.01
     }
   },
   "cohere": {
     "command-a": {
-      "input": 2.5,
-      "output": 10.0
-    },
-    "command-r-plus": {
       "input": 2.5,
       "output": 10.0
     },
@@ -279,16 +251,6 @@
       "input": 0.435,
       "output": 0.87,
       "cache_read": 0.003625
-    },
-    "deepseek-chat": {
-      "input": 0.14,
-      "output": 0.28,
-      "cache_read": 0.0028
-    },
-    "deepseek-reasoner": {
-      "input": 0.14,
-      "output": 0.28,
-      "cache_read": 0.0028
     }
   },
   "kimi": {
@@ -311,11 +273,6 @@
       "input": 0.95,
       "output": 4.0,
       "cache_read": 0.16
-    },
-    "kimi-k2.5": {
-      "input": 0.6,
-      "output": 3.0,
-      "cache_read": 0.1
     },
     "moonshot-v1-8k": {
       "input": 0.2,
@@ -441,7 +398,7 @@
     "qwen3.5-flash": {
       "input": 0.1,
       "output": 0.4,
-      "cache_read": 0.02,
+      "cache_read": 0.01,
       "cache_write_5m": 0.125
     },
     "qwen-flash": {
@@ -456,21 +413,19 @@
       "cache_read": 0.01
     },
     "qwen3-coder-next": {
-      "input": 1.0,
-      "output": 5.0,
-      "cache_read": 0.2,
-      "cache_write_5m": 1.25
+      "input": 0.3,
+      "output": 1.5
     },
     "qwen3-coder-plus": {
       "input": 1.0,
       "output": 5.0,
-      "cache_read": 0.2,
+      "cache_read": 0.1,
       "cache_write_5m": 1.25
     },
     "qwen3-coder-flash": {
       "input": 0.3,
       "output": 1.5,
-      "cache_read": 0.06,
+      "cache_read": 0.03,
       "cache_write_5m": 0.375
     },
     "qwen3-235b-a22b": {
@@ -524,10 +479,6 @@
       "output": 1.2,
       "cache_read": 0.03,
       "cache_write_5m": 0.375
-    },
-    "minimax-text-01": {
-      "input": 0.2,
-      "output": 1.1
     }
   },
   "mimo": {
