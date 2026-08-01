@@ -46,11 +46,48 @@ cuts prices, every tree is worth less that day — and the alternative costs mor
 because a model with no price row would be worth $0 permanently and new models
 appear constantly.
 
-**Unpriced models count tokens, not money.** A day spent on a brand-new model
-moves the token board and leaves the value board alone. `unpriced_tokens` says
-how much is in that state, so a page can render `≥ $X` rather than implying
-precision. Nothing is stored, so when the price finally lands, that history
-becomes valuable on its own.
+**An unpriced version borrows the previous one's rate; an unpriced family gets
+nothing.** Lookup runs three ways: exact, then with version/date suffixes
+stripped, then the newest *lower* version in the same family — so
+`claude-opus-5` is valued at `claude-opus-4-8`'s rate until the table catches up.
+
+This is load-bearing, not a nicety. On the largest live account, 445M collected
+tokens — 98% of that tree — sat under `claude-opus-5` while the table stopped at
+4-8, making the whole tree worth **$7.44**. With the fallback it is **$582.21**
+and nothing is unpriced. Vendors ship faster than price tables get updated, so
+without this the board is mostly noise.
+
+The fallback only walks backwards. A genuinely new family has no trustworthy
+reference and stays unpriced.
+
+A digit run counts as a version only if **nothing alphanumeric follows it**. That
+one-sided rule was tuned against the 96 real model names. Requiring a clean
+character *after* is what keeps parameter counts and context lengths out —
+`ministral-3b`, `command-r7b` and `glm-32b-128k` carry no version at all, so
+`ministral-12b` can never inherit `8b`'s rate. Requiring one *before* would be a
+mistake: half the industry glues the version to a letter (`minimax-m3`,
+`kimi-k3`, `deepseek-v4-flash`, `qwen3-max`), and under that rule `minimax-m4`
+would not recognise `minimax-m3` as its predecessor — the fallback would fail in
+exactly the situation it exists for. Context variants stay separate either way,
+because `moonshot-v1-8k` and `moonshot-v1-128k` differ in the part that survives.
+
+A unique index enforces one row per (family, version). `foo-4-8` and `foo-4.8`
+have different primary keys and different `price_key`s, yet they normalise to the
+same family and version — a later `foo-5` would then have two tied candidates,
+and the client (which keeps the first it sees) and the server (whose `ORDER BY`
+has no tie-breaker) could pick different rates. An index makes that table
+unstorable rather than arbitrating between them; `publish_pricing.py` rejects the
+same shape before it is ever deployed.
+
+Version segments parse as arbitrary-precision numbers, not machine integers.
+Model IDs may run to 64 characters, so `claude-opus-999999999999999999999` is a
+legal upload; an `int[]` cast raises *integer out of range*, and because
+`leaderboard_value` is public, one such row would fail the entire board's queries
+for every visitor.
+
+Because `unpriced_tokens` now sits near zero for most accounts, the view reports
+`estimated_usd` alongside `value_usd` — the share of the money that came from a
+borrowed rate. Without it, "this number is an estimate" would be invisible.
 
 ## What the database will accept as model usage
 
@@ -218,6 +255,7 @@ reason in `model_prices_sync.last_error` — if any of these hold:
 | `input` or `output` missing | coerced to 0 — see below |
 | any rate non-numeric or negative | nonsense prices |
 | two models collide under `private.price_key` | one usage row joins twice |
+| two models share a family *and* version (0020) | the fallback would pick between them arbitrarily |
 
 Nothing malformed is skipped over, and that is the point. Filtering a broken
 vendor out rather than refusing the file would drop every Claude price while the
