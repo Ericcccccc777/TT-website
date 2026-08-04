@@ -8,6 +8,8 @@ import { PixelCrown } from "@/components/pixel-crown";
 import type { Locale } from "@/i18n/routing";
 import { localizedMetadata, localizedUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/json-ld";
+import { BoardTabs } from "@/components/leaderboard/board-tabs";
+import { MEDAL, regionInfo, formatTokens, compactTokens } from "@/lib/leaderboard-format";
 import { redirect } from "next/navigation";
 
 export async function generateMetadata({
@@ -34,18 +36,6 @@ export async function generateMetadata({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 type TFunc = Awaited<ReturnType<typeof getTranslations<"LeaderboardPage">>>;
-
-function formatTokens(n: number, locale: string): string {
-  return n.toLocaleString(locale);
-}
-
-/** Compact token count (e.g. 90M / 9000万) — fits the narrow per-tree cards. */
-function compactTokens(n: number, locale: string): string {
-  return new Intl.NumberFormat(locale, {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(n);
-}
 
 function relativeTime(iso: string, t: TFunc): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -74,29 +64,6 @@ function treeSpritePrefix(tree: string): string {
   return TREE_PREFIX[tree] ?? "AppleTree";
 }
 
-/**
- * Turns an ISO 3166-1 alpha-2 code (what the desktop app stores in `region`)
- * into a flag emoji + a locale-aware country name. Returns null for empty or
- * malformed codes so the row simply renders without a flag.
- */
-function regionInfo(code: string, locale: string): { flag: string; name: string } | null {
-  const cc = code.trim().toUpperCase();
-  if (!/^[A-Z]{2}$/.test(cc)) return null;
-  const flag = String.fromCodePoint(...[...cc].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
-  let name = cc;
-  try {
-    name = new Intl.DisplayNames([locale], { type: "region" }).of(cc) ?? cc;
-  } catch {
-    name = cc;
-  }
-  return { flag, name };
-}
-
-const MEDAL: Record<number, string> = {
-  1: "#c8943c",
-  2: "#9ba8af",
-  3: "#a07850",
-};
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -199,6 +166,11 @@ export default async function LeaderboardPage({
 
       {/* ── Main content ── */}
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <BoardTabs
+          active="tokens"
+          labels={{ tokens: t("boardTokens"), value: t("boardValue"), usage: t("boardUsage") }}
+        />
+
         {/* Heading */}
         <div className="mb-8 text-center">
           <h1

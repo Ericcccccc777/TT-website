@@ -306,6 +306,52 @@ export const SEO_COPY: Record<string, Partial<Record<Locale, SeoCopy>>> = {
       keywords: ["token forest 배지", "github readme 배지", "claude code 배지"],
     },
   },
+  "/leaderboard/value": {
+    en: {
+      title: "Token Forest Value Leaderboard",
+      description:
+        "See what the biggest Token Forest trees would have cost. Collected Claude Code and Codex tokens priced at each model's published rate — an estimate, not a bill.",
+      keywords: ["Claude Code cost leaderboard", "AI token cost ranking"],
+    },
+    zh: {
+      title: "Token Forest 树林价值榜",
+      description:
+        "看看最大的那些 Token Forest 树值多少钱。已收取的 Claude Code 与 Codex token 按各模型的公开价格计算 —— 这是估算,不是账单。",
+    },
+    ja: {
+      title: "Token Forest 価値ランキング",
+      description:
+        "Token Forest の大きな木がいくらに相当するかを確認。集めた Claude Code / Codex のトークンを各モデルの公開価格で換算した推定値です(請求書ではありません)。",
+    },
+    ko: {
+      title: "Token Forest 가치 리더보드",
+      description:
+        "가장 큰 Token Forest 나무의 값어치를 확인하세요. 모은 Claude Code·Codex 토큰을 모델별 공개 단가로 환산한 추정치입니다(청구서가 아닙니다).",
+    },
+  },
+  "/leaderboard/usage": {
+    en: {
+      title: "Token Forest Vendor Usage Leaderboard",
+      description:
+        "Which AI vendors and models the Token Forest community actually runs on — Claude, Codex, Gemini, GLM, Qwen and more, ranked by tokens collected.",
+      keywords: ["AI model usage ranking", "Claude vs Codex usage"],
+    },
+    zh: {
+      title: "Token Forest 厂商使用量榜",
+      description:
+        "Token Forest 社区实际在用哪些 AI 厂商和型号 —— Claude、Codex、Gemini、GLM、Qwen 等,按已收取的 token 排名。",
+    },
+    ja: {
+      title: "Token Forest ベンダー使用量ランキング",
+      description:
+        "Token Forest のコミュニティが実際に使っている AI ベンダーとモデル —— Claude、Codex、Gemini、GLM、Qwen などをトークン数で比較。",
+    },
+    ko: {
+      title: "Token Forest 벤더 사용량 리더보드",
+      description:
+        "Token Forest 커뮤니티가 실제로 사용하는 AI 벤더와 모델 —— Claude, Codex, Gemini, GLM, Qwen 등을 모은 토큰 수로 비교합니다.",
+    },
+  },
   "/leaderboard": {
     en: {
       title: "Token Forest Global Leaderboard",

@@ -197,6 +197,29 @@ The ratio goes through a definer function rather than the view reading
 `raw_score` itself: `raw_score` minus `score` **is** the withholding decision, and
 publishing it would tell a held player exactly how much was taken.
 
+## The public board
+
+`/leaderboard/value` ranks players by `value_usd`, alongside the token board and
+the vendor board (see `usage-board.md`). Three sibling routes, `<Link>`-switched,
+no client-side tab widget — the board is the URL.
+
+Every amount is prefixed `≈`. Where part of it rests on a rate borrowed from an
+older model in the same family, the row says how much: without that line a tree
+valued almost entirely by fallback looks identical to one priced from published
+rates. Rows with unpriced tokens carry a `+ N unpriced` line for the same reason.
+
+Who is absent matters as much as who is listed. A player with no per-model rows
+at all is not in `leaderboard_value` and never ranks — they are unmeasured, not
+worth $0. A player whose models are simply missing from the price table *does*
+appear, at a real `$0.00`. The page states the difference and gives the count of
+the first group, because an empty-looking bottom of the board otherwise reads as
+a claim about those players.
+
+The board inherits the attribution window described in `usage-board.md`: it
+covers only tokens collected since 2026-07-29, the coverage ratio is shown live
+above the table, and if that ratio cannot be read the board is not rendered at
+all rather than shown beside a fabricated zero.
+
 ## Reading it
 
 ```sql
