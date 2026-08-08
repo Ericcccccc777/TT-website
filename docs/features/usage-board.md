@@ -99,17 +99,21 @@ rejected on privacy grounds.
 The window is currently a few percent of all tokens ever counted, and it is not a
 random sample. On a real account, 71% of lifetime tokens were Opus 4.8 while 96.6%
 of the attributed window was Opus 5 — the window says the opposite of the
-lifetime. A visitor who reads this board as "what people use" gets a confident,
-wrong answer.
+lifetime.
 
-So the coverage ratio is a gold-edged band above the board, computed live rather
-than hard-coded, and:
+That gap was originally disclosed on the page itself: a gold-edged band carrying
+the live coverage ratio and the attribution start date, and a rule that the board
+would not render at all when the ratio could not be read.
 
-**When the coverage figure cannot be read, the board does not render.**
-`getAttribution()` returns `null` on failure, never `ratio: 0` — a zero renders as
-a perfectly plausible "0% covered" that is indistinguishable from the truth. The
-page shows a distinct "board unavailable" notice, which is deliberately *not* the
-same as the empty state.
+**Both were removed by the product owner on 2026-08-08.** The board now renders
+from `leaderboard_provider_usage` / `leaderboard_model_usage` alone, and stands or
+falls on its own error and empty states like any other page. `getAttribution()`
+went with it; `getExcludedPlayers()` is what survives, and only the value board
+uses it.
+
+The ratio is still computable — `leaderboard_attribution` is untouched in 0021 —
+so the band can come back as a display-layer change if the framing is ever wanted
+again. What is gone is the claim that the board refuses to render without it.
 
 ## Routing
 

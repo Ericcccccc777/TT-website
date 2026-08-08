@@ -16,66 +16,37 @@ import { LEADERBOARD_PAGE_SIZE, type LeaderboardEntry } from "@/lib/leaderboard"
  * Node; at 1e4 users x 10 models that is 1e5 rows per render.
  */
 
-// ── Attribution coverage ──────────────────────────────────────────────────────
+// ── Coverage ──────────────────────────────────────────────────────────────────
 
 /**
- * The day per-model attribution shipped. Tokens banked before it carry no model
- * name and never will: back-filling would mean reading logs from before the user
- * installed the app, which was rejected on privacy grounds.
+ * How many players are on the token board but not on the value board, or
+ * **null when it could not be read**.
  *
- * A constant because the database cannot answer it — leaderboard_models has no
- * creation timestamp, by design (0015 keeps updated_at out of the public grant
- * so nobody can poll a player's working hours).
- */
-export const ATTRIBUTION_SINCE = "2026-07-29";
-
-export type Attribution = {
-  /** Raw sum; equals the vendor and model board totals exactly. */
-  attributedTokens: number;
-  lifetimeTokens: number;
-  /**
-   * countedTokens / lifetimeTokens, guaranteed 0–1.
-   *
-   * The numerator is NOT attributedTokens. Model rows are raw while `score` is
-   * post-withholding, so dividing one by the other mixes two accounting bases
-   * and a held account can push the figure past 100% — on a label whose whole
-   * job is to look trustworthy. The view caps each account's contribution at its
-   * own score first.
-   */
-  ratio: number;
-  playersAttributed: number;
-  playersTotal: number;
-};
-
-/**
- * Coverage of the per-model data, or **null when it could not be read**.
+ * Per-model attribution shipped partway through the app's life; tokens banked
+ * before it carry no model name and never will (back-filling would mean reading
+ * logs from before the user installed the app, which was rejected on privacy
+ * grounds). So a player can sit high on the token board and be absent here,
+ * which looks like a bug unless the page says otherwise.
  *
- * Null rather than a zeroed object is the entire point. These boards describe a
- * recent slice of history and promise to say how thin it is; a fallback of
- * `ratio: 0` renders as a perfectly plausible "0% covered" that is
- * indistinguishable from the truth. Callers must treat null as "cannot honestly
- * render this board" rather than as a number.
+ * Null rather than 0 on failure: "0 players excluded" is a specific, plausible,
+ * checkable claim, and it would be a false one.
+ *
+ * The rest of leaderboard_attribution — the coverage ratio and the token totals
+ * behind it — is no longer surfaced; the view still exposes it if the figure is
+ * ever wanted back.
  */
-export async function getAttribution(): Promise<Attribution | null> {
+export async function getExcludedPlayers(): Promise<number | null> {
   try {
     const client = getSupabaseServerClient();
     const { data, error } = await client
       .from("leaderboard_attribution")
-      .select("attributed_tokens, counted_tokens, lifetime_tokens, players_attributed, players_total")
+      .select("players_attributed, players_total")
       .limit(1)
       .maybeSingle();
 
     if (error || !data) return null;
 
-    const attributedTokens = Number(data.attributed_tokens ?? 0);
-    const lifetimeTokens = Number(data.lifetime_tokens ?? 0);
-    return {
-      attributedTokens,
-      lifetimeTokens,
-      ratio: lifetimeTokens > 0 ? Number(data.counted_tokens ?? 0) / lifetimeTokens : 0,
-      playersAttributed: Number(data.players_attributed ?? 0),
-      playersTotal: Number(data.players_total ?? 0),
-    };
+    return Math.max(Number(data.players_total ?? 0) - Number(data.players_attributed ?? 0), 0);
   } catch {
     return null;
   }

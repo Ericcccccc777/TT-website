@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { LEADERBOARD_PAGE_SIZE } from "@/lib/leaderboard";
-import { getValueBoard, getAttribution, ATTRIBUTION_SINCE } from "@/lib/leaderboard-boards";
+import { getValueBoard, getExcludedPlayers } from "@/lib/leaderboard-boards";
 import { MEDAL, regionInfo, formatTokens, formatUsd } from "@/lib/leaderboard-format";
 import { BoardTabs } from "@/components/leaderboard/board-tabs";
-import { AttributionBand } from "@/components/leaderboard/attribution-band";
+import { DisclosureNote } from "@/components/leaderboard/disclosure-note";
 import { PixelCrown } from "@/components/pixel-crown";
 import type { Locale } from "@/i18n/routing";
 import { localizedMetadata, localizedUrl } from "@/lib/seo";
@@ -47,10 +47,10 @@ export default async function ValueBoardPage({
   const pageParam = Number((await searchParams).page);
   const page = Number.isInteger(pageParam) && pageParam > 1 ? pageParam : 1;
 
-  const [t, tnav, [{ entries, total, error }, attribution]] = await Promise.all([
+  const [t, tnav, [{ entries, total, error }, excluded]] = await Promise.all([
     getTranslations("LeaderboardPage"),
     getTranslations("TopBar"),
-    Promise.all([getValueBoard(page), getAttribution()]),
+    Promise.all([getValueBoard(page), getExcludedPlayers()]),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
@@ -60,11 +60,6 @@ export default async function ValueBoardPage({
   const offset = (page - 1) * LEADERBOARD_PAGE_SIZE;
 
   const tabs = { tokens: t("boardTokens"), value: t("boardValue"), usage: t("boardUsage") };
-  const coveragePct = attribution
-    ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(
-        attribution.ratio,
-      )
-    : null;
 
   return (
     <div className="min-h-screen bg-surface-parchment text-text-forest">
@@ -96,33 +91,19 @@ export default async function ValueBoardPage({
         </div>
 
         {/*
-          No coverage figure means the boards cannot be described honestly, so
-          they are not shown at all. Rendering the table beside a fabricated "0%"
-          would look exactly like the truth.
+          "Estimate, not a bill" stays whatever else is trimmed from this page —
+          it is the only place a visitor is told the number is not money owed.
+          The excluded-players line only appears when it could actually be read;
+          a hard-coded 0 would read as "everybody is on this board".
         */}
-        {attribution && coveragePct && (
-          <AttributionBand
-            ratioLabel={t("coverageLabel", { pct: coveragePct })}
-            sinceLabel={t("coverageSince", { date: ATTRIBUTION_SINCE })}
-            body={t("valueDisclosure")}
-            extra={t("valueExcluded", {
-              n: formatTokens(
-                Math.max(attribution.playersTotal - attribution.playersAttributed, 0),
-                locale,
-              ),
-            })}
-          />
-        )}
-
-        {!attribution && !error && (
-          <div
-            className="mb-6 rounded-[2px] border-2 border-bubble-claude bg-surface-card px-4 py-3"
-            style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
-          >
-            <span className="text-bubble-claude">{t("coverageUnavailableTitle")}</span>
-            <span className="ml-1 text-text-muted-light">{t("coverageUnavailableBody")}</span>
-          </div>
-        )}
+        <DisclosureNote
+          body={t("valueDisclosure")}
+          extra={
+            excluded && excluded > 0
+              ? t("valueExcluded", { n: formatTokens(excluded, locale) })
+              : undefined
+          }
+        />
 
         {error && (
           <div
@@ -134,7 +115,7 @@ export default async function ValueBoardPage({
           </div>
         )}
 
-        {!error && (attribution && entries.length === 0) && (
+        {!error && entries.length === 0 && (
           <div className="py-20 text-center">
             <Image
               src="/sprites/AppleTree_1.png"
@@ -160,7 +141,7 @@ export default async function ValueBoardPage({
           </div>
         )}
 
-        {attribution && entries.length > 0 && (
+        {entries.length > 0 && (
           <div className="overflow-x-auto">
             <div
               className="overflow-hidden rounded-[2px]"

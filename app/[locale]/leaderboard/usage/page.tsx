@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getProviderUsage, getModelUsage, getAttribution, ATTRIBUTION_SINCE } from "@/lib/leaderboard-boards";
+import { getProviderUsage, getModelUsage } from "@/lib/leaderboard-boards";
 import { formatTokens, compactTokens } from "@/lib/leaderboard-format";
 import { BoardTabs } from "@/components/leaderboard/board-tabs";
-import { AttributionBand } from "@/components/leaderboard/attribution-band";
 import { UsageBar, providerColor } from "@/components/leaderboard/usage-bars";
 import type { Locale } from "@/i18n/routing";
 import { localizedMetadata, localizedUrl } from "@/lib/seo";
@@ -45,11 +44,10 @@ export default async function UsageBoardPage({
 
   const rawProvider = (await searchParams).p;
 
-  const [t, tnav, providers, attribution] = await Promise.all([
+  const [t, tnav, providers] = await Promise.all([
     getTranslations("LeaderboardPage"),
     getTranslations("TopBar"),
     getProviderUsage(),
-    getAttribution(),
   ]);
 
   // Only accept ?p= values that are actually on the board. An arbitrary string
@@ -61,11 +59,6 @@ export default async function UsageBoardPage({
   const models = await getModelUsage(selected);
 
   const tabs = { tokens: t("boardTokens"), value: t("boardValue"), usage: t("boardUsage") };
-  const coveragePct = attribution
-    ? new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 1 }).format(
-        attribution.ratio,
-      )
-    : null;
 
   const providerMax = providers.rows[0]?.tokens ?? 0;
   const modelMax = models.rows[0]?.tokens ?? 0;
@@ -101,24 +94,6 @@ export default async function UsageBoardPage({
           </p>
         </div>
 
-        {attribution && coveragePct && (
-          <AttributionBand
-            ratioLabel={t("coverageLabel", { pct: coveragePct })}
-            sinceLabel={t("coverageSince", { date: ATTRIBUTION_SINCE })}
-            body={t("usageDisclosure")}
-          />
-        )}
-
-        {!attribution && !error && (
-          <div
-            className="mb-6 rounded-[2px] border-2 border-bubble-claude bg-surface-card px-4 py-3"
-            style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
-          >
-            <span className="text-bubble-claude">{t("coverageUnavailableTitle")}</span>
-            <span className="ml-1 text-text-muted-light">{t("coverageUnavailableBody")}</span>
-          </div>
-        )}
-
         {error && (
           <div
             className="mb-6 rounded-[2px] border-2 border-bubble-claude bg-surface-card px-4 py-3"
@@ -129,7 +104,7 @@ export default async function UsageBoardPage({
           </div>
         )}
 
-        {!error && (attribution && providers.rows.length === 0) && (
+        {!error && providers.rows.length === 0 && (
           <div className="py-20 text-center">
             <Image
               src="/sprites/AppleTree_1.png"
@@ -155,7 +130,7 @@ export default async function UsageBoardPage({
           </div>
         )}
 
-        {attribution && providers.rows.length > 0 && (
+        {providers.rows.length > 0 && (
           <>
             {/* ── Vendors ── */}
             <section className="mb-8">

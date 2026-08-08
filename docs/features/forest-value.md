@@ -215,10 +215,18 @@ appear, at a real `$0.00`. The page states the difference and gives the count of
 the first group, because an empty-looking bottom of the board otherwise reads as
 a claim about those players.
 
-The board inherits the attribution window described in `usage-board.md`: it
-covers only tokens collected since 2026-07-29, the coverage ratio is shown live
-above the table, and if that ratio cannot be read the board is not rendered at
-all rather than shown beside a fabricated zero.
+The board inherits the attribution window described in `usage-board.md`: it covers
+only tokens collected since 2026-07-29. The coverage ratio that used to be printed
+above the table, and the rule that no ratio meant no board, were removed on
+2026-08-08 (see `usage-board.md`).
+
+What stayed is the gold-edged note itself, now carrying two things: that the
+figure is an estimate rather than a bill, and the count of players absent from the
+board. The estimate sentence is the only place on the site a visitor is told the
+number is not money owed — everywhere else it is a dollar sign next to their name.
+The absent-player count renders only when `getExcludedPlayers()` actually returns a
+number; on failure the line is omitted rather than shown as zero, since "0 players
+excluded" is a specific and checkable claim that would be false.
 
 ## Reading it
 
