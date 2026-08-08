@@ -85,8 +85,15 @@ export type BucketCheck = {
   sumMatches: boolean; // |sum − delta| ≤ SUM_TOL
   impliedRate: number; // max ÷ 300s — peak tokens/sec inside one window
   avgPerBucket: number;
-  problems: string[]; // why !ok, if it isn't
+  problems: Signal[]; // why !ok, if it isn't
 };
+
+/**
+ * A reason, not a sentence. The analyser runs on the server with no notion of
+ * the admin's language, so it emits a key plus its numbers and the page renders
+ * it through lib/ranger/i18n. Adding a language never touches this file.
+ */
+export type Signal = { key: string; p?: Record<string, string | number> };
 
 export type AnalyzedRow = HistoryEntry & {
   gapSeconds: number | null; // time since the previous change (null for the first/baseline row)
@@ -98,7 +105,7 @@ export type AnalyzedRow = HistoryEntry & {
   bucket: BucketCheck | null; // null when the client uploaded no summary
   severity: Severity;
   acknowledged: boolean; // an admin marked this specific change reviewed-OK
-  signals: string[]; // human-readable reasons for the severity
+  signals: Signal[]; // structured reasons; rendered per-language by the page
 };
 
 export type HistorySummary = {
@@ -185,30 +192,23 @@ function checkBuckets(e: HistoryEntry, delta: number): BucketCheck | null {
   // all. So "absent" means "no evidence", never "suspicious".
   if (n === null || max === null || sum === null || span === null) return null;
 
-  const problems: string[] = [];
+  const problems: Signal[] = [];
   const sumMatches = Math.abs(sum - delta) <= THRESHOLDS.SUM_TOL;
 
   if (!sumMatches) {
-    problems.push(
-      `Bucket total (${fmtSigned(sum)}) does not match the score delta (${fmtSigned(delta)}) — ` +
-        `the uploaded score is not backed by the token log.`,
-    );
+    problems.push({ key: "sigSumMismatch", p: { sum: fmtSigned(sum), delta: fmtSigned(delta) } });
   }
   if (max > THRESHOLDS.BUCKET_SUS) {
-    problems.push(
-      `One 5-minute window holds ${fmtSigned(max)} tokens — beyond any real machine.`,
-    );
+    problems.push({ key: "sigWindowImpossible", p: { max: fmtSigned(max) } });
   }
   if (n > 0 && n * THRESHOLDS.BUCKET_SECONDS > span + THRESHOLDS.BUCKET_SECONDS) {
-    problems.push(
-      `${n} five-minute windows cannot fit inside a ${fmtGap(span)} span — the buckets are fabricated.`,
-    );
+    problems.push({ key: "sigWindowsDontFit", p: { n, span: fmtGap(span) } });
   }
   if (max > sum) {
-    problems.push("Busiest window exceeds the total — internally inconsistent.");
+    problems.push({ key: "sigMaxOverSum" });
   }
   if (n <= 0 && sum > 0) {
-    problems.push("Tokens claimed with zero buckets — internally inconsistent.");
+    problems.push({ key: "sigZeroBuckets" });
   }
 
   return {
@@ -241,7 +241,7 @@ export function analyzeHistory(
     let jumpPct: number | null = null;
     let ceiling: number | null = null;
     let bucket: BucketCheck | null = null;
-    const signals: string[] = [];
+    const signals: Signal[] = [];
     let severity: Severity = "normal";
 
     if (isBaseline) {
@@ -249,35 +249,36 @@ export function analyzeHistory(
       // starting total is itself believable. This is the off→on re-register path,
       // so it is not merely cosmetic.
       severity = "baseline";
-      signals.push("Starting baseline — the accumulated total before per-change history began.");
+      signals.push({ key: "sigBaseline" });
       if (e.newScore >= THRESHOLDS.BASELINE_SUS) {
         severity = "suspicious";
-        signals.push(
-          `First-ever total is ${fmtSigned(e.newScore)} — far past any plausible lifetime usage.`,
-        );
+        signals.push({ key: "sigBaselineSus", p: { v: fmtSigned(e.newScore) } });
       } else if (e.newScore >= THRESHOLDS.BASELINE_WATCH) {
         severity = "watch";
-        signals.push(
-          `First-ever total is ${fmtSigned(e.newScore)} — unusually high for a fresh registration.`,
-        );
+        signals.push({ key: "sigBaselineWatch", p: { v: fmtSigned(e.newScore) } });
       }
     } else {
       const effGap = gapSeconds === null ? null : Math.max(gapSeconds, 1);
-      if (effGap !== null) rate = e.delta / effGap;
-      if (e.oldScore && e.oldScore > 0) jumpPct = (e.delta / e.oldScore) * 100;
+      // trueDelta over delta wherever available (migration 0016): a re-insert
+      // restates the WHOLE score as `delta`, so rate/jump/bucket checks computed
+      // from it read a lifetime of tokens as one instant gain and invent
+      // suspicion for anyone who merely toggled the leaderboard off and on.
+      const gain = e.trueDelta ?? e.delta;
+      if (effGap !== null) rate = gain / effGap;
+      if (e.oldScore && e.oldScore > 0) jumpPct = (gain / e.oldScore) * 100;
 
-      bucket = checkBuckets(e, e.delta);
+      bucket = checkBuckets(e, gain);
 
       const isX100 =
         e.oldScore !== null &&
         e.oldScore > 0 &&
         Math.abs(e.newScore - e.oldScore * 100) <= THRESHOLDS.X100_TOL;
 
-      if (e.delta < 0) {
+      if (gain < 0) {
         severity = "suspicious";
-        signals.push("Score DECREASED — scores normally only grow; a drop is a tamper signal.");
+        signals.push({ key: "sigDecreased" });
       } else if (isX100) {
-        signals.push("Exact ×100 — matches the one-time v2→v3 metric migration (legit).");
+        signals.push({ key: "sigX100" });
       } else {
         const gap = gapSeconds ?? 0;
         const susCeiling = jumpCeiling(gap, "suspicious");
@@ -290,34 +291,37 @@ export function analyzeHistory(
           signals.push(...bucket.problems);
         } else if (bucket && bucket.max > THRESHOLDS.BUCKET_WATCH) {
           severity = "watch";
-          signals.push(
-            `Busiest 5-minute window holds ${fmtSigned(bucket.max)} tokens ` +
-              `(${fmtRate(bucket.impliedRate)}) — high, but not impossible.`,
-          );
+          signals.push({
+            key: "sigBusyWindow",
+            p: { max: fmtSigned(bucket.max), rate: fmtRate(bucket.impliedRate) },
+          });
         }
 
         // ── The time-scaled ceiling. Always in force: a forged-but-consistent
         //    summary must not be able to launder an impossible jump. ──
-        if (e.delta > susCeiling) {
+        if (gain > susCeiling) {
           severity = "suspicious";
-          signals.push(
-            `Gained ${fmtSigned(e.delta)} in ${fmtGap(gap)} — over the ${fmtSigned(susCeiling)} ` +
-              `ceiling for that interval.`,
-          );
-        } else if (severity === "normal" && e.delta > watchCeiling) {
+          signals.push({
+            key: "sigOverCeiling",
+            p: { gain: fmtSigned(gain), gap: fmtGap(gap), ceiling: fmtSigned(susCeiling) },
+          });
+        } else if (severity === "normal" && gain > watchCeiling) {
           if (bucket?.ok) {
             // Spread across enough real 5-minute windows to explain itself: this
             // is the hoarded-bubble case the old absolute thresholds mangled.
-            signals.push(
-              `Large gain (${fmtSigned(e.delta)}) but accounted for: ${bucket.n} five-minute ` +
-                `windows over ${fmtGap(bucket.span)}, busiest ${fmtSigned(bucket.max)}, total matches.`,
-            );
+            signals.push({
+              key: "sigLargeButAccounted",
+              p: {
+                gain: fmtSigned(gain), n: bucket.n,
+                span: fmtGap(bucket.span), max: fmtSigned(bucket.max),
+              },
+            });
           } else {
             severity = "watch";
-            signals.push(
-              `Gained ${fmtSigned(e.delta)} in ${fmtGap(gap)} — over the ${fmtSigned(watchCeiling)} ` +
-                `ceiling for that interval.`,
-            );
+            signals.push({
+              key: "sigOverCeiling",
+              p: { gain: fmtSigned(gain), gap: fmtGap(gap), ceiling: fmtSigned(watchCeiling) },
+            });
           }
         }
 
@@ -329,14 +333,14 @@ export function analyzeHistory(
           !bucket?.ok
         ) {
           severity = "watch";
-          signals.push(`Grew ${Math.round(jumpPct)}% in one step.`);
+          signals.push({ key: "sigGrewPct", p: { pct: Math.round(jumpPct) } });
         }
 
         if (severity === "normal" && signals.length === 0) {
           signals.push(
             bucket?.ok
-              ? `Within normal bounds — ${bucket.n} five-minute windows, total matches the delta.`
-              : "Within normal bounds.",
+              ? { key: "sigNormalWithBuckets", p: { n: bucket.n } }
+              : { key: "sigNormal" },
           );
         }
       }
@@ -345,14 +349,14 @@ export function analyzeHistory(
     // A server-set flag (from the future DB gate) always escalates to suspicious.
     if (e.flagged && severity !== "suspicious") {
       severity = "suspicious";
-      signals.unshift(`Server-flagged${e.reason ? `: ${e.reason}` : ""}.`);
+      signals.unshift({ key: "sigServerFlagged", p: { reason: e.reason ?? "" } });
     }
 
     // An admin can acknowledge a flagged row as reviewed-OK → it renders normal
     // and leaves the flagged counts.
     const acknowledged = acknowledgedIds.has(e.id);
     if (acknowledged && (severity === "watch" || severity === "suspicious")) {
-      signals.unshift("Reviewed OK — cleared by an admin.");
+      signals.unshift({ key: "sigReviewedOk" });
       severity = "normal";
     }
 
@@ -372,7 +376,8 @@ export function analyzeHistory(
   });
 
   const real = analyzed.filter((r) => r.oldScore !== null);
-  const totalGained = real.reduce((s, r) => s + Math.max(0, r.delta), 0);
+  // trueDelta throughout (0016): `delta` restates the whole score on a re-insert.
+  const totalGained = real.reduce((s, r) => s + Math.max(0, r.trueDelta ?? r.delta), 0);
 
   let peakRate: number | null = null;
   let peakRateAt: string | null = null;
@@ -383,8 +388,9 @@ export function analyzeHistory(
       peakRate = r.rate;
       peakRateAt = r.at;
     }
-    if (largestJump === null || r.delta > largestJump) {
-      largestJump = r.delta;
+    const g = r.trueDelta ?? r.delta;
+    if (largestJump === null || g > largestJump) {
+      largestJump = g;
       largestJumpAt = r.at;
     }
   }
@@ -422,4 +428,72 @@ export function analyzeHistory(
 
   // Return newest-first for display.
   return { rows: [...analyzed].reverse(), summary };
+}
+
+// ── Quarantine explanations + throttling detection (migration 0016) ──────────
+// Two separate jobs, both aimed at the same problem: an admin looking at a held
+// row cannot tell from `peak,rate` what actually happened, and a patient cheat
+// that stays just under every threshold produces no held rows at all.
+
+/** Machine hold code -> i18n keys. The sentences live in lib/ranger/i18n. */
+export const HOLD_REASON_KEYS: Record<string, { short: string; why: string }> = {
+  peak: { short: "hrPeak", why: "hrPeakWhy" },
+  rate: { short: "hrRate", why: "hrRateWhy" },
+  wallclock: { short: "hrWallclock", why: "hrWallclockWhy" },
+  relaunder: { short: "hrRelaunder", why: "hrRelaunderWhy" },
+  impossible_windows: { short: "hrWindows", why: "hrWindowsWhy" },
+};
+
+export function explainHold(reasons: string[]): { short: string; why: string }[] {
+  return reasons.map((r) => HOLD_REASON_KEYS[r] ?? { short: "hrUnknown", why: "hrUnknown" });
+}
+
+
+/** How close an event sat to each ceiling, 0..1+ (1 = exactly at the limit). */
+function ceilingLoads(e: HistoryEntry, gain: number, gapSeconds: number | null): number[] {
+  const out: number[] = [];
+  if (e.bktMax !== null) out.push(e.bktMax / 300 / 250_000);
+  if (e.bktN && e.bktSum !== null) out.push(e.bktSum / ((e.bktN * 300) / 3600) / 400e6);
+  if (gapSeconds && gapSeconds > 0) {
+    // Mirrors the DB rule: only the part no bucket vouches for.
+    const remainder = gain - (e.bktSum ?? 0);
+    if (remainder > 0) out.push(remainder / (gapSeconds / 3600) / 600e6);
+  }
+  return out;
+}
+
+export type ThrottleVerdict = {
+  hugging: number;    // events sitting at or above 60% of some ceiling
+  measured: number;   // events where any ceiling could be measured at all
+  ratio: number;
+  suspicious: boolean;
+};
+
+/**
+ * A cheat that throttles itself never trips a rule, so no single event looks
+ * wrong. What it cannot hide is the SHAPE: real work varies wildly and rarely
+ * approaches the ceiling, while a governed loop parks just underneath it and
+ * stays there. This reports that shape; it holds nothing by itself, it only
+ * tells a human where to look.
+ */
+export function detectThrottling(rows: AnalyzedRow[]): ThrottleVerdict {
+  let hugging = 0;
+  let measured = 0;
+  for (const r of rows) {
+    // Held events are excluded: they already have a verdict, and counting them
+    // would let this panel claim "nothing was held" on an account that plainly
+    // had something held.
+    if (r.quarantined) continue;
+    const loads = ceilingLoads(r, r.trueDelta ?? r.delta, r.gapSeconds ?? null);
+    if (!loads.length) continue;
+    measured += 1;
+    // No upper bound. The rules hold only on STRICTLY exceeding a threshold, so
+    // a load of exactly 1 is both legal and the most perfectly throttled value
+    // there is — excluding it would leave a gap sitting on the line itself.
+    if (Math.max(...loads) >= 0.6) hugging += 1;
+  }
+  const ratio = measured ? hugging / measured : 0;
+  // Needs a run, not a coincidence: 4+ events and over half of them hugging.
+  const suspicious = measured >= 4 && ratio > 0.5;
+  return { hugging, measured, ratio, suspicious };
 }

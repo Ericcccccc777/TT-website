@@ -6,6 +6,8 @@ import { getAdminUser } from "@/lib/ranger/auth";
 import { getRangerUserDetail } from "@/lib/ranger/data";
 import {
   analyzeHistory,
+  detectThrottling,
+  explainHold,
   fmtGap,
   fmtRate,
   THRESHOLDS,
@@ -15,7 +17,16 @@ import {
 import { getRangerLang, t, type Key, type Lang } from "@/lib/ranger/i18n";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
 import { BarsChart, ChartCard, CumulativeChart } from "@/components/ranger/charts";
-import { acknowledgeAction, banAction, unacknowledgeAction, unbanAction } from "../actions";
+import { BatchBar } from "../batch-bar";
+import {
+  acknowledgeAction,
+  banAction,
+  batchEventAction,
+  holdEventAction,
+  releaseEventAction,
+  unacknowledgeAction,
+  unbanAction,
+} from "../actions";
 
 // Admin detail view — never indexed, never cached, always request-time (cookies).
 export const metadata: Metadata = {
@@ -169,7 +180,7 @@ function BucketPanel({ row, lang }: { row: AnalyzedRow; lang: Lang }) {
           style={{ border: "1px solid #b91c1c", background: "rgba(185,28,28,0.06)", color: "#b91c1c" }}
         >
           {b.problems.map((p, i) => (
-            <li key={i}>• {p}</li>
+            <li key={i}>• {t(lang, p.key as never, p.p)}</li>
           ))}
         </ul>
       )}
@@ -203,6 +214,10 @@ export default async function RangerUserPage({
 
   const { row, history, acknowledgedIds, error } = await getRangerUserDetail(userId);
   const { rows, summary } = analyzeHistory(history, new Set(acknowledgedIds));
+  // A throttled cheat trips no rule — every gain sits just under every ceiling —
+  // so it produces no held rows at all. This looks at the shape across events
+  // instead. It holds nothing; it only points a human at the account.
+  const throttle = detectThrottling(rows);
 
   // Filter + sort. Baseline rows are excluded from the jump/rate sorts because their
   // "delta" is the whole accumulated pre-history total, not a single step — it would
@@ -215,7 +230,9 @@ export default async function RangerUserPage({
     display = display.filter((r) => r.severity === "watch" || r.severity === "suspicious");
   }
   if (sort === "jump") {
-    display = [...display].filter((r) => !isBaseline(r)).sort((a, b) => b.delta - a.delta);
+    display = [...display]
+      .filter((r) => !isBaseline(r))
+      .sort((a, b) => (b.trueDelta ?? b.delta) - (a.trueDelta ?? a.delta));
   } else if (sort === "rate") {
     display = [...display]
       .filter((r) => !isBaseline(r))
@@ -267,9 +284,9 @@ export default async function RangerUserPage({
   const changes = asc.filter((r) => !isBaseline(r));
   const deltaBars = changes.map((r) => ({
     t: ms(r.at),
-    v: Math.max(0, r.delta),
+    v: Math.max(0, r.trueDelta ?? r.delta),
     severity: r.severity,
-    label: `${fmtWhen(r.at)} · ${fmtSigned(r.delta)} over ${r.gapLabel}`,
+    label: `${fmtWhen(r.at)} · ${fmtSigned(r.trueDelta ?? r.delta)} over ${r.gapLabel}`,
   }));
 
   // 3. THE judgement chart: each gain as a % of what was physically possible in the time
@@ -281,9 +298,9 @@ export default async function RangerUserPage({
     .filter((r) => r.ceiling !== null && r.ceiling > 0)
     .map((r) => ({
       t: ms(r.at),
-      v: (Math.max(0, r.delta) / (r.ceiling as number)) * 100,
+      v: (Math.max(0, r.trueDelta ?? r.delta) / (r.ceiling as number)) * 100,
       severity: r.severity,
-      label: `${fmtWhen(r.at)} · ${Math.round((Math.max(0, r.delta) / (r.ceiling as number)) * 100)}% of the ${fmtSigned(r.ceiling as number)} ceiling for ${r.gapLabel}`,
+      label: `${fmtWhen(r.at)} · ${Math.round((Math.max(0, r.trueDelta ?? r.delta) / (r.ceiling as number)) * 100)}% of the ${fmtSigned(r.ceiling as number)} ceiling for ${r.gapLabel}`,
     }));
 
   // 4. The evidence: the busiest 5-minute window inside each gain. Only rows whose client
@@ -298,7 +315,9 @@ export default async function RangerUserPage({
     }));
 
   // Table columns — right-align the numeric metrics for a clean, scannable grid.
+  const BATCH_FORM = "ranger-batch";
   const cols: { label: string; align: "left" | "right" }[] = [
+    { label: "", align: "left" },      // 勾选框列
     { label: t(lang, "thWhen"), align: "left" },
     { label: t(lang, "thInterval"), align: "left" },
     { label: t(lang, "thChange"), align: "left" },
@@ -380,6 +399,12 @@ export default async function RangerUserPage({
           <Panel title={t(lang, "sectAccount")} className="mt-6">
             <dl className="grid grid-cols-2 gap-x-8 gap-y-4 px-5 py-4 font-body text-small text-text-muted-light sm:grid-cols-3">
               <Field label={t(lang, "fTokens")} value={fmtTokens(row.score)} />
+              {row.heldTokens > 0 && (
+                <Field
+                  label={t(lang, "qHeldNotCounted")}
+                  value={`−${fmtTokens(row.heldTokens)}  ·  ${t(lang, "qRawTotal")} ${fmtTokens(row.rawScore)}`}
+                />
+              )}
               <Field label={t(lang, "fRegion")} value={row.region || "—"} />
               <Field label={t(lang, "fMainTree")} value={row.tree || "—"} />
               <Field label={t(lang, "fFirstSeen")} value={fmtWhen(row.createdAt)} />
@@ -519,6 +544,20 @@ export default async function RangerUserPage({
                         className="border-t border-leaf-deep/20"
                         style={{ background: tint }}
                       >
+                        {/* Belongs to the batch form outside the table via `form=`;
+                            nesting a form inside the per-row ones would be invalid. */}
+                        <td className="px-3 py-2.5 align-top">
+                          {isBaseline(h) ? null : (
+                            <input
+                              type="checkbox"
+                              name="eventIds"
+                              value={h.id}
+                              form={BATCH_FORM}
+                              data-held={h.quarantined ? "1" : "0"}
+                              aria-label={`${h.id}`}
+                            />
+                          )}
+                        </td>
                         <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
                           {/* Clicking the timestamp opens the breakdown below it. URL state,
                               server-rendered — same idiom as the segmented controls, no client JS. */}
@@ -537,9 +576,9 @@ export default async function RangerUserPage({
                         </td>
                         <td
                           className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
-                          style={{ color: h.delta < 0 ? "#b91c1c" : "var(--color-text-forest)" }}
+                          style={{ color: (h.trueDelta ?? h.delta) < 0 ? "#b91c1c" : "var(--color-text-forest)" }}
                         >
-                          {fmtSigned(h.delta)}
+                          {fmtSigned(h.trueDelta ?? h.delta)}
                         </td>
                         <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
                           {h.rateLabel}
@@ -550,7 +589,9 @@ export default async function RangerUserPage({
                         <td className="px-3 py-2.5 align-top text-[11px]">
                           <div className="flex items-start gap-2">
                             <SevBadge severity={h.severity} acknowledged={h.acknowledged} lang={lang} />
-                            <span className="opacity-80">{h.signals.join(" ")}</span>
+                            <span className="opacity-80">
+                              {h.signals.map((sg) => t(lang, sg.key as never, sg.p)).join(" ")}
+                            </span>
                           </div>
                           {showMarkOk && (
                             <form action={acknowledgeAction} className="mt-1.5">
@@ -562,6 +603,50 @@ export default async function RangerUserPage({
                                 style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
                               >
                                 {t(lang, "markOk")}
+                              </button>
+                            </form>
+                          )}
+                          {/* Quarantine (0016). Held increases are not in the
+                              player's public score; releasing one puts it back.
+                              Distinct from "mark ok" above, which only silences
+                              the severity badge and moves no tokens. */}
+                          {h.quarantined ? (
+                            <div className="mt-1.5">
+                              <div className="text-[10px] text-amber-800">
+                                {t(lang, "qHeld")} −{(h.trueDelta ?? h.delta).toLocaleString()}
+                                {h.decidedBy ? ` · ${t(lang, "qDecidedBy", { who: h.decidedBy })}` : ""}
+                              </div>
+                              {/* The machine's codes mean nothing to a human at
+                                  a glance; spell out what actually happened. */}
+                              {explainHold(h.holdReasons).map((r) => (
+                                <div key={r.short} className="mt-0.5 text-[10px] leading-snug">
+                                  <span className="font-semibold text-amber-900">
+                                    {t(lang, r.short as never)}
+                                  </span>
+                                  <span className="text-text-muted-light"> — {t(lang, r.why as never)}</span>
+                                </div>
+                              ))}
+                              <form action={releaseEventAction} className="mt-1">
+                                <input type="hidden" name="eventId" value={h.id} />
+                                <input type="hidden" name="userId" value={userId} />
+                                <button
+                                  type="submit"
+                                  className="ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-2 py-0.5 text-[10px] text-text-cream"
+                                >
+                                  {t(lang, "qRelease")}
+                                </button>
+                              </form>
+                            </div>
+                          ) : (
+                            <form action={holdEventAction} className="mt-1.5">
+                              <input type="hidden" name="eventId" value={h.id} />
+                              <input type="hidden" name="userId" value={userId} />
+                              <button
+                                type="submit"
+                                className="ranger-btn ranger-btn-lift rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                                style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
+                              >
+                                {t(lang, "qHold")}
                               </button>
                             </form>
                           )}
@@ -578,7 +663,7 @@ export default async function RangerUserPage({
                       </tr>
                       {open && (
                         <tr style={{ background: tint }}>
-                          <td colSpan={7} className="px-3 pb-4">
+                          <td colSpan={8} className="px-3 pb-4">
                             <BucketPanel row={h} lang={lang} />
                           </td>
                         </tr>
@@ -588,13 +673,38 @@ export default async function RangerUserPage({
                   })}
                   {display.length === 0 && (
                     <tr className="border-t border-leaf-deep/20">
-                      <td colSpan={7} className="px-3 py-8 text-center text-text-muted-light">
+                      <td colSpan={8} className="px-3 py-8 text-center text-text-muted-light">
                         {history.length === 0 ? t(lang, "noHistory") : t(lang, "noMatch")}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
+              {/* The form itself carries nothing but the target user; the checkboxes
+                  above and the buttons below attach to it by id. */}
+              <form id={BATCH_FORM} action={batchEventAction}>
+                <input type="hidden" name="userId" value={userId} />
+              </form>
+              <BatchBar
+                formId={BATCH_FORM}
+                labels={{
+                  selectAllHeld: t(lang, "qSelectAll"),
+                  selectAllOpen: t(lang, "qSelectAllOpen"),
+                  clear: t(lang, "qClearSel"),
+                  // Templates, never functions — {n}/{held}/{open} are filled in
+                  // client-side. A function here is a render-time crash.
+                  release: t(lang, "qBatchRelease", { n: "{n}" }),
+                  hold: t(lang, "qBatchHold", { n: "{n}" }),
+                  countNone: t(lang, "qSelectedNone"),
+                  countHeld: t(lang, "qSelectedHeld", { n: "{n}" }),
+                  countOpen: t(lang, "qSelectedOpen", { n: "{n}" }),
+                  countMixed: t(lang, "qSelectedMixed", { n: "{n}", held: "{held}", open: "{open}" }),
+                  hintIdle: t(lang, "qHintIdle"),
+                  hintHeld: t(lang, "qHintHeld"),
+                  hintOpen: t(lang, "qHintOpen"),
+                  hintMixed: t(lang, "qHintMixed"),
+                }}
+              />
             </div>
           </div>
         </section>
@@ -611,6 +721,24 @@ export default async function RangerUserPage({
             >
               {t(lang, "decision")}
             </h2>
+            {/* A throttled cheat trips no rule — every gain sits just under every
+                ceiling — so it produces no held rows and this page would otherwise
+                look clean. Reported as a shape across events, never as a hold. */}
+            {throttle.suspicious && (
+              <div
+                className="mt-3 rounded-[2px] bg-surface-parchment p-3"
+                style={{ border: "var(--border-pixel)" }}
+              >
+                <div className="text-small font-semibold text-amber-900">
+                  {t(lang, "qThrottleTitle")}
+                </div>
+                <div className="mt-1 text-[11px] leading-snug text-text-muted-light">
+                  {t(lang, "qThrottleBody", {
+                    note: t(lang, "qThrottleNote", { hug: throttle.hugging, n: throttle.measured }),
+                  })}
+                </div>
+              </div>
+            )}
             <div className="mt-3">
               {row.banned ? (
                 <form action={unbanAction}>

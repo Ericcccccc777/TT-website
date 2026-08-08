@@ -23,6 +23,10 @@ export type RangerRow = {
   banReason: string | null;
   bannedAt: string | null;
   prevUid: string | null; // the uid this row superseded (set when a dead session re-signed-up), else null
+  // Quarantine (migration 0016). `score` is already the public figure —
+  // rawScore minus heldTokens — so nothing downstream needs to subtract.
+  rawScore: number;   // what the client says its total is
+  heldTokens: number; // sum of the increases not being counted
 };
 
 /**
@@ -41,7 +45,7 @@ export async function getRangerLeaderboard(): Promise<{
     const [lb, bans] = await Promise.all([
       admin
         .from("leaderboard")
-        .select("user_id, username, score, tree, region, updated_at, created_at, prev_uid")
+        .select("user_id, username, score, raw_score, held_tokens, tree, region, updated_at, created_at, prev_uid")
         .order("score", { ascending: false })
         .limit(500),
       admin.from("leaderboard_bans").select("user_id, reason, created_at"),
@@ -71,6 +75,8 @@ export async function getRangerLeaderboard(): Promise<{
         banReason: ban?.reason ?? null,
         bannedAt: ban?.created_at ?? null,
         prevUid: (r.prev_uid as string | null) ?? null,
+        rawScore: Number(r.raw_score ?? r.score ?? 0),
+        heldTokens: Number(r.held_tokens ?? 0),
       };
     });
 
@@ -117,6 +123,11 @@ export type HistoryEntry = {
   bktSum: number | null; // Σ over all of them — must equal `delta`
   bktSpan: number | null; // seconds from earliest window to latest
   appVersion: string | null; // which client produced it
+  trueDelta: number | null;   // the real increase; `delta` restates the total on a re-insert
+  quarantined: boolean;       // not counted toward the public score
+  holdReasons: string[];
+  decidedBy: string | null;   // a human ruled on this event; re-evaluation leaves it alone
+  decidedAt: string | null;
 };
 
 /** A single user's admin detail: their leaderboard row + ban status + history. */
@@ -141,7 +152,8 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
     // the migration hasn't been applied yet fall back to the pre-0008 column set
     // rather than blanking the whole history view (same defensive posture as the
     // reviews fetch below). Once 0008 is live the first query simply succeeds.
-    const HIST_BASE = "id, old_score, new_score, delta, flagged, reason, at";
+    const HIST_BASE =
+      "id, old_score, new_score, delta, true_delta, flagged, reason, at, quarantined, hold_reasons, decided_by, decided_at";
     const HIST_BKT = `${HIST_BASE}, bkt_n, bkt_max, bkt_sum, bkt_span, app_version`;
     const histQuery = (cols: string) =>
       admin
@@ -155,7 +167,7 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
     const [lb, ban, histWide] = await Promise.all([
       admin
         .from("leaderboard")
-        .select("user_id, username, score, tree, region, updated_at, created_at, prev_uid")
+        .select("user_id, username, score, raw_score, held_tokens, tree, region, updated_at, created_at, prev_uid")
         .eq("user_id", userId)
         .maybeSingle(),
       admin
@@ -188,6 +200,8 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
           banReason: b?.reason ?? null,
           bannedAt: b?.created_at ?? null,
           prevUid: (r.prev_uid as string | null) ?? null,
+          rawScore: Number(r.raw_score ?? r.score ?? 0),
+          heldTokens: Number(r.held_tokens ?? 0),
         }
       : null;
 
@@ -213,6 +227,13 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
       bktSum: num(h.bkt_sum),
       bktSpan: num(h.bkt_span),
       appVersion: (h.app_version as string | null) ?? null,
+      // Quarantine (0016). trueDelta is the real increase — `delta` restates the
+      // whole score on a re-insert, so it must not be summed.
+      trueDelta: num(h.true_delta),
+      quarantined: !!h.quarantined,
+      holdReasons: (h.hold_reasons as string[] | null) ?? [],
+      decidedBy: (h.decided_by as string | null) ?? null,
+      decidedAt: (h.decided_at as string | null) ?? null,
     }));
 
     // Which of these history rows an admin has already reviewed-OK.

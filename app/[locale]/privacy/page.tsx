@@ -10,7 +10,7 @@ import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 const EN: LegalDoc = {
   title: "Token Forest Privacy Notice",
   meta: [
-    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-19 · Effective at first public release",
+    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-28 · Effective at first public release",
     "Publisher: Poietic Studio",
   ],
   sections: [
@@ -61,7 +61,10 @@ const EN: LegalDoc = {
           table: {
             head: ["File", "Contents"],
             rows: [
-              ["garden.json", "Per-tree tokens, growth stage, fruit, decorations, first-use time"],
+              [
+                "garden.json",
+                "Per-tree tokens, growth stage, fruit, decorations, first-use time; plus the running per-model totals of the tokens you collected (model name + the four counts, no dates)",
+              ],
               [
                 "config.json",
                 "Window position, language, bubble mode, leaderboard state, display name, region",
@@ -83,7 +86,7 @@ const EN: LegalDoc = {
           },
         },
         {
-          p: "These files stay on your machine and are never uploaded. usage_ledger.json contains local metadata (such as file paths) that other users of your computer could read if they can read your files; treat the app's data folder as private. account.json currently stores session tokens as plain JSON; moving them to the operating system's credential store is planned. Deleting these files (or uninstalling and deleting the folder) removes all local data.",
+          p: "These files stay on your machine and are never uploaded. usage_ledger.json contains local metadata (such as file paths) that other users of your computer could read if they can read your files; treat the app's data folder as private. From v0.2.0 the session tokens live in the operating system's credential store — Keychain on macOS, Credential Manager on Windows. A copy stays in account.json so that an older build, which does not know about the credential store, still finds your account instead of registering a new one and stranding your leaderboard row. Deleting these files (or uninstalling and deleting the folder) removes all local data.",
         },
       ],
     },
@@ -132,6 +135,10 @@ const EN: LegalDoc = {
                 "No",
               ],
               ["Anti-cheat summary — four numbers, see below (v0.1.5+)", "No"],
+              [
+                "Model breakdown of the tokens you collected — model name, its vendor, the input / output / cache-read / cache-write counts and their sum, with no dates attached (v0.2.0+)",
+                "Yes (model boards)",
+              ],
               ["Server-generated created/updated timestamps", "May be shown"],
             ],
           },
@@ -140,7 +147,22 @@ const EN: LegalDoc = {
           p: "Small print: if you leave the name blank, the generated anonymous name is rendered in your app language, so the leaderboard indirectly reflects which UI language you use.",
         },
         {
-          p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project names, Git branches, per-model or per-session usage, cost estimates, or any per-window / time-of-day breakdown of your token use.",
+          p: "The model breakdown (v0.2.0+). The leaderboard has boards beyond \"biggest tree\" — most-used model, one vendor against another. They are fed by a per-model breakdown of your tokens: the model name (say claude-opus-4-8), the vendor it belongs to, and the four token counts plus their sum.",
+        },
+        {
+          p: "Two public boards are built from this breakdown, besides the token board. Vendor usage adds every player's tokens together per vendor and per model — whole-community totals, from which no single player's usage can be read back. Forest value shows an estimate of what your collected tokens would have cost, worked out on our server by multiplying the counts you already sync by each model's published price: no money figure is ever sent from your machine and no new field is uploaded. It is an estimate and not a bill — subscriptions, discounts and free allowances are ignored, a vendor price change moves everyone at once, and the model each token is filed under comes from your own machine and is not independently verified. Both boards state how much of all counted tokens they cover. It covers only the bubbles you popped yourself. Every bubble carries the breakdown of which models burned it, and that breakdown is banked at the exact moment you collect the bubble — the same instant, the same energy, that raises your tree score. A bubble that expires unpopped counts for neither. Token Forest does not go digging through logs from before you installed it in order to build this.",
+        },
+        {
+          p: "The vendor is derived from the model name, not from which CLI wrote the log: people routinely route DeepSeek, GLM or Kimi through Claude Code via ANTHROPIC_BASE_URL, and attributing by source would file those under Claude.",
+        },
+        {
+          p: "It carries no dates. Running totals only — no per-day, per-hour or per-session split — so like the four anti-cheat numbers it cannot reconstruct when you work and when you rest. The per-date breakdown stays on your machine, for the dashboard.",
+        },
+        {
+          p: "Tracking begins with v0.1.10. Tokens collected before it have no model attribution and are not backfilled, so the model total is normally lower than your score. A sync carries at most 30 models; model names pass two checks — the app folds anything outside a strict character set into a single \"unknown\" entry, and the server independently re-checks the character set and a banned-word list, dropping rows that fail.",
+        },
+        {
+          p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project names, Git branches, per-session usage, cost estimates, anything about tokens you never collected, or any per-window / time-of-day breakdown of your token use — including any per-date breakdown of the model figures above.",
         },
         {
           p: "Like any online service, Supabase's infrastructure processes standard connection data (such as IP addresses and request timestamps) to operate and secure the service, under Supabase's own policies.",
@@ -250,7 +272,7 @@ const EN: LegalDoc = {
 const ZH: LegalDoc = {
   title: "Token Forest 隐私声明",
   meta: [
-    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-19 · 首个公开版本发布时生效",
+    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-28 · 首个公开版本发布时生效",
     "发布者:Poietic Studio",
   ],
   sections: [
@@ -301,7 +323,10 @@ const ZH: LegalDoc = {
           table: {
             head: ["文件", "内容"],
             rows: [
-              ["garden.json", "每棵树的 token、阶段、果实、装饰、首次使用时间"],
+              [
+                "garden.json",
+                "每棵树的 token、阶段、果实、装饰、首次使用时间;以及已收取 token 按模型的累计(模型名 + 四类数量,无日期)",
+              ],
               ["config.json", "窗口位置、语言、气泡模式、排行榜状态、昵称、地区"],
               ["growth_ledger.json", "按日期 × 树种 × token 类型的成长流水"],
               [
@@ -317,7 +342,7 @@ const ZH: LegalDoc = {
           },
         },
         {
-          p: "这些文件只存在于你的机器上,不会上传。usage_ledger.json 含文件路径等本地元数据,同一台电脑的其他用户若能读你的文件即可看到,请把应用数据目录视为私人目录。account.json 当前以普通 JSON 保存会话令牌,改用操作系统凭据存储已在计划中。删除这些文件(或卸载并删除目录)即清除全部本地数据。",
+          p: "这些文件只存在于你的机器上,不会上传。usage_ledger.json 含文件路径等本地元数据,同一台电脑的其他用户若能读你的文件即可看到,请把应用数据目录视为私人目录。自 v0.2.0 起,会话令牌保存在操作系统的凭据存储中——macOS 钥匙串、Windows 凭据管理器。account.json 里保留一份副本,是为了让不认识凭据存储的旧版本仍能找到你的账号,而不是当成「从没注册过」重新注册、把你榜上那一行变成孤儿。删除这些文件(或卸载并删除目录)即清除全部本地数据。",
         },
       ],
     },
@@ -366,6 +391,10 @@ const ZH: LegalDoc = {
                 "否",
               ],
               ["防作弊摘要——四个数字,见下(v0.1.5+)", "否"],
+              [
+                "你收取的 token 按模型的构成——模型名、所属厂商、输入/输出/缓存读/缓存写数量及其合计,不带日期(v0.2.0+)",
+                "是(模型榜)",
+              ],
               ["服务端生成的创建/更新时间", "可能显示"],
             ],
           },
@@ -374,7 +403,22 @@ const ZH: LegalDoc = {
           p: "小字说明:昵称留空时生成的匿名名按你的界面语言渲染,因此榜单会间接体现你的 UI 语言。",
         },
         {
-          p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、项目名、Git 分支、按模型/按会话用量、成本估算,以及任何逐片段/按时段的 token 使用明细。",
+          p: "按模型的构成(v0.2.0+)。排行榜除了「谁的树最大」,还有「使用最多的模型」「厂商对比」这类榜单。它们由一份按模型的构成支撑:模型名(如 claude-opus-4-8)、它所属的厂商,以及四类 token 数量及其合计。",
+        },
+        {
+          p: "除 token 榜外,这份构成还用于两个公开榜单。厂商使用量榜把所有玩家在某个厂商、某个型号上的 token 加在一起,是全社区合计,从中读不出任何一个人的用量。树林价值榜显示你收取的 token 折算成美元的估算:金额在我们的服务器上算,用你本来就会同步的数量乘以各模型的公开价格——你的机器从不发送任何金额,也不会为此多上传字段。它是估算不是账单:不考虑订阅、折扣与免费额度,厂商改价时所有人同时变动,而每个 token 归到哪个模型名下来自你自己的机器,未经独立核验。两个榜单都会标明自己覆盖了全部已统计 token 的多少。它统计的只是你亲手点掉的那些气泡。每颗气泡都带着「自己是由哪几个模型烧出来的」,这份构成在你点掉气泡的那一刻才入账——和树的分数同一时刻、同一笔能量;没被点、直接过期的气泡两边都不算。Token Forest 不会为了这个榜去翻你安装之前的历史日志。",
+        },
+        {
+          p: "厂商由模型名派生,而不是由哪个 CLI 记的日志派生:用户常把 DeepSeek、GLM、Kimi 经 ANTHROPIC_BASE_URL 接进 Claude Code,按来源归会把它们错记成 Claude。",
+        },
+        {
+          p: "它不带日期。只有累计量,没有按天、按小时、按会话的拆分,因此和防作弊那四个数字一样,还原不出你几点在工作、几点在休息。按日期的拆分留在你的机器上,供数据面板使用。",
+        },
+        {
+          p: "记账从 v0.1.10 开始。更早收取的 token 没有模型归属,也不会补算,所以模型合计通常小于你的分数。一次同步最多带 30 个模型;模型名要过两道校验——App 这边把字符集不合规的归进单独一格「unknown」,服务端再独立复核一次字符集与违禁词表,没过的行直接丢弃。",
+        },
+        {
+          p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、项目名、Git 分支、按会话用量、成本估算、未被你收取的 token 的任何信息,以及任何逐片段/按时段的 token 使用明细——包括上面那份模型构成的按日期拆分。",
         },
         {
           p: "与任何在线服务一样,Supabase 的基础设施会为运行与安全处理标准连接数据(如 IP 地址、请求时间),适用其自身政策。",
@@ -484,7 +528,7 @@ const ZH: LegalDoc = {
 const JA: LegalDoc = {
   title: "Token Forest プライバシー通知",
   meta: [
-    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-19 · 最初の公開リリース時に発効",
+    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-28 · 最初の公開リリース時に発効",
     "発行者:Poietic Studio",
   ],
   sections: [
@@ -535,7 +579,10 @@ const JA: LegalDoc = {
           table: {
             head: ["ファイル", "内容"],
             rows: [
-              ["garden.json", "木ごとのトークン、成長段階、果実、装飾、初回使用時刻"],
+              [
+                "garden.json",
+                "木ごとのトークン、成長段階、果実、装飾、初回使用時刻;および回収したトークンのモデル別累計(モデル名 + 4 種の数量、日付なし)",
+              ],
               [
                 "config.json",
                 "ウィンドウ位置、言語、バブルモード、リーダーボードの状態、表示名、地域",
@@ -557,7 +604,7 @@ const JA: LegalDoc = {
           },
         },
         {
-          p: "これらのファイルはお使いのマシン上にとどまり、アップロードされることはありません。usage_ledger.json にはファイルパスなどのローカルメタデータが含まれ、同じコンピューターの他のユーザーがあなたのファイルを読める場合には、見られる可能性があります。アプリのデータフォルダーは非公開として扱ってください。account.json は現在、セッショントークンを平文の JSON として保存しています。オペレーティングシステムの認証情報ストアへの移行を予定しています。これらのファイルを削除する(またはアンインストールしてフォルダーを削除する)と、すべてのローカルデータが削除されます。",
+          p: "これらのファイルはお使いのマシン上にとどまり、アップロードされることはありません。usage_ledger.json にはファイルパスなどのローカルメタデータが含まれ、同じコンピューターの他のユーザーがあなたのファイルを読める場合には、見られる可能性があります。アプリのデータフォルダーは非公開として扱ってください。v0.2.0 以降、セッショントークンはオペレーティングシステムの認証情報ストア(macOS はキーチェーン、Windows は資格情報マネージャー)に保存されます。account.json にも控えを残します——認証情報ストアを知らない旧バージョンがアカウントを見つけられずに新規登録してしまい、ランキングの行が孤立するのを防ぐためです。これらのファイルを削除する(またはアンインストールしてフォルダーを削除する)と、すべてのローカルデータが削除されます。",
         },
       ],
     },
@@ -609,15 +656,34 @@ const JA: LegalDoc = {
                 "いいえ",
               ],
               ["不正防止サマリー——4 つの数値、下記参照(v0.1.5+)", "いいえ"],
+              [
+                "回収したトークンのモデル別内訳——モデル名、その提供元、入力/出力/キャッシュ読み/キャッシュ書き込みの数量とその合計、日付なし(v0.2.0+)",
+                "はい(モデルランキング)",
+              ],
               ["サーバーが生成する作成/更新のタイムスタンプ", "表示される場合あり"],
             ],
           },
         },
         {
-          p: "細目:名前を空欄にすると、生成される匿名名はアプリの言語で表示されるため、リーダーボードにはお使いの UI 言語が間接的に反映されます。",
+          p: "この内訳は、トークンランキングのほかに 2 つの公開ランキングにも使われます。ベンダー使用量ランキングは全プレイヤーのトークンをベンダー別・モデル別に合算したもので、コミュニティ全体の合計であり、個人の使用量を読み取ることはできません。フォレスト価値ランキングは、集めたトークンの推定金額を表示します。金額は当社のサーバー側で、すでに同期されている数量に各モデルの公開価格を掛けて算出します——金額がお使いのマシンから送信されることはなく、新たな項目のアップロードもありません。これは請求書ではなく推定です:サブスクリプション・割引・無料枠は反映されず、ベンダーが価格を変更すれば全員の数値が同時に動きます。また各トークンがどのモデルに属するかはご自身のマシン由来で、独立した検証は行われていません。両ランキングとも、集計済みトークン全体のうちどれだけをカバーしているかを明示します。 細目:名前を空欄にすると、生成される匿名名はアプリの言語で表示されるため、リーダーボードにはお使いの UI 言語が間接的に反映されます。",
         },
         {
-          p: "いかなるモードでもアップロードしないもの:生ログ、プロンプトや会話内容、ソースコード、セッションタイトル、ファイルパス、プロジェクト名、Git ブランチ、モデル別・セッション別の使用状況、費用の見積もり、およびトークン使用の区間別・時間帯別の内訳一切。",
+          p: "モデル別内訳(v0.2.0+)。ランキングには「木の大きさ」以外にも、最も使われたモデル、提供元どうしの比較といったボードがあります。これらはトークンのモデル別内訳——モデル名(例 claude-opus-4-8)、その提供元、4 種のトークン数量とその合計——によって支えられています。",
+        },
+        {
+          p: "対象はあなたが自分で回収したバブルのみです。各バブルは「どのモデルが消費したか」の内訳を保持しており、その内訳はバブルを回収した瞬間——ツリーのスコアが増えるのと同じ瞬間、同じエネルギー——に記録されます。回収されずに期限切れとなったバブルはどちらにも入りません。この集計のためにインストール前のログを遡ることはありません。",
+        },
+        {
+          p: "提供元はモデル名から導出され、どの CLI がログを書いたかには依存しません:DeepSeek や GLM、Kimi を ANTHROPIC_BASE_URL 経由で Claude Code に接続する使い方は一般的で、ログの出所で判断すると Claude に誤集計されるためです。",
+        },
+        {
+          p: "日付は含みません。累計のみで、日別・時間別・セッション別の分割はないため、不正防止の 4 つの数値と同様に作業時間を復元できません。日付別の内訳は端末に留まり、ダッシュボードで使われます。",
+        },
+        {
+          p: "集計は v0.1.10 から開始します。それ以前に回収したトークンはモデル情報を持たず遡って補完されないため、モデル合計は通常スコアより少なくなります。1 回の同期で最大 30 モデル。モデル名は 2 段階で検証され、アプリは厳格な文字集合を外れるものを単一の「unknown」にまとめ、サーバー側でも文字集合と禁止語リストを独立に再確認し、通らない行は破棄します。",
+        },
+        {
+          p: "いかなるモードでもアップロードしないもの:生ログ、プロンプトや会話内容、ソースコード、セッションタイトル、ファイルパス、プロジェクト名、Git ブランチ、セッション別の使用状況、費用の見積もり、回収していないトークンに関する一切、およびトークン使用の区間別・時間帯別の内訳一切——上記のモデル別数値の日付別内訳を含みます。",
         },
         {
           p: "あらゆるオンラインサービスと同様に、Supabase のインフラは、サービスの運用と保護のために標準的な接続データ(IP アドレスやリクエストのタイムスタンプなど)を、Supabase 自身のポリシーに従って処理します。",
@@ -727,7 +793,7 @@ const JA: LegalDoc = {
 const KO: LegalDoc = {
   title: "Token Forest 개인정보 보호정책",
   meta: [
-    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-19 · 최초 공개 릴리스 시 발효",
+    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-28 · 최초 공개 릴리스 시 발효",
     "발행자: Poietic Studio",
   ],
   sections: [
@@ -778,7 +844,10 @@ const KO: LegalDoc = {
           table: {
             head: ["파일", "내용"],
             rows: [
-              ["garden.json", "나무별 토큰, 성장 단계, 열매, 장식, 최초 사용 시각"],
+              [
+                "garden.json",
+                "나무별 토큰, 성장 단계, 열매, 장식, 최초 사용 시각; 그리고 수집한 토큰의 모델별 누계(모델명 + 4종 수량, 날짜 없음)",
+              ],
               ["config.json", "창 위치, 언어, 버블 모드, 리더보드 상태, 표시 이름, 지역"],
               ["growth_ledger.json", "날짜 × 나무 × 토큰 유형별 성장 기록"],
               [
@@ -794,7 +863,7 @@ const KO: LegalDoc = {
           },
         },
         {
-          p: "이 파일들은 사용자의 기기에 남아 있으며 업로드되지 않습니다. usage_ledger.json에는 파일 경로와 같은 로컬 메타데이터가 포함되어 있어, 같은 컴퓨터의 다른 사용자가 사용자의 파일을 읽을 수 있다면 볼 수 있습니다. 앱의 데이터 폴더는 비공개로 취급하십시오. account.json은 현재 세션 토큰을 일반 JSON으로 저장합니다. 운영 체제의 자격 증명 저장소로 옮기는 것을 계획하고 있습니다. 이 파일들을 삭제하면(또는 제거 후 폴더를 삭제하면) 모든 로컬 데이터가 삭제됩니다.",
+          p: "이 파일들은 사용자의 기기에 남아 있으며 업로드되지 않습니다. usage_ledger.json에는 파일 경로와 같은 로컬 메타데이터가 포함되어 있어, 같은 컴퓨터의 다른 사용자가 사용자의 파일을 읽을 수 있다면 볼 수 있습니다. 앱의 데이터 폴더는 비공개로 취급하십시오. v0.2.0부터 세션 토큰은 운영 체제의 자격 증명 저장소(macOS는 키체인, Windows는 자격 증명 관리자)에 저장됩니다. account.json에도 사본을 남깁니다 — 자격 증명 저장소를 모르는 구버전이 계정을 찾지 못해 새로 등록하고 리더보드 행이 고아가 되는 것을 막기 위해서입니다. 이 파일들을 삭제하면(또는 제거 후 폴더를 삭제하면) 모든 로컬 데이터가 삭제됩니다.",
         },
       ],
     },
@@ -843,15 +912,34 @@ const KO: LegalDoc = {
                 "아니요",
               ],
               ["부정행위 방지 요약——네 개의 숫자, 아래 참조(v0.1.5+)", "아니요"],
+              [
+                "수집한 토큰의 모델별 구성——모델명, 해당 제공사, 입력/출력/캐시 읽기/캐시 쓰기 수량과 그 합계, 날짜 없음(v0.2.0+)",
+                "예(모델 리더보드)",
+              ],
               ["서버가 생성한 생성/수정 타임스탬프", "표시될 수 있음"],
             ],
           },
         },
         {
-          p: "세부 사항: 이름을 비우면 생성되는 익명 이름이 앱 언어로 표시되므로, 리더보드에 사용자의 UI 언어가 간접적으로 반영됩니다.",
+          p: "이 구성은 토큰 리더보드 외에 두 개의 공개 리더보드에도 사용됩니다. 벤더 사용량 리더보드는 모든 플레이어의 토큰을 벤더별·모델별로 합산한 것으로, 커뮤니티 전체 합계이며 개인의 사용량은 읽어낼 수 없습니다. 숲 가치 리더보드는 수집한 토큰의 추정 금액을 보여줍니다. 금액은 저희 서버에서 이미 동기화된 수량에 모델별 공개 단가를 곱해 계산합니다 — 사용자의 기기에서 금액이 전송되지 않으며 새로 업로드되는 항목도 없습니다. 이는 청구서가 아니라 추정치입니다: 구독·할인·무료 한도는 반영되지 않고, 벤더가 가격을 바꾸면 모두의 수치가 동시에 움직이며, 각 토큰이 어느 모델에 속하는지는 사용자 기기에서 온 정보로 독립 검증되지 않습니다. 두 리더보드 모두 집계된 전체 토큰 중 얼마를 포함하는지 명시합니다. 세부 사항: 이름을 비우면 생성되는 익명 이름이 앱 언어로 표시되므로, 리더보드에 사용자의 UI 언어가 간접적으로 반영됩니다.",
         },
         {
-          p: "어떤 모드에서도 업로드하지 않는 것: 원본 로그, 프롬프트나 대화 내용, 소스 코드, 세션 제목, 파일 경로, 프로젝트 이름, Git 브랜치, 모델별·세션별 사용량, 비용 추정, 그리고 토큰 사용의 구간별·시간대별 내역 일체.",
+          p: "모델별 구성(v0.2.0+). 리더보드에는 「나무 크기」 외에도 가장 많이 쓴 모델, 제공사 간 비교 같은 보드가 있습니다. 이들은 토큰의 모델별 구성——모델명(예: claude-opus-4-8), 해당 제공사, 4종 토큰 수량과 그 합계——으로 채워집니다.",
+        },
+        {
+          p: "대상은 직접 누른 버블뿐입니다. 각 버블은 「어떤 모델이 소비했는지」의 구성을 지니며, 그 구성은 버블을 수집하는 바로 그 순간——나무 점수가 오르는 것과 같은 순간, 같은 에너지——에 기록됩니다. 누르지 않고 만료된 버블은 양쪽 모두 계산되지 않습니다. 이 집계를 위해 설치 이전의 로그를 뒤지지 않습니다.",
+        },
+        {
+          p: "제공사는 모델명에서 파생되며 어느 CLI가 로그를 남겼는지와는 무관합니다: DeepSeek·GLM·Kimi를 ANTHROPIC_BASE_URL로 Claude Code에 연결해 쓰는 경우가 흔한데, 출처로 분류하면 Claude로 잘못 집계되기 때문입니다.",
+        },
+        {
+          p: "날짜는 담지 않습니다. 누적값만 있고 일별·시간별·세션별 분할이 없으므로, 부정행위 방지용 네 숫자와 마찬가지로 언제 일하고 언제 쉬는지 알아낼 수 없습니다. 날짜별 내역은 기기에 남아 대시보드에서 사용됩니다.",
+        },
+        {
+          p: "집계는 v0.1.10부터 시작합니다. 그 이전에 수집한 토큰은 모델 정보가 없고 소급 보정하지 않으므로 모델 합계는 보통 점수보다 적습니다. 한 번의 동기화에 최대 30개 모델이 실립니다. 모델명은 두 단계로 검증되어, 앱은 엄격한 문자 집합을 벗어나는 것을 단일 「unknown」으로 묶고, 서버도 문자 집합과 금지어 목록을 독립적으로 재확인해 통과하지 못한 행은 버립니다.",
+        },
+        {
+          p: "어떤 모드에서도 업로드하지 않는 것: 원본 로그, 프롬프트나 대화 내용, 소스 코드, 세션 제목, 파일 경로, 프로젝트 이름, Git 브랜치, 세션별 사용량, 비용 추정, 수집하지 않은 토큰에 관한 일체, 그리고 토큰 사용의 구간별·시간대별 내역 일체——위 모델별 수치의 날짜별 내역을 포함합니다.",
         },
         {
           p: "다른 온라인 서비스와 마찬가지로, Supabase의 인프라는 서비스를 운영하고 보호하기 위해 표준 연결 데이터(IP 주소, 요청 타임스탬프 등)를 Supabase 자체 정책에 따라 처리합니다.",

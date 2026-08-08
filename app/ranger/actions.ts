@@ -209,3 +209,88 @@ export async function setRangerLangAction(formData: FormData): Promise<void> {
   });
   revalidatePath("/ranger", "layout");
 }
+
+/**
+ * Count a held score increase after all (migration 0016). The tokens go back
+ * into the player's public score immediately; the event is marked as decided by
+ * a human, so re-evaluation leaves it alone from then on. Admin-only.
+ */
+export async function releaseEventAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const eventId = Number(formData.get("eventId"));
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!Number.isFinite(eventId)) throw new Error("Missing eventId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.rpc("release_leaderboard_event", {
+    p_id: eventId,
+    p_admin: admin.email ?? "admin",
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/ranger");
+  if (userId) revalidatePath(`/ranger/${userId}`);
+  revalidatePublicBoards();   // the score just went up in public
+}
+
+/** Stop counting an increase the rules let through. Admin-only. */
+export async function holdEventAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const eventId = Number(formData.get("eventId"));
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!Number.isFinite(eventId)) throw new Error("Missing eventId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.rpc("hold_leaderboard_event", {
+    p_id: eventId,
+    p_admin: admin.email ?? "admin",
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/ranger");
+  if (userId) revalidatePath(`/ranger/${userId}`);
+  revalidatePublicBoards();
+}
+
+/**
+ * Release or hold many gains in one submit (migration 0016). The per-event RPCs
+ * are already idempotent and each adjusts held_tokens by its own delta, so this
+ * is a loop rather than a new database path — one wrong id cannot corrupt the
+ * others, and re-submitting the same set changes nothing.
+ *
+ * Ids arrive as repeated `eventIds` fields from the checkboxes. Admin-only.
+ */
+export async function batchEventAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const mode = String(formData.get("mode") ?? "");
+  if (mode !== "release" && mode !== "hold") throw new Error("Bad mode.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  const ids = formData
+    .getAll("eventIds")
+    .map((v) => Number(v))
+    .filter((n) => Number.isFinite(n));
+  if (!ids.length) return;
+
+  const db = getSupabaseAdminClient();
+  const rpc = mode === "release" ? "release_leaderboard_event" : "hold_leaderboard_event";
+  const failures: string[] = [];
+  for (const id of ids) {
+    const { error } = await db.rpc(rpc, { p_id: id, p_admin: admin.email ?? "admin" });
+    if (error) failures.push(`#${id}: ${error.message}`);
+  }
+
+  revalidatePath("/ranger");
+  if (userId) revalidatePath(`/ranger/${userId}`);
+  revalidatePublicBoards();
+
+  // Surface partial failure rather than reporting a clean run: the score has
+  // already moved for the ids that did succeed.
+  if (failures.length) throw new Error(`${failures.length}/${ids.length} failed — ${failures[0]}`);
+}
