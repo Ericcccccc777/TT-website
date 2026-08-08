@@ -208,25 +208,37 @@ older model in the same family, the row says how much: without that line a tree
 valued almost entirely by fallback looks identical to one priced from published
 rates. Rows with unpriced tokens carry a `+ N unpriced` line for the same reason.
 
-Who is absent matters as much as who is listed. A player with no per-model rows
-at all is not in `leaderboard_value` and never ranks — they are unmeasured, not
-worth $0. A player whose models are simply missing from the price table *does*
-appear, at a real `$0.00`. The page states the difference and gives the count of
-the first group, because an empty-looking bottom of the board otherwise reads as
-a claim about those players.
+Who is absent still matters. A player with no per-model rows at all is not in
+`leaderboard_value` and never ranks — they are unmeasured, not worth $0. A player
+whose models are simply missing from the price table *does* appear, at a real
+`$0.00`. The two look the same from outside the database, and as of 2026-08-08 the
+page no longer distinguishes them.
 
 The board inherits the attribution window described in `usage-board.md`: it covers
-only tokens collected since 2026-07-29. The coverage ratio that used to be printed
-above the table, and the rule that no ratio meant no board, were removed on
-2026-08-08 (see `usage-board.md`).
+only tokens collected since 2026-07-29.
 
-What stayed is the gold-edged note itself, now carrying two things: that the
-figure is an estimate rather than a bill, and the count of players absent from the
-board. The estimate sentence is the only place on the site a visitor is told the
-number is not money owed — everywhere else it is a dollar sign next to their name.
-The absent-player count renders only when `getExcludedPlayers()` actually returns a
-number; on failure the line is omitted rather than shown as zero, since "0 players
-excluded" is a specific and checkable claim that would be false.
+**The page's disclosure is a short note, set by the product owner on 2026-08-08,**
+making three points: amounts come from each model's *latest* public API price,
+price updates can lag, and the figure is what the tree is worth rather than a bill.
+Sentence count is not the requirement — brevity is, and where a locale reads better
+as two or three short sentences than as one long one (ja, ko), it gets them.
+Three things were
+removed to get there — the live coverage ratio, the attribution start date, and the
+count of players absent from the board — along with the rule that no coverage
+figure meant no board.
+
+"Latest" is not a stylistic choice. `leaderboard_value` joins accumulated tokens
+straight onto `model_prices`, and the daily sync replaces that table wholesale
+(`delete` then `insert`, 0018) — there is no per-token price snapshot anywhere. So
+a vendor price change silently reprices every token ever collected, including
+those banked years earlier. Copy that says tokens are priced "at the time they
+were counted" is false for every tree that spans a price change, and a first draft
+of this sentence said exactly that.
+
+The last clause of that sentence is load-bearing: it is the only place on the site
+a visitor is told the number is not money owed. Everywhere else it is a dollar sign
+next to their name. The EULA disclaims it too, but nobody reads the EULA standing
+in front of the board.
 
 ## Reading it
 

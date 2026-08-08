@@ -107,13 +107,14 @@ would not render at all when the ratio could not be read.
 
 **Both were removed by the product owner on 2026-08-08.** The board now renders
 from `leaderboard_provider_usage` / `leaderboard_model_usage` alone, and stands or
-falls on its own error and empty states like any other page. `getAttribution()`
-went with it; `getExcludedPlayers()` is what survives, and only the value board
-uses it.
+falls on its own error and empty states like any other page. The reader that
+fetched the coverage figure went with it, so **no page reads
+`leaderboard_attribution` any more** — the value board dropped its own use of it
+later the same day.
 
-The ratio is still computable — `leaderboard_attribution` is untouched in 0021 —
-so the band can come back as a display-layer change if the framing is ever wanted
-again. What is gone is the claim that the board refuses to render without it.
+The ratio is still computable — the view is untouched in 0021 — so the band can
+come back as a display-layer change if the framing is ever wanted again. What is
+gone is the claim that the board refuses to render without it.
 
 ## Routing
 

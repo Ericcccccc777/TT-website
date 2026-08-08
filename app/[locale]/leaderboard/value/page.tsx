@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { LEADERBOARD_PAGE_SIZE } from "@/lib/leaderboard";
-import { getValueBoard, getExcludedPlayers } from "@/lib/leaderboard-boards";
+import { getValueBoard } from "@/lib/leaderboard-boards";
 import { MEDAL, regionInfo, formatTokens, formatUsd } from "@/lib/leaderboard-format";
 import { BoardTabs } from "@/components/leaderboard/board-tabs";
 import { DisclosureNote } from "@/components/leaderboard/disclosure-note";
@@ -47,10 +47,10 @@ export default async function ValueBoardPage({
   const pageParam = Number((await searchParams).page);
   const page = Number.isInteger(pageParam) && pageParam > 1 ? pageParam : 1;
 
-  const [t, tnav, [{ entries, total, error }, excluded]] = await Promise.all([
+  const [t, tnav, { entries, total, error }] = await Promise.all([
     getTranslations("LeaderboardPage"),
     getTranslations("TopBar"),
-    Promise.all([getValueBoard(page), getExcludedPlayers()]),
+    getValueBoard(page),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
@@ -91,19 +91,11 @@ export default async function ValueBoardPage({
         </div>
 
         {/*
-          "Estimate, not a bill" stays whatever else is trimmed from this page —
-          it is the only place a visitor is told the number is not money owed.
-          The excluded-players line only appears when it could actually be read;
-          a hard-coded 0 would read as "everybody is on this board".
+          One sentence, by request: where the price comes from, that it can lag,
+          and that this is what the tree is worth rather than money owed. The
+          last clause is the only place on the site a visitor is told that.
         */}
-        <DisclosureNote
-          body={t("valueDisclosure")}
-          extra={
-            excluded && excluded > 0
-              ? t("valueExcluded", { n: formatTokens(excluded, locale) })
-              : undefined
-          }
-        />
+        <DisclosureNote body={t("valueDisclosure")} />
 
         {error && (
           <div

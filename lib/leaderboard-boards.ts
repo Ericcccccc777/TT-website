@@ -16,41 +16,19 @@ import { LEADERBOARD_PAGE_SIZE, type LeaderboardEntry } from "@/lib/leaderboard"
  * Node; at 1e4 users x 10 models that is 1e5 rows per render.
  */
 
-// ── Coverage ──────────────────────────────────────────────────────────────────
-
-/**
- * How many players are on the token board but not on the value board, or
- * **null when it could not be read**.
+/*
+ * Nothing here reads `leaderboard_attribution` any more.
  *
- * Per-model attribution shipped partway through the app's life; tokens banked
- * before it carry no model name and never will (back-filling would mean reading
- * logs from before the user installed the app, which was rejected on privacy
- * grounds). So a player can sit high on the token board and be absent here,
- * which looks like a bug unless the page says otherwise.
+ * Both boards used to print how thin the per-model window is — the coverage
+ * ratio, the date attribution started, and the count of players missing from the
+ * value board — and the value board refused to render when that ratio could not
+ * be read. All of it was removed by the product owner on 2026-08-08.
  *
- * Null rather than 0 on failure: "0 players excluded" is a specific, plausible,
- * checkable claim, and it would be a false one.
- *
- * The rest of leaderboard_attribution — the coverage ratio and the token totals
- * behind it — is no longer surfaced; the view still exposes it if the figure is
- * ever wanted back.
+ * The view is still there and still correct (0021), so the figures can be put
+ * back as a display-layer change; the caveat worth keeping in mind meanwhile is
+ * that these boards cover only tokens collected since 2026-07-29 and are not a
+ * random sample of anyone's history.
  */
-export async function getExcludedPlayers(): Promise<number | null> {
-  try {
-    const client = getSupabaseServerClient();
-    const { data, error } = await client
-      .from("leaderboard_attribution")
-      .select("players_attributed, players_total")
-      .limit(1)
-      .maybeSingle();
-
-    if (error || !data) return null;
-
-    return Math.max(Number(data.players_total ?? 0) - Number(data.players_attributed ?? 0), 0);
-  } catch {
-    return null;
-  }
-}
 
 // ── Vendor / model usage ──────────────────────────────────────────────────────
 
