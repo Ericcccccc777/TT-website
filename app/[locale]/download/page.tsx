@@ -6,7 +6,7 @@ import { localizedMetadata } from "@/lib/seo";
 import { BreadcrumbJsonLd, SoftwareAppJsonLd } from "@/components/json-ld";
 
 // 每次发版只改这一处;platformLine 文案会显示它。
-const APP_VERSION = "v0.1.3";
+const APP_VERSION = "v0.1.8";
 const GITHUB_REPO = "https://github.com/Ericcccccc777/Poietic-TokenForest";
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 // 平台安装包直链:始终指向最新 Release 的同名资产。
