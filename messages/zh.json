@@ -324,7 +324,7 @@
     "usageModelCount": "{n} 个型号",
     "usageClearFilter": "显示全部厂商",
     "usageVendorAria": "{provider} — {tokens} tokens,占已归属用量的 {pct}",
-    "usageDisclosure": "这里的数字是把所有玩家加在一起的,所以从中读不出任何一个人的用量。它们是原始计数:被反作弊规则扣留的用量**仍然计入**,这一点和 token 榜不同 —— 换成扣留后的数字,反而会把「谁被扣了多少」泄露出去。",
+    "usageDisclosure": "这里的数字是把所有玩家加在一起的,所以从中读不出任何一个人的用量。它们是原始计数:被反作弊规则扣留的用量仍然计入,这一点和 token 榜不同 —— 换成扣留后的数字,反而会把「谁被扣了多少」泄露出去。",
     "usageEmptyHeading": "还没有已归属的用量",
     "usageEmptyBody": "玩家用当前版本收取气泡之后,厂商的数字就会开始累积。",
     "coverageLabel": "覆盖全部已统计 token 的 {pct}",
