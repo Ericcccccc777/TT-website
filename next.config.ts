@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
   },
   allowedDevOrigins: ["localhost", "127.0.0.1"],
   images: {
+    // Sprites are versioned by filename, so the optimizer can hold its WebP
+    // derivatives for a week instead of re-validating on every visit. Matches
+    // the Cache-Control we set for /sprites/* in netlify.toml.
+    minimumCacheTTL: 604800,
     remotePatterns: [
       {
         protocol: "https",
