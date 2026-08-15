@@ -5,8 +5,8 @@ gains a small control; opening it reveals a panel between their row and the next
 one, holding a name, a one-line description, a link and a picture.
 
 The website only ever **shows** this. Everything is written in the desktop app,
-under Settings → Leaderboard → Project showcase, and is off by default. Nothing
-on the website can create, edit or remove it.
+in its leaderboard settings, and is off by default. Nothing on the website can
+create, edit or remove it.
 
 ## Happy path
 
@@ -20,6 +20,12 @@ on the website can create, edit or remove it.
    new one. Only one is ever open.
 6. Activating the same marker again closes it.
 
+The marker sits **beside the player's name**, not on the row as a whole. The row
+already carries something else you can click — the little tree that shows what a
+player has grown — and a whole-row target would mean two different things happen
+depending on where a visitor lands. It also gives someone using a keyboard one
+clear thing to move to rather than an ambiguous block.
+
 ## What counts as having a project
 
 **The project name decides it.** A player with a name has a project; a player
@@ -30,13 +36,13 @@ the top of it.
 
 Everything else is optional and simply absent when empty:
 
-| filled in           | what the panel shows                                 |
-| ------------------- | ---------------------------------------------------- |
-| name only           | the name, alone                                      |
-| name + description  | both, no space reserved for a picture                |
-| name + picture      | the name and the picture                             |
-| all four            | all four                                             |
-| picture but no name | **no marker, no panel** — the picture is never shown |
+| filled in           | what the panel shows                  |
+| ------------------- | ------------------------------------- |
+| name only           | the name, alone                       |
+| name + description  | both, no space reserved for a picture |
+| name + picture      | the name and the picture              |
+| all four            | all four                              |
+| picture but no name | **no marker, no panel** — never shown |
 
 The panel never reserves an empty slot. A player with no picture gets a panel
 that is simply shorter, not one with a gap in it.
@@ -45,11 +51,12 @@ that is simply shorter, not one with a gap in it.
 
 Shown as the site's address — `example.com` — never as the full raw link.
 
-Two reasons, and both are about the same thing. A full address can be made to
-read like a site it is not: characters that render as Latin letters but are not,
-and characters with no width at all. The other three things a player writes are
-screened for those; the link is not. Showing only the address means what the
-visitor reads is the part that decides where they land.
+The reason is trickery. An address can be made to read like a site it is not:
+characters that render as ordinary letters but are not, and characters with no
+width at all. The name and the description are screened for that kind of thing,
+and the picture's address is pinned so tightly that none of it can appear there.
+The link is the one thing that is not screened — so we only ever show the part of
+it that names the site.
 
 The link opens in a new tab, and search engines are told we do not vouch for it.
 The leaderboard is a page with real standing; without that signal it becomes a
@@ -69,9 +76,11 @@ notice. A picture can go missing for real reasons (a player removed it and the
 removal only half-completed) and for boring ones (the visitor's connection
 faltered), and in both cases the honest thing to show is what we do have.
 
-When a player replaces their picture, the new one appears immediately. It must
-not be possible to publish one picture, have it seen, and then quietly swap it
-for another.
+When a player replaces their picture, the new one appears at that player's next
+sync. It must not be possible to publish one picture, have it seen, and then
+quietly swap it for another and have the old one keep showing indefinitely.
+Whether the new picture genuinely turns over at that moment depends on the
+desktop app and is one of the launch gates below.
 
 ## Who does not get a panel
 
@@ -91,7 +100,7 @@ usage — are built differently and are deliberately out of scope for this
 version. A visitor who finds the panel on one board will look for it on the
 others; that is an accepted cost of shipping this one first.
 
-## Moderation — must be settled before this goes live
+## Must be settled before this goes live
 
 Today the only ways to deal with a player who publishes something unacceptable
 are to hide them from the board completely, or to edit the database by hand. The
@@ -102,14 +111,21 @@ Two further problems make hand-editing unreliable:
 - The word screening runs only when a player changes what they wrote. Text that
   passed when the word list was shorter stays published afterwards.
 - The values live in the desktop app. Clearing them on our side may simply be
-  written back on that player's next sync.
+  written back on that player's next sync. What the app publishes about its own
+  behaviour suggests this is the likely outcome, not the unlikely one.
 
-**Two things must be true before launch:** the admin page can clear one player's
-project without hiding the player, and clearing it actually sticks. The second
-depends on how the desktop app behaves and is not answerable from this side.
+**Four things must be true before launch:**
 
-Until both hold, the only honest response to an incident is hiding the player
-entirely, and the picture stays reachable by anyone who already has its address.
+1. The admin page can clear one player's project without hiding the player.
+2. Clearing it actually sticks against the desktop app's next sync.
+3. Pictures can only ever come from our own storage, never a look-alike address.
+4. A player whose gains are held shows nothing.
+
+Until 1 and 2 hold, the only honest response to an incident is hiding the player
+entirely — **and hiding a player does not take their picture down.** Its address
+can be worked out from information the site already publishes, so it stays
+reachable by anyone, not only by people who saw the panel. Removing a picture
+today means deleting it by hand.
 
 ## Known limitations (accepted for this version)
 
@@ -119,9 +135,10 @@ entirely, and the picture stays reachable by anyone who already has its address.
   would reload the whole page on every click, and nothing on this site shows a
   loading indicator.
 - The words a player writes are part of the page from the moment it loads, so
-  search engines and the AI crawlers this site invites will read them and file
+  search engines and the AI assistants this site invites will read them and file
   them under our name. This is deliberate — the words cost nothing to include
-  and help the page. Only the picture waits for a click.
+  and help the page. It applies to the first fifty players only; later pages of
+  the board are already kept out of search. Only the picture waits for a click.
 - A player writes in whatever language they choose, and it sits beside text in
   the visitor's language. Nothing marks the switch for a screen reader, which
   matches how player names already behave on this site.
@@ -132,16 +149,22 @@ entirely, and the picture stays reachable by anyone who already has its address.
 an automated test to live. Every scenario below is verified by hand. Adding a
 test runner is worth doing and is deliberately not bundled into this feature.
 
+Two things the steps below cannot reach are checked at code review instead: that
+project text never enters the page's hidden description for search engines, and
+that the link carries the tags telling search engines we do not vouch for it.
+
 ## Smoke test (manual)
 
 Run on the deployed site, not locally — this is the first picture on the whole
-site that is loaded from somewhere else, and that path has never run in
-production.
+site that is fetched from our storage rather than shipped with the site, and that
+path has never run in production.
 
 1. Open the tokens leaderboard. Confirm exactly the players with a project name
    carry a marker, and no one else does.
 2. Activate a marker. Confirm the panel opens directly beneath that player's row
-   and pushes the rest down, and that the picture only starts loading now.
+   and pushes the rest down.
+   _[engineer, with the browser's network panel open: confirm the picture is
+   requested only now, not on page load.]_
 3. Activate a second player's marker. Confirm the first panel closes.
 4. Activate the same marker again. Confirm it closes and the keyboard focus
    returns to the marker.
@@ -157,4 +180,13 @@ production.
    open the panel. Confirm the new picture appears rather than the old one.
 10. Hide a player who has a project. Confirm their row and their panel both
     disappear from the board.
-11. Confirm a player whose gains are being held shows no marker.
+11. Ask the engineer to point one player's picture at something that is not
+    there. Reload and open that panel. Confirm you see the name and the
+    description alone — no gap where the picture would be, no broken-picture
+    icon, no error message.
+
+**Launch gate, not a step:** confirm a player whose gains are held shows no
+marker. This cannot be checked from the public board — holds are invisible there
+by design, and today no held account has a project. Start from the admin page,
+put a project on a held account deliberately, and check the board from outside.
+Name who creates that state before launch.
