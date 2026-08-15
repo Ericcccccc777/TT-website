@@ -325,8 +325,6 @@
     "usageVendorAria": "{provider} — {tokens} 토큰, 귀속 사용량의 {pct}",
     "usageEmptyHeading": "아직 귀속된 사용량이 없습니다",
     "usageEmptyBody": "현재 버전으로 버블을 모으면 벤더별 수치가 쌓이기 시작합니다.",
-    "valueBorrowed": "이 중 약 {amount}는 대체 단가 기준",
-    "valueAllBorrowed": "전액이 대체 단가 기준",
     "usageModelsTruncated": "상위 {shown}개 표시(전체 {total}개)"
   },
   "DownloadPage": {

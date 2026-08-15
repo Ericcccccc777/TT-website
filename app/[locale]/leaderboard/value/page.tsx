@@ -217,27 +217,6 @@ export default async function ValueBoardPage({
                               </span>
                               {formatUsd(entry.valueUsd, locale)}
                             </span>
-                            {/*
-                              How much of this number rests on a price borrowed
-                              from an older model in the same family. Without it
-                              a tree valued almost entirely by fallback looks
-                              exactly like one priced from published rates.
-                            */}
-                            {entry.estimatedUsd > 0 && (
-                              <span
-                                className="whitespace-nowrap text-text-muted-light"
-                                style={{
-                                  fontFamily: "var(--font-body)",
-                                  fontSize: "var(--text-small)",
-                                }}
-                              >
-                                {entry.estimatedUsd >= entry.valueUsd
-                                  ? t("valueAllBorrowed")
-                                  : t("valueBorrowed", {
-                                      amount: formatUsd(entry.estimatedUsd, locale),
-                                    })}
-                              </span>
-                            )}
                             {entry.unpricedTokens > 0 && (
                               <span
                                 className="whitespace-nowrap text-text-muted-light"

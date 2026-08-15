@@ -325,8 +325,6 @@
     "usageVendorAria": "{provider} — {tokens} tokens,占已归属用量的 {pct}",
     "usageEmptyHeading": "还没有已归属的用量",
     "usageEmptyBody": "玩家用当前版本收取气泡之后,厂商的数字就会开始累积。",
-    "valueBorrowed": "其中约 {amount} 用的是回退价格",
-    "valueAllBorrowed": "全部使用回退价格计算",
     "usageModelsTruncated": "显示前 {shown} 个,共 {total} 个"
   },
   "DownloadPage": {

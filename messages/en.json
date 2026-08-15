@@ -325,8 +325,6 @@
     "usageVendorAria": "{provider} — {tokens} tokens, {pct} of attributed usage",
     "usageEmptyHeading": "No attributed usage yet",
     "usageEmptyBody": "Vendor totals start accumulating as players collect bubbles with the current app.",
-    "valueBorrowed": "≈ {amount} of it from a borrowed rate",
-    "valueAllBorrowed": "priced entirely from a borrowed rate",
     "usageModelsTruncated": "showing the top {shown} of {total}"
   },
   "DownloadPage": {

@@ -121,7 +121,12 @@ export async function getModelUsage(
 
 export type ValueEntry = LeaderboardEntry & {
   valueUsd: number;
-  /** How much of valueUsd came from a borrowed (same-family) price. */
+  /**
+   * How much of valueUsd came from a borrowed (same-family) price. Not rendered
+   * any more — the product owner dropped that line on 2026-08-12 and left the `≈`
+   * prefix to carry the caveat. Still selected, because restoring the line is a
+   * display-layer change.
+   */
   estimatedUsd: number;
   unpricedTokens: number;
 };
