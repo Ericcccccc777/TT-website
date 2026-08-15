@@ -27,7 +27,7 @@ const EN: LegalDoc = {
         {
           list: [
             "Core features run entirely on your device. No account, no API key, no network needed.",
-            "The app contains no telemetry, no ads, no crash reporting, no auto-update phoning home.",
+            "The app contains no telemetry, no ads and no crash reporting. The optional update check is off by default, and even with it on the app never installs anything by itself — it tells you a new version exists and, if you ask, downloads the installer for you to run.",
             "It reads the usage logs your AI coding tools already write locally — never your source-code files.",
             "It does not store or upload prompts or conversation content.",
             "The global leaderboard is optional and off by default. Before it turns on, the app shows a consent dialog listing every field it would sync. Turning it off requests deletion of your entry.",
@@ -97,12 +97,13 @@ const EN: LegalDoc = {
           p: "By default Token Forest makes no network requests at all. Growth, bubbles, the shop, capsule mode and the dashboard all work offline. Cost estimates use a bundled price table.",
         },
         {
-          p: "Exactly two optional features can go online, and neither does anything until you act:",
+          p: "The features that can go online are the leaderboard, the price-table update and the update check. Each is off by default, and none of them does anything until you act:",
         },
         {
           list: [
             "Leaderboard — off by default; see the next section.",
             "Price-table update (v0.1.4+) — clicking “↻ Update prices” in the dashboard, or turning on “Auto-update prices” in Settings (off by default; when on, at most one check per day), downloads a single static file, https://tokenforest.com.au/pricing.json, so newly released models can be priced without waiting for an app update. This is a download only: the request carries no usage data, no identifiers and no account. The file is validated and cached locally; on any failure the app silently keeps using the bundled/cached table.",
+            "Update check (v0.2.1+) — off by default. Turn it on in the first-run welcome dialog or in Settings → About; there is also a manual “Check for updates…” you can click once without turning anything on. When on, the app asks GitHub for the latest release: GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest, at most once a day after a successful check, and at most once every 6 hours while it cannot connect (so at most four attempts a day). The request has no body, no query string, no cookies and no authorization; the only headers the app sets are three fixed constants (User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28), identical on every install. It carries no version number, no platform, no identifier and no usage data — the version comparison happens on your machine. Nothing is downloaded until you click “Download update”; the file is then checked against the SHA-256 published in that same GitHub release, keeps its macOS quarantine / Windows mark-of-the-web flag, and is only revealed in Finder / File Explorer. The app never installs it, never replaces itself and never asks for elevated privileges. Turning this on adds GitHub as a network counterparty: like any online service, GitHub and the networks in between may process your IP address, request time and standard server logs under their own policies, and a machine with the update check on leaves a trace at GitHub of roughly which days it was switched on.",
           ],
         },
         {
@@ -289,7 +290,7 @@ const ZH: LegalDoc = {
         {
           list: [
             "核心功能完全在你的设备上运行:无需账号、无需 API key、无需网络。",
-            "应用没有遥测、广告、崩溃上报,也没有自动更新的后台请求。",
+            "应用没有遥测、广告、崩溃上报。可选的更新检查默认关闭;即使打开,App 也不会自己装任何东西—— 它只告诉你有新版本,你要的话再把安装包下下来交给你自己运行。",
             "它读取的是 AI 编程工具已经写在你本机的使用日志——从不读取你的源代码文件。",
             "不保存、不上传 prompt 或对话内容。",
             "全球排行榜为可选功能,默认关闭。开启前会弹出同意确认,列出将同步的全部字段;关闭时会请求删除你的记录。",
@@ -353,12 +354,13 @@ const ZH: LegalDoc = {
           p: "默认情况下,Token Forest 不发出任何网络请求:成长、气泡、商店、胶囊模式、数据面板全部离线可用,成本估算使用内置价格表。",
         },
         {
-          p: "只有两个可选功能会联网,且在你主动操作之前都不会有任何动作:",
+          p: "会联网的可选功能是排行榜、价格表更新和更新检查。它们各自独立、全部默认关闭,在你主动操作之前都不会有任何动作:",
         },
         {
           list: [
             "排行榜 —— 默认关闭,见下一节。",
             "价格表更新(v0.1.4+)—— 在数据面板点击「↻ 更新价格」,或在设置中打开「自动更新价格表」(默认关;开启后每日至多检查一次),会下载一个静态文件 https://tokenforest.com.au/pricing.json,让新发布的模型不用等 App 更新就能计价。这是纯下载:请求不携带任何用量数据、标识符或账号;文件经校验后缓存在本地,任何失败都会静默回退到内置/缓存价格表。",
+            "更新检查(v0.2.1+)—— 默认关闭。可以在首次启动的欢迎弹窗里打开,或在设置 → 关于里打开;此外还有一个手动的「检查更新…」,点一次只发一次请求,不会顺手把自动检查打开。开启后,App 会向 GitHub 问一次最新版本:GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest,成功之后每日至多一次;连不上时最多每 6 小时重试一次(即一天至多 4 次)。请求没有请求体、URL 不带任何查询参数、无 Cookie、无 Authorization;App 设置的请求头只有三个固定常量(User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28),在每一台安装上都逐字节相同。请求不带版本号、不带平台、不带任何标识符、不带任何用量数据—— 版本比较在你自己的机器上完成。在你点「下载更新」之前不会下载任何东西;下载后的文件会按同一个 GitHub Release 给出的 SHA-256 核对,保留 macOS 的 quarantine / Windows 的 MOTW 来源标记,并且只在访达 / 资源管理器里帮你定位。App 不会替你安装、不会自我替换、不会申请提权。打开它意味着新增一个网络对端:GitHub —— 和任何在线服务一样,GitHub 及沿途的网络基础设施可能按其自身政策处理你的 IP 地址、请求时间和标准服务器日志;而且即使请求不带任何数据,一台开着更新检查的机器仍会在 GitHub 的日志里留下「大致在哪些日子被打开过」的痕迹。",
           ],
         },
         {
@@ -545,7 +547,7 @@ const JA: LegalDoc = {
         {
           list: [
             "中核機能はすべてお使いのデバイス上で動作します。アカウント、API キー、ネットワークは不要です。",
-            "アプリにはテレメトリ、広告、クラッシュレポート、外部へ通信する自動更新は一切ありません。",
+            "アプリにはテレメトリ、広告、クラッシュレポートはありません。任意の更新チェックは既定でオフで、オンにしてもアプリが自分で何かをインストールすることはありません —— 新しいバージョンがあることを知らせ、あなたが求めた場合にインストーラーをダウンロードするだけで、実行するのはあなたです。",
             "AI コーディングツールがすでにローカルに書き出している使用ログを読み取ります——あなたのソースコードファイルを読むことはありません。",
             "プロンプトや会話内容を保存・アップロードすることはありません。",
             "グローバルリーダーボードは任意機能で、既定でオフです。オンにする前に、同期される全項目を列挙した同意ダイアログを表示します。オフにすると、あなたの記録の削除を要求します。",
@@ -615,12 +617,13 @@ const JA: LegalDoc = {
           p: "既定では、Token Forest はネットワークリクエストを一切行いません。成長、バブル、ショップ、カプセルモード、ダッシュボードはすべてオフラインで動作します。費用の見積もりは同梱の価格表を使用します。",
         },
         {
-          p: "オンラインに接続しうる任意機能は正確に二つだけで、いずれもあなたが操作するまで何も行いません:",
+          p: "オンラインに接続しうる任意機能は、リーダーボード、価格表の更新、更新チェックです。いずれも既定でオフで、あなたが操作するまで何も行いません:",
         },
         {
           list: [
             "リーダーボード — 既定でオフ。次のセクションを参照してください。",
             "価格表の更新(v0.1.4+)— ダッシュボードで「↻ 価格を更新」をクリックするか、設定で「価格表を自動更新」をオン(既定はオフ。オンでも 1 日に最大 1 回の確認)にすると、静的ファイル https://tokenforest.com.au/pricing.json を 1 つダウンロードし、新しく公開されたモデルをアプリ更新を待たずに価格計算できます。これはダウンロードのみです:リクエストは使用データ・識別子・アカウントを一切含みません。ファイルは検証のうえローカルにキャッシュされ、失敗時はアプリが同梱/キャッシュ済みの表を静かに使い続けます。",
+            "更新チェック(v0.2.1+)— 既定でオフです。初回起動時のウェルカム画面、または設定 → について から有効にできます。ほかに手動の「更新を確認…」もあり、これは一度だけリクエストを送るもので、自動チェックが勝手に有効になることはありません。オンにすると、アプリは GitHub に最新リリースを問い合わせます:GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest。頻度は成功後は 1 日に最大 1 回、接続できないときは最大 6 時間ごとに再試行(1 日あたり最大 4 回)です。リクエストにはボディもクエリ文字列も Cookie も Authorization もなく、アプリが設定するヘッダーは 3 つの固定値(User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28)のみで、すべてのインストールで同一です。バージョン番号、プラットフォーム、識別子、使用量データは一切含まれません —— バージョンの比較はお使いのマシン上で行われます。「更新をダウンロード」をクリックするまで何もダウンロードされません。ダウンロードしたファイルは同じ GitHub リリースが公開している SHA-256 と照合され、macOS の quarantine / Windows の MOTW 属性を保持したまま、Finder / エクスプローラーで場所を示すだけです。アプリがインストールしたり、自分自身を置き換えたり、権限昇格を求めたりすることはありません。これを有効にすると GitHub が新たな通信相手になります:他のオンラインサービスと同様に、GitHub および経路上のネットワークは各社のポリシーに基づき IP アドレス、リクエスト時刻、標準的なサーバーログを処理する可能性があり、更新チェックをオンにしたマシンは「おおよそどの日に起動されていたか」という痕跡を GitHub 側に残します。",
           ],
         },
         {
@@ -810,7 +813,7 @@ const KO: LegalDoc = {
         {
           list: [
             "핵심 기능은 전적으로 사용자의 기기에서 실행됩니다. 계정, API 키, 네트워크가 필요 없습니다.",
-            "앱에는 텔레메트리, 광고, 오류 보고, 외부로 연결되는 자동 업데이트가 전혀 없습니다.",
+            "앱에는 텔레메트리, 광고, 오류 보고가 없습니다. 선택적인 업데이트 확인은 기본적으로 꺼져 있으며, 켜더라도 앱이 스스로 무언가를 설치하지 않습니다 —— 새 버전이 있다는 사실을 알려주고, 원하시면 설치 파일을 내려받아 드릴 뿐 실행은 사용자가 합니다.",
             "AI 코딩 도구가 이미 로컬에 기록해 둔 사용 로그를 읽습니다 — 사용자의 소스 코드 파일은 읽지 않습니다.",
             "프롬프트나 대화 내용을 저장하거나 업로드하지 않습니다.",
             "글로벌 리더보드는 선택 기능이며 기본적으로 꺼져 있습니다. 켜지기 전에 동기화될 모든 항목을 나열한 동의 창을 표시합니다. 끄면 사용자의 기록 삭제를 요청합니다.",
@@ -874,12 +877,13 @@ const KO: LegalDoc = {
           p: "기본적으로 Token Forest는 어떠한 네트워크 요청도 하지 않습니다. 성장, 버블, 상점, 캡슐 모드, 대시보드는 모두 오프라인에서 작동합니다. 비용 추정은 내장된 가격표를 사용합니다.",
         },
         {
-          p: "온라인에 연결될 수 있는 선택 기능은 정확히 두 가지뿐이며, 둘 다 사용자가 조작하기 전에는 아무 일도 하지 않습니다:",
+          p: "온라인에 연결될 수 있는 선택 기능은 리더보드, 가격표 업데이트, 업데이트 확인입니다. 모두 기본적으로 꺼져 있으며, 사용자가 조작하기 전에는 아무 일도 하지 않습니다:",
         },
         {
           list: [
             "리더보드 — 기본적으로 꺼짐. 다음 섹션을 참조하세요.",
             "가격표 업데이트(v0.1.4+) — 대시보드에서 「↻ 가격 업데이트」를 클릭하거나 설정에서 「가격표 자동 업데이트」를 켜면(기본값은 꺼짐, 켜도 하루 최대 1회 확인) 정적 파일 https://tokenforest.com.au/pricing.json 하나를 내려받아, 새로 출시된 모델을 앱 업데이트를 기다리지 않고 가격 계산할 수 있습니다. 이는 다운로드일 뿐입니다: 요청은 사용 데이터, 식별자, 계정을 전혀 담지 않습니다. 파일은 검증 후 로컬에 캐시되며, 실패 시 앱은 내장/캐시된 표를 조용히 계속 사용합니다.",
+            "업데이트 확인(v0.2.1+) — 기본적으로 꺼져 있습니다. 첫 실행 시 환영 창이나 설정 → 정보에서 켤 수 있고, 아무것도 켜지 않고 한 번만 보내는 수동 「업데이트 확인…」도 있습니다. 켜면 앱이 GitHub에 최신 릴리스를 한 번 물어봅니다: GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest. 빈도는 성공 후 하루 최대 한 번이며, 연결되지 않을 때는 최대 6시간마다 재시도합니다(하루 최대 4회). 요청에는 본문도, 쿼리 문자열도, 쿠키도, Authorization도 없으며 앱이 설정하는 헤더는 세 개의 고정 상수(User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28)뿐으로 모든 설치에서 동일합니다. 버전 번호, 플랫폼, 식별자, 사용량 데이터는 전혀 담기지 않으며 —— 버전 비교는 사용자의 컴퓨터에서 이루어집니다. 「업데이트 다운로드」를 누르기 전에는 아무것도 내려받지 않습니다. 내려받은 파일은 같은 GitHub 릴리스가 공개한 SHA-256과 대조되고, macOS의 quarantine / Windows의 MOTW 표시를 유지한 채 Finder / 파일 탐색기에서 위치만 알려 줍니다. 앱이 대신 설치하거나, 스스로를 교체하거나, 권한 상승을 요구하는 일은 없습니다. 이 기능을 켜면 GitHub가 새로운 통신 상대가 됩니다: 다른 온라인 서비스와 마찬가지로 GitHub와 그 경로의 네트워크는 자체 정책에 따라 IP 주소, 요청 시각, 표준 서버 로그를 처리할 수 있으며, 업데이트 확인을 켠 컴퓨터는 「대략 어떤 날에 켜져 있었는지」라는 흔적을 GitHub 쪽에 남깁니다.",
           ],
         },
         {
