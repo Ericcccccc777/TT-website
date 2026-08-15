@@ -140,6 +140,10 @@ const EN: LegalDoc = {
                 "Model breakdown of the tokens you collected — model name, its vendor, the input / output / cache-read / cache-write counts and their sum, with no dates attached (v0.2.0+)",
                 "Yes (model boards)",
               ],
+              [
+                "Project showcase — a project name, a one-line description, a link and one image, all written by you (v0.2.2+). Off by default, inside the leaderboard settings. The image is resized to 512px / 64 KB and stripped of location and camera metadata before it leaves your machine; turning the switch off clears these fields and deletes the uploaded image at the next sync.",
+                "Yes",
+              ],
               ["Server-generated created/updated timestamps", "May be shown"],
             ],
           },
@@ -396,6 +400,10 @@ const ZH: LegalDoc = {
               [
                 "你收取的 token 按模型的构成——模型名、所属厂商、输入/输出/缓存读/缓存写数量及其合计,不带日期(v0.2.0+)",
                 "是(模型榜)",
+              ],
+              [
+                "项目展示 —— 由你自己填写的项目名称、一句话简介、链接,以及一张图片(v0.2.2+)。默认关闭,在排行榜设置里。图片在离开本机之前会被压到 512px / 64 KB 并去掉位置、相机等信息;关掉这个开关后,下一次同步会清空这几项并删除已上传的图片。",
+                "是",
               ],
               ["服务端生成的创建/更新时间", "可能显示"],
             ],
@@ -663,6 +671,10 @@ const JA: LegalDoc = {
                 "回収したトークンのモデル別内訳——モデル名、その提供元、入力/出力/キャッシュ読み/キャッシュ書き込みの数量とその合計、日付なし(v0.2.0+)",
                 "はい(モデルランキング)",
               ],
+              [
+                "プロジェクト紹介 —— ご自身が入力したプロジェクト名、ひとこと紹介、リンク、画像 1 枚(v0.2.2+)。既定はオフで、ランキング設定の中にあります。画像は端末を出る前に 512px / 64 KB 以内に縮小し、位置情報やカメラ情報を削除します。スイッチをオフにすると、次回の同期でこれらの項目が消去され、アップロード済みの画像も削除されます。",
+                "はい",
+              ],
               ["サーバーが生成する作成/更新のタイムスタンプ", "表示される場合あり"],
             ],
           },
@@ -919,6 +931,10 @@ const KO: LegalDoc = {
               [
                 "수집한 토큰의 모델별 구성——모델명, 해당 제공사, 입력/출력/캐시 읽기/캐시 쓰기 수량과 그 합계, 날짜 없음(v0.2.0+)",
                 "예(모델 리더보드)",
+              ],
+              [
+                "프로젝트 소개 —— 사용자가 직접 입력한 프로젝트 이름, 한 줄 소개, 링크, 이미지 1장(v0.2.2+). 기본값은 꺼짐이며 리더보드 설정 안에 있습니다. 이미지는 기기를 떠나기 전에 512px / 64 KB로 축소되고 위치·카메라 정보가 제거됩니다. 스위치를 끄면 다음 동기화에서 이 항목들이 지워지고 업로드된 이미지도 삭제됩니다.",
+                "예",
               ],
               ["서버가 생성한 생성/수정 타임스탬프", "표시될 수 있음"],
             ],
