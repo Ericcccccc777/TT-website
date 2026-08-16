@@ -11,7 +11,7 @@ const GITHUB_SECURITY = "https://github.com/Ericcccccc777/Poietic-TokenForest/se
 
 const EN: LegalDoc = {
   title: "Token Forest Security Policy",
-  meta: ["Last updated 2026-07-08", "Publisher: Poietic Studio"],
+  meta: ["Last updated 2026-08-16", "Publisher: Poietic Studio"],
   sections: [
     {
       blocks: [
@@ -67,9 +67,12 @@ const EN: LegalDoc = {
         {
           list: [
             "any upload of local logs, prompts, conversation content or source-code files;",
-            "any network request while the leaderboard is off (the app promises zero);",
+            "any network request that no optional feature you turned on can account for — with the leaderboard, the price-table update and the update check all off, the app promises zero; with one of them on, anything beyond what the Privacy Notice describes for that feature (different host, extra data, higher frequency) is in scope;",
             "a mismatch between the consent dialog / Privacy Notice and what is actually sent;",
             "leaderboard authentication or row-level-security bypass (reading or modifying another user's row);",
+            "publishing project-showcase content that bypasses the checks the Privacy Notice describes — a link that is not https://, a name or description that evades the word screening, or an image served from anywhere other than our own storage;",
+            "reading, replacing or deleting another player's project image, or enumerating stored objects beyond what the public board displays;",
+            "a project showcase that stays published after the player switched it off, left the leaderboard, or was removed from the board;",
             "exposure of access/refresh tokens;",
             "local storage readable across OS user boundaries;",
             "arbitrary code execution, unsafe archive/update handling, DLL or library hijacking;",
@@ -130,7 +133,7 @@ const EN: LegalDoc = {
 
 const ZH: LegalDoc = {
   title: "Token Forest 安全政策",
-  meta: ["最后更新 2026-07-08", "发布者:Poietic Studio"],
+  meta: ["最后更新 2026-08-16", "发布者:Poietic Studio"],
   sections: [
     {
       blocks: [
@@ -186,9 +189,12 @@ const ZH: LegalDoc = {
         {
           list: [
             "任何对本地日志、提示词、对话内容或源代码文件的上传;",
-            "排行榜关闭时的任何网络请求(应用承诺为零);",
+            "任何无法由你已开启的可选功能解释的网络请求 —— 排行榜、价格表更新、更新检查全部关闭时,应用承诺为零;开启其中之一时,超出《隐私声明》对该功能所述范围的任何行为(不同的主机、额外的数据、更高的频率)都在受理范围内;",
             "同意确认/《隐私声明》与实际发送内容之间的不一致;",
             "排行榜认证或行级安全绕过(读取或修改其他用户的记录);",
+            "绕过《隐私声明》所述校验发布项目展示内容 —— 非 https:// 的链接、绕过词表审查的名称或简介、或来自我们自有存储之外的图片;",
+            "读取、替换或删除其他玩家的项目图片,或枚举超出公开榜单所展示范围的存储对象;",
+            "玩家关闭开关、退出排行榜或被下架之后,项目展示内容仍然处于公开状态;",
             "access/refresh 令牌泄露;",
             "本地存储可被操作系统的其他用户跨账户读取;",
             "任意代码执行、不安全的归档/更新处理、DLL 或库劫持;",
@@ -247,7 +253,7 @@ const ZH: LegalDoc = {
 
 const JA: LegalDoc = {
   title: "Token Forest セキュリティポリシー",
-  meta: ["最終更新 2026-07-08", "発行者:Poietic Studio"],
+  meta: ["最終更新 2026-08-16", "発行者:Poietic Studio"],
   sections: [
     {
       blocks: [
@@ -303,9 +309,12 @@ const JA: LegalDoc = {
         {
           list: [
             "ローカルログ、プロンプト、会話内容、ソースコードファイルのあらゆるアップロード;",
-            "リーダーボードがオフの間のあらゆるネットワークリクエスト(アプリはゼロを約束しています);",
+            "オンにした任意機能では説明できないあらゆるネットワークリクエスト —— リーダーボード、価格表の更新、更新チェックをすべてオフにした状態で、アプリはゼロを約束します。いずれかをオンにした場合、その機能について《プライバシー通知》が記載する範囲を超えるもの(異なるホスト、余分なデータ、より高い頻度)は受理対象です;",
             "同意ダイアログ/《プライバシー通知》と実際に送信される内容との不一致;",
             "リーダーボードの認証または行レベルセキュリティの回避(他のユーザーの記録の閲覧・改変);",
+            "《プライバシー通知》が記載する検査を回避してプロジェクト紹介の内容を公開すること —— https:// でないリンク、単語フィルターをすり抜ける名称や紹介文、または当方のストレージ以外から配信される画像;",
+            "他のプレイヤーのプロジェクト画像の閲覧・差し替え・削除、または公開ランキングが表示する範囲を超えた保存オブジェクトの列挙;",
+            "プレイヤーがスイッチをオフにした、ランキングから離脱した、または掲載を取り消された後も、プロジェクト紹介が公開されたままであること;",
             "access/refresh トークンの露出;",
             "OS のユーザー境界を越えて読み取れるローカルストレージ;",
             "任意コード実行、安全でないアーカイブ/更新の処理、DLL またはライブラリのハイジャック;",
@@ -368,7 +377,7 @@ const JA: LegalDoc = {
 
 const KO: LegalDoc = {
   title: "Token Forest 보안 정책",
-  meta: ["최종 업데이트 2026-07-08", "발행자: Poietic Studio"],
+  meta: ["최종 업데이트 2026-08-16", "발행자: Poietic Studio"],
   sections: [
     {
       blocks: [
@@ -424,9 +433,12 @@ const KO: LegalDoc = {
         {
           list: [
             "로컬 로그, 프롬프트, 대화 내용 또는 소스 코드 파일의 모든 업로드;",
-            "리더보드가 꺼져 있는 동안의 모든 네트워크 요청(앱은 0을 약속합니다);",
+            "켜 놓은 선택 기능으로 설명되지 않는 모든 네트워크 요청 —— 리더보드, 가격표 업데이트, 업데이트 확인을 모두 끈 상태에서 앱은 0을 약속합니다. 그중 하나를 켠 경우 해당 기능에 대해 《개인정보 보호정책》이 설명하는 범위를 벗어나는 것(다른 호스트, 추가 데이터, 더 높은 빈도)은 접수 대상입니다;",
             "동의 창/《개인정보 보호정책》과 실제로 전송되는 내용 간의 불일치;",
             "리더보드 인증 또는 행 수준 보안 우회(다른 사용자의 기록 열람 또는 수정);",
+            "《개인정보 보호정책》이 설명하는 검사를 우회하여 프로젝트 소개 내용을 게시하는 것 —— https:// 가 아닌 링크, 단어 필터를 회피한 이름이나 소개, 또는 당사 저장소가 아닌 곳에서 제공되는 이미지;",
+            "다른 플레이어의 프로젝트 이미지를 읽거나 교체하거나 삭제하는 것, 또는 공개 리더보드가 표시하는 범위를 넘어 저장된 객체를 열거하는 것;",
+            "플레이어가 스위치를 끄거나 리더보드에서 나가거나 게시가 취소된 뒤에도 프로젝트 소개가 계속 공개되어 있는 것;",
             "access/refresh 토큰 노출;",
             "운영 체제 사용자 경계를 넘어 읽을 수 있는 로컬 저장소;",
             "임의 코드 실행, 안전하지 않은 아카이브/업데이트 처리, DLL 또는 라이브러리 하이재킹;",
