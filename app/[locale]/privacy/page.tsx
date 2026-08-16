@@ -10,7 +10,7 @@ import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 const EN: LegalDoc = {
   title: "Token Forest Privacy Notice",
   meta: [
-    "Version 1.0-beta (pre-release draft) · Last updated 2026-07-28 · Effective at first public release",
+    "Version 1.0-beta · Last updated 2026-08-16 · In force since the first public release (v0.1.0, 2026-07-09)",
     "Publisher: Poietic Studio",
   ],
   sections: [
@@ -27,7 +27,7 @@ const EN: LegalDoc = {
         {
           list: [
             "Core features run entirely on your device. No account, no API key, no network needed.",
-            "The app contains no telemetry, no ads, no crash reporting, no auto-update phoning home.",
+            "The app contains no telemetry, no ads and no crash reporting. The optional update check is off by default, and even with it on the app never installs anything by itself — it tells you a new version exists and, if you ask, downloads the installer for you to run.",
             "It reads the usage logs your AI coding tools already write locally — never your source-code files.",
             "It does not store or upload prompts or conversation content.",
             "The global leaderboard is optional and off by default. Before it turns on, the app shows a consent dialog listing every field it would sync. Turning it off requests deletion of your entry.",
@@ -82,6 +82,10 @@ const EN: LegalDoc = {
                 "sync_error.json",
                 "Only if the leaderboard was enabled: the last leaderboard-sync error message and its timestamp (diagnostic only; never uploaded)",
               ],
+              [
+                "update_state.json",
+                "Only if the update check ran: when it last succeeded and when it last tried, plus the cached latest version number, release-page link, and the installer's SHA-256 and size",
+              ],
             ],
           },
         },
@@ -97,12 +101,13 @@ const EN: LegalDoc = {
           p: "By default Token Forest makes no network requests at all. Growth, bubbles, the shop, capsule mode and the dashboard all work offline. Cost estimates use a bundled price table.",
         },
         {
-          p: "Exactly two optional features can go online, and neither does anything until you act:",
+          p: "The features that can go online are the leaderboard, the price-table update and the update check. Each is off by default, and none of them does anything until you act:",
         },
         {
           list: [
             "Leaderboard — off by default; see the next section.",
-            "Price-table update (v0.1.4+) — clicking “↻ Update prices” in the dashboard, or turning on “Auto-update prices” in Settings (off by default; when on, at most one check per day), downloads a single static file, https://tokenforest.com.au/pricing.json, so newly released models can be priced without waiting for an app update. This is a download only: the request carries no usage data, no identifiers and no account. The file is validated and cached locally; on any failure the app silently keeps using the bundled/cached table.",
+            "Price-table update (v0.1.5+) — clicking “↻ Update prices” in the dashboard, or turning on “Auto-update prices” in Settings (off by default; when on, at most one check per day), downloads a single static file, https://tokenforest.com.au/pricing.json, so newly released models can be priced without waiting for an app update. This is a download only: the request carries no usage data, no identifiers and no account. The file is validated and cached locally; on any failure the app silently keeps using the bundled/cached table.",
+            "Update check (v0.2.1+) — off by default. Turn it on in the first-run welcome dialog or in Settings → About; there is also a manual “Check for updates…” you can click once without turning anything on. When on, the app asks GitHub for the latest release: GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest, at most once a day after a successful check, and at most once every 6 hours while it cannot connect (so at most four attempts a day). The request has no body, no query string, no cookies and no authorization; the only headers the app sets are three fixed constants (User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28), identical on every install. It carries no version number, no platform, no identifier and no usage data — the version comparison happens on your machine. Nothing is downloaded until you click “Download update”; the file is then checked against the SHA-256 published in that same GitHub release, keeps its macOS quarantine / Windows mark-of-the-web flag, and is only revealed in Finder / File Explorer. The app never installs it, never replaces itself and never asks for elevated privileges. Turning this on adds GitHub as a network counterparty: like any online service, GitHub and the networks in between may process your IP address, request time and standard server logs under their own policies, and a machine with the update check on leaves a trace at GitHub of roughly which days it was switched on.",
           ],
         },
         {
@@ -123,7 +128,10 @@ const EN: LegalDoc = {
           table: {
             head: ["Field", "Shown publicly?"],
             rows: [
-              ["Random anonymous ID (generated by Supabase; used only to own your row)", "No"],
+              [
+                "Random anonymous ID (generated by Supabase; owns your row, and is the address of your badge image and your project image)",
+                "Yes (it appears in those two links)",
+              ],
               ["Display name (blank = a generated “Anonymous#id” name)", "Yes"],
               ["Total collected tree tokens", "Yes"],
               ["Each tree's token total and growth stage", "Yes (tree details)"],
@@ -139,18 +147,25 @@ const EN: LegalDoc = {
                 "Model breakdown of the tokens you collected — model name, its vendor, the input / output / cache-read / cache-write counts and their sum, with no dates attached (v0.2.0+)",
                 "Yes (model boards)",
               ],
+              [
+                "Project showcase — a project name, a one-line description, a link and one image, all written by you (v0.2.2+). Off by default, inside the leaderboard settings. The image is resized to 512px / 64 KB and stripped of location and camera metadata before it leaves your machine; turning the switch off clears these fields and deletes the uploaded image at the next sync (see the Project showcase section below).",
+                "Yes",
+              ],
               ["Server-generated created/updated timestamps", "May be shown"],
             ],
           },
         },
         {
+          p: "In that column, “Yes” means it appears on a public page and “No” means it does not. The four anti-cheat numbers are additionally locked at the database level: the public read-only key that the app and the website use is refused those columns outright.",
+        },
+        {
           p: "Small print: if you leave the name blank, the generated anonymous name is rendered in your app language, so the leaderboard indirectly reflects which UI language you use.",
         },
         {
-          p: "The model breakdown (v0.2.0+). The leaderboard has boards beyond \"biggest tree\" — most-used model, one vendor against another. They are fed by a per-model breakdown of your tokens: the model name (say claude-opus-4-8), the vendor it belongs to, and the four token counts plus their sum.",
+          p: 'The model breakdown (v0.2.0+). The leaderboard has boards beyond "biggest tree" — most-used model, one vendor against another. They are fed by a per-model breakdown of your tokens: the model name (say claude-opus-4-8), the vendor it belongs to, and the four token counts plus their sum.',
         },
         {
-          p: "Two public boards are built from this breakdown, besides the token board. Vendor usage adds every player's tokens together per vendor and per model — whole-community totals, from which no single player's usage can be read back. Forest value shows an estimate of what your collected tokens would have cost, worked out on our server by multiplying the counts you already sync by each model's published price: no money figure is ever sent from your machine and no new field is uploaded. It is an estimate and not a bill — subscriptions, discounts and free allowances are ignored, a vendor price change moves everyone at once, and the model each token is filed under comes from your own machine and is not independently verified. Both boards state how much of all counted tokens they cover. It covers only the bubbles you popped yourself. Every bubble carries the breakdown of which models burned it, and that breakdown is banked at the exact moment you collect the bubble — the same instant, the same energy, that raises your tree score. A bubble that expires unpopped counts for neither. Token Forest does not go digging through logs from before you installed it in order to build this.",
+          p: "Two public boards are built from this breakdown, besides the token board. Vendor usage adds every player's tokens together per vendor and per model — whole-community totals. Those totals are what the website shows, but the per-player, per-model rows they are built from are readable through our public database interface and can be linked to an anonymous ID. Forest value shows an estimate of what your collected tokens would have cost, worked out on our server by multiplying the counts you already sync by each model's published price: no money figure is ever sent from your machine and no new field is uploaded. It is an estimate and not a bill — subscriptions, discounts and free allowances are ignored, a vendor price change moves everyone at once, and the model each token is filed under comes from your own machine and is not independently verified. Both boards state how much of all counted tokens they cover. It covers only the bubbles you popped yourself. Every bubble carries the breakdown of which models burned it, and that breakdown is banked at the exact moment you collect the bubble — the same instant, the same energy, that raises your tree score. A bubble that expires unpopped counts for neither. Token Forest does not go digging through logs from before you installed it in order to build this.",
         },
         {
           p: "The vendor is derived from the model name, not from which CLI wrote the log: people routinely route DeepSeek, GLM or Kimi through Claude Code via ANTHROPIC_BASE_URL, and attributing by source would file those under Claude.",
@@ -159,10 +174,10 @@ const EN: LegalDoc = {
           p: "It carries no dates. Running totals only — no per-day, per-hour or per-session split — so like the four anti-cheat numbers it cannot reconstruct when you work and when you rest. The per-date breakdown stays on your machine, for the dashboard.",
         },
         {
-          p: "Tracking begins with v0.1.10. Tokens collected before it have no model attribution and are not backfilled, so the model total is normally lower than your score. A sync carries at most 30 models; model names pass two checks — the app folds anything outside a strict character set into a single \"unknown\" entry, and the server independently re-checks the character set and a banned-word list, dropping rows that fail.",
+          p: 'Tracking begins with v0.2.0. Tokens collected before it have no model attribution and are not backfilled, so the model total is normally lower than your score. A sync carries at most 30 models (a real user typically has 5–15), and anything beyond that is dropped by token count; model names pass two checks — the app folds anything outside a strict character set into a single "unknown" entry, and the server independently re-checks the character set and a banned-word list, dropping rows that fail.',
         },
         {
-          p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project names, Git branches, per-session usage, cost estimates, anything about tokens you never collected, or any per-window / time-of-day breakdown of your token use — including any per-date breakdown of the model figures above.",
+          p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project folder names read from your logs, Git branches, per-session usage, cost estimates, anything about tokens you never collected, or any per-window / time-of-day breakdown of your token use — including any per-date breakdown of the model figures above.",
         },
         {
           p: "Like any online service, Supabase's infrastructure processes standard connection data (such as IP addresses and request timestamps) to operate and secure the service, under Supabase's own policies.",
@@ -213,10 +228,10 @@ const EN: LegalDoc = {
       h: "Website",
       blocks: [
         {
-          p: "This website uses no analytics, no advertising trackers, and no marketing cookies. Its hosting provider processes standard server logs (IP address, user agent, requested page, time) to serve and secure the site. The leaderboard page reads the public leaderboard rows described above; viewing it requires no login. If we ever add analytics or similar services, this notice will be updated first.",
+          p: "This website uses no analytics, no advertising trackers, and no marketing cookies. Its hosting provider processes standard server logs (IP address, user agent, requested page, time) to serve and secure the site. The leaderboard page reads the public leaderboard rows described above; viewing it requires no login. The site also serves a badge image to any player who asks for one: its address contains your anonymous ID, and it shows the same public figures as your leaderboard row. Wherever you paste it, that page's visitors — or that host's image proxy — fetch it from us, so those requests appear in the ordinary server logs described above. If we ever add analytics or similar services, this notice will be updated first.",
         },
         {
-          p: "The home page shows a demo video hosted on YouTube. Nothing is fetched from YouTube until you press play: at rest the page shows only a still image served from this site. Once you press play, the video loads from YouTube's no-cookie player domain, and from that point YouTube may set its own cookies and receive your IP address under Google's privacy policy. You can avoid it entirely by not playing the video.",
+          p: "The home page shows a demo video. Nothing is fetched from any video platform until you press play: at rest the page shows only a still image served from this site. Once you press play — or press the button that switches source — the video loads from YouTube's no-cookie player domain, or from Bilibili if you switch to it, and from that point that platform may set its own cookies and receive your IP address under its own privacy policy. Not playing the video avoids both entirely.",
         },
       ],
     },
@@ -229,10 +244,28 @@ const EN: LegalDoc = {
       ],
     },
     {
+      h: "Project showcase (v0.2.2+, off by default)",
+      blocks: [
+        {
+          p: "Inside the leaderboard settings there is a switch called Project showcase. Turn it on and you can add a project name (up to 24 characters), a one-line description (up to 80 characters), a link, and one image. Those four things are synced along with your leaderboard entry and shown publicly next to it. A few things worth stating plainly:",
+        },
+        {
+          list: [
+            "It is off by default, and it does nothing while the leaderboard itself is off. If you have never turned it on, none of these four fields is ever sent. Turning it off sends the four fields once, empty, so that what is stored gets cleared.",
+            "You write it, and it is shown as you wrote it, with spaces at the start and end removed. Do not put anything there you would not want public.",
+            "We can hold it back. If your account is under review, your showcase is not shown on the leaderboard until a person clears it; the rest of your entry is unaffected, and nothing you wrote is deleted while it waits. Not shown is not the same as hidden: holding it back takes it off the public page, but what you wrote stays on our side and the picture keeps the direct address it already had.",
+            "The image is re-encoded on your machine before it is uploaded — resized to at most 512 pixels on its longest side and 64 KB, and stripped of location and camera metadata in the process. If you pick a photo from your phone, its GPS coordinates do not go with it.",
+            "Turning the switch off takes it down. The next sync clears those fields on the leaderboard and deletes the uploaded image; turning the leaderboard off entirely deletes them along with your whole entry. It is not merely hidden on your side. Beta limitation, stated plainly: that clean-up happens when the switch-off reaches us, so if you are offline — or the app’s anonymous session has expired and can no longer authenticate — the entry and the picture stay as they were until a later attempt succeeds. Ask us and we will remove them for you.",
+            "Links must start with https:// and are checked before they are accepted. The text goes through the same word filter as display names, on your machine and again on the server.",
+          ],
+        },
+      ],
+    },
+    {
       h: "Verifying these claims",
       blocks: [
         {
-          p: "We take “trust us” seriously enough to know it isn't good enough. The app works with your network fully disabled — try it. Each release publishes SHA-256 checksums and its signing status, and release notes call out any privacy or network change. The source code is currently private, but we are exploring opening the core usage-reader component so the “reads logs, uploads nothing” claims can be independently audited.",
+          p: "We take “trust us” seriously enough to know it isn't good enough. The app works with your network fully disabled — try it. Releases publish SHA-256 checksums and a signing status, and release notes call out any privacy or network change; four early builds are the exception — v0.1.0, v0.1.1 and v0.1.2 went out without a published checksum, and v0.1.9 without either. The source code is currently private, but we are exploring opening the core usage-reader component so the “reads logs, uploads nothing” claims can be independently audited.",
         },
       ],
     },
@@ -254,7 +287,10 @@ const EN: LegalDoc = {
       h: "Changes",
       blocks: [
         {
-          p: "If a future version adds any new data processing — telemetry, crash reporting, auto-update checks, new leaderboard fields — this notice and the in-app consent will be updated before that version ships, and the release notes will call it out under “Privacy or network changes”.",
+          p: "If a future version adds any new data processing — telemetry, crash reporting, new network destinations, new leaderboard fields — this notice and the in-app consent will be updated before that version ships, and the release notes will call it out under “Privacy or network changes”.",
+        },
+        {
+          p: "This has happened three times so far: the price-table update (shipped in v0.1.5, which added our website's hosting provider as a counterparty), the update check (v0.2.1, which added GitHub), and the project showcase (v0.2.2, which added the first fields you write yourself and the first file you upload). All three are off by default.",
         },
       ],
     },
@@ -262,7 +298,7 @@ const EN: LegalDoc = {
       h: "Contact",
       blocks: [
         {
-          code: "Publisher: Poietic Studio\nPrivacy:   contact@tokenforest.com.au (interim; privacy@tokenforest.com.au activating before first public release)\nSecurity:  see the Security page\nWebsite:   https://www.tokenforest.com.au",
+          code: "Publisher: Poietic Studio\nPrivacy:   contact@tokenforest.com.au (a dedicated privacy@tokenforest.com.au inbox is being set up)\nSecurity:  see the Security page\nWebsite:   https://www.tokenforest.com.au",
         },
       ],
     },
@@ -272,7 +308,7 @@ const EN: LegalDoc = {
 const ZH: LegalDoc = {
   title: "Token Forest 隐私声明",
   meta: [
-    "版本 1.0-beta(发布前草案) · 最后更新 2026-07-28 · 首个公开版本发布时生效",
+    "版本 1.0-beta · 最后更新 2026-08-16 · 自首个公开版本(v0.1.0,2026-07-09)起生效",
     "发布者:Poietic Studio",
   ],
   sections: [
@@ -289,7 +325,7 @@ const ZH: LegalDoc = {
         {
           list: [
             "核心功能完全在你的设备上运行:无需账号、无需 API key、无需网络。",
-            "应用没有遥测、广告、崩溃上报,也没有自动更新的后台请求。",
+            "应用没有遥测、广告、崩溃上报。可选的更新检查默认关闭;即使打开,App 也不会自己装任何东西—— 它只告诉你有新版本,你要的话再把安装包下下来交给你自己运行。",
             "它读取的是 AI 编程工具已经写在你本机的使用日志——从不读取你的源代码文件。",
             "不保存、不上传 prompt 或对话内容。",
             "全球排行榜为可选功能,默认关闭。开启前会弹出同意确认,列出将同步的全部字段;关闭时会请求删除你的记录。",
@@ -338,6 +374,10 @@ const ZH: LegalDoc = {
                 "sync_error.json",
                 "仅在开启过排行榜后存在:最近一次排行榜同步失败的错误信息与时间(仅用于诊断;从不上传)",
               ],
+              [
+                "update_state.json",
+                "仅在更新检查跑过后存在:上次成功检查与上次尝试检查的时间,以及缓存下来的最新版本号、发布页链接、安装包的 SHA-256 与大小",
+              ],
             ],
           },
         },
@@ -353,12 +393,13 @@ const ZH: LegalDoc = {
           p: "默认情况下,Token Forest 不发出任何网络请求:成长、气泡、商店、胶囊模式、数据面板全部离线可用,成本估算使用内置价格表。",
         },
         {
-          p: "只有两个可选功能会联网,且在你主动操作之前都不会有任何动作:",
+          p: "会联网的可选功能是排行榜、价格表更新和更新检查。它们各自独立、全部默认关闭,在你主动操作之前都不会有任何动作:",
         },
         {
           list: [
             "排行榜 —— 默认关闭,见下一节。",
-            "价格表更新(v0.1.4+)—— 在数据面板点击「↻ 更新价格」,或在设置中打开「自动更新价格表」(默认关;开启后每日至多检查一次),会下载一个静态文件 https://tokenforest.com.au/pricing.json,让新发布的模型不用等 App 更新就能计价。这是纯下载:请求不携带任何用量数据、标识符或账号;文件经校验后缓存在本地,任何失败都会静默回退到内置/缓存价格表。",
+            "价格表更新(v0.1.5+)—— 在数据面板点击「↻ 更新价格」,或在设置中打开「自动更新价格表」(默认关;开启后每日至多检查一次),会下载一个静态文件 https://tokenforest.com.au/pricing.json,让新发布的模型不用等 App 更新就能计价。这是纯下载:请求不携带任何用量数据、标识符或账号;文件经校验后缓存在本地,任何失败都会静默回退到内置/缓存价格表。",
+            "更新检查(v0.2.1+)—— 默认关闭。可以在首次启动的欢迎弹窗里打开,或在设置 → 关于里打开;此外还有一个手动的「检查更新…」,点一次只发一次请求,不会顺手把自动检查打开。开启后,App 会向 GitHub 问一次最新版本:GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest,成功之后每日至多一次;连不上时最多每 6 小时重试一次(即一天至多 4 次)。请求没有请求体、URL 不带任何查询参数、无 Cookie、无 Authorization;App 设置的请求头只有三个固定常量(User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28),在每一台安装上都逐字节相同。请求不带版本号、不带平台、不带任何标识符、不带任何用量数据—— 版本比较在你自己的机器上完成。在你点「下载更新」之前不会下载任何东西;下载后的文件会按同一个 GitHub Release 给出的 SHA-256 核对,保留 macOS 的 quarantine / Windows 的 MOTW 来源标记,并且只在访达 / 资源管理器里帮你定位。App 不会替你安装、不会自我替换、不会申请提权。打开它意味着新增一个网络对端:GitHub —— 和任何在线服务一样,GitHub 及沿途的网络基础设施可能按其自身政策处理你的 IP 地址、请求时间和标准服务器日志;而且即使请求不带任何数据,一台开着更新检查的机器仍会在 GitHub 的日志里留下「大致在哪些日子被打开过」的痕迹。",
           ],
         },
         {
@@ -379,7 +420,10 @@ const ZH: LegalDoc = {
           table: {
             head: ["字段", "是否公开展示"],
             rows: [
-              ["随机匿名 ID(Supabase 生成,仅用于归属你的记录)", "否"],
+              [
+                "随机匿名 ID(Supabase 生成;归属你的记录,同时也是你徽章图片与项目图片的地址)",
+                "是(出现在这两个链接里)",
+              ],
               ["展示昵称(留空则生成「匿名用户#编号」)", "是"],
               ["收集的树 Token 总数", "是"],
               ["每棵树的 Token 数与成长阶段", "是(树详情)"],
@@ -395,9 +439,16 @@ const ZH: LegalDoc = {
                 "你收取的 token 按模型的构成——模型名、所属厂商、输入/输出/缓存读/缓存写数量及其合计,不带日期(v0.2.0+)",
                 "是(模型榜)",
               ],
+              [
+                "项目展示 —— 由你自己填写的项目名称、一句话简介、链接,以及一张图片(v0.2.2+)。默认关闭,在排行榜设置里。图片在离开本机之前会被压到 512px / 64 KB 并去掉位置、相机等信息;关掉这个开关后,下一次同步会清空这几项并删除已上传的图片(详见下文「项目展示」一节)。",
+                "是",
+              ],
               ["服务端生成的创建/更新时间", "可能显示"],
             ],
           },
+        },
+        {
+          p: "这一列里,「是」代表它会出现在公开页面上,「否」代表不会。防作弊那四个数字还额外锁在数据库层:App 与网站使用的公开只读密钥连读都读不到那几列。",
         },
         {
           p: "小字说明:昵称留空时生成的匿名名按你的界面语言渲染,因此榜单会间接体现你的 UI 语言。",
@@ -406,7 +457,7 @@ const ZH: LegalDoc = {
           p: "按模型的构成(v0.2.0+)。排行榜除了「谁的树最大」,还有「使用最多的模型」「厂商对比」这类榜单。它们由一份按模型的构成支撑:模型名(如 claude-opus-4-8)、它所属的厂商,以及四类 token 数量及其合计。",
         },
         {
-          p: "除 token 榜外,这份构成还用于两个公开榜单。厂商使用量榜把所有玩家在某个厂商、某个型号上的 token 加在一起,是全社区合计,从中读不出任何一个人的用量。树林价值榜显示你收取的 token 折算成美元的估算:金额在我们的服务器上算,用你本来就会同步的数量乘以各模型的公开价格——你的机器从不发送任何金额,也不会为此多上传字段。它是估算不是账单:不考虑订阅、折扣与免费额度,厂商改价时所有人同时变动,而每个 token 归到哪个模型名下来自你自己的机器,未经独立核验。两个榜单都会标明自己覆盖了全部已统计 token 的多少。它统计的只是你亲手点掉的那些气泡。每颗气泡都带着「自己是由哪几个模型烧出来的」,这份构成在你点掉气泡的那一刻才入账——和树的分数同一时刻、同一笔能量;没被点、直接过期的气泡两边都不算。Token Forest 不会为了这个榜去翻你安装之前的历史日志。",
+          p: "除 token 榜外,这份构成还用于两个公开榜单。厂商使用量榜把所有玩家在某个厂商、某个型号上的 token 加在一起,是全社区合计。网站上显示的是这份合计,但它背后那些「某个人某个模型用了多少」的明细,可以通过我们的公开数据库接口读到,并且能对应到某个匿名 ID。树林价值榜显示你收取的 token 折算成美元的估算:金额在我们的服务器上算,用你本来就会同步的数量乘以各模型的公开价格——你的机器从不发送任何金额,也不会为此多上传字段。它是估算不是账单:不考虑订阅、折扣与免费额度,厂商改价时所有人同时变动,而每个 token 归到哪个模型名下来自你自己的机器,未经独立核验。两个榜单都会标明自己覆盖了全部已统计 token 的多少。它统计的只是你亲手点掉的那些气泡。每颗气泡都带着「自己是由哪几个模型烧出来的」,这份构成在你点掉气泡的那一刻才入账——和树的分数同一时刻、同一笔能量;没被点、直接过期的气泡两边都不算。Token Forest 不会为了这个榜去翻你安装之前的历史日志。",
         },
         {
           p: "厂商由模型名派生,而不是由哪个 CLI 记的日志派生:用户常把 DeepSeek、GLM、Kimi 经 ANTHROPIC_BASE_URL 接进 Claude Code,按来源归会把它们错记成 Claude。",
@@ -415,10 +466,10 @@ const ZH: LegalDoc = {
           p: "它不带日期。只有累计量,没有按天、按小时、按会话的拆分,因此和防作弊那四个数字一样,还原不出你几点在工作、几点在休息。按日期的拆分留在你的机器上,供数据面板使用。",
         },
         {
-          p: "记账从 v0.1.10 开始。更早收取的 token 没有模型归属,也不会补算,所以模型合计通常小于你的分数。一次同步最多带 30 个模型;模型名要过两道校验——App 这边把字符集不合规的归进单独一格「unknown」,服务端再独立复核一次字符集与违禁词表,没过的行直接丢弃。",
+          p: "记账从 v0.2.0 开始。更早收取的 token 没有模型归属,也不会补算,所以模型合计通常小于你的分数。一次同步最多带 30 个模型(真实用户通常 5~15 个),超出的按用量倒序截断;模型名要过两道校验——App 这边把字符集不合规的归进单独一格「unknown」,服务端再独立复核一次字符集与违禁词表,没过的行直接丢弃。",
         },
         {
-          p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、项目名、Git 分支、按会话用量、成本估算、未被你收取的 token 的任何信息,以及任何逐片段/按时段的 token 使用明细——包括上面那份模型构成的按日期拆分。",
+          p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、从日志里读到的项目文件夹名、Git 分支、按会话用量、成本估算、未被你收取的 token 的任何信息,以及任何逐片段/按时段的 token 使用明细——包括上面那份模型构成的按日期拆分。",
         },
         {
           p: "与任何在线服务一样,Supabase 的基础设施会为运行与安全处理标准连接数据(如 IP 地址、请求时间),适用其自身政策。",
@@ -469,7 +520,7 @@ const ZH: LegalDoc = {
       h: "网站",
       blocks: [
         {
-          p: "本网站不使用分析工具、广告跟踪或营销 Cookie。托管商会为提供与保护服务处理标准服务器日志(IP、浏览器标识、请求页面、时间)。排行榜页面读取上述公开榜单数据,浏览无需登录。将来若引入 analytics 等服务,会先更新本声明。",
+          p: "本网站不使用分析工具、广告跟踪或营销 Cookie。托管商会为提供与保护服务处理标准服务器日志(IP、浏览器标识、请求页面、时间)。排行榜页面读取上述公开榜单数据,浏览无需登录。本站还会为主动索取的玩家提供一张徽章图片:它的地址里含有你的匿名 ID,显示的是与你榜上那一行相同的公开数字。你把它贴到哪里,那个页面的访客(或该平台的图片代理)就会来本站取图,我们因此会看到上面说的那类标准服务器日志。将来若引入 analytics 等服务,会先更新本声明。",
         },
         {
           p: "首页展示了一段演示视频。在你点击播放之前,页面不会向任何视频平台发起请求 —— 静止状态下显示的只是一张由本站提供的图片。当你点击播放、或点击切换片源的按钮时,视频会从 YouTube(中文页默认从哔哩哔哩)加载,自那时起对应平台可能按其隐私政策写入它自己的 Cookie 并获取你的 IP 地址。只要不播放视频,即可完全避开两者。",
@@ -485,10 +536,28 @@ const ZH: LegalDoc = {
       ],
     },
     {
+      h: "项目展示(v0.2.2+,默认关闭)",
+      blocks: [
+        {
+          p: "排行榜设置里有一个叫「项目展示」的开关。打开之后可以填项目名称(最多 24 字)、一句话简介(最多 80 字)、一个链接,以及一张图片。这四项会随排行榜同步一起公开显示在你那一行旁边。有几件事必须说清楚:",
+        },
+        {
+          list: [
+            "默认关闭,而且排行榜本身没开时它什么也不做。如果你从没打开过,这四项一个字节都不会发送;而把它关掉时,这四项会以空值发送一次,用来清空已经存下的内容。",
+            "内容由你自己写,显示出来的就是你写的,只会去掉首尾的空格。不要填任何你不希望公开的信息。",
+            "我们可能暂不显示它。如果你的账号正在接受审核,项目展示不会出现在排行榜上,由人工放行后再显示;你榜上的其余内容不受影响,等待期间你填的内容也不会被删除。「不显示」不等于「藏起来」:它只是不出现在公开页面上,你填的内容仍留在我们这边,图片也仍保留它原来的直接地址。",
+            "图片在离开你的机器之前会被重新编码 —— 缩到最长边不超过 512 像素、64 KB 以内,并在这一步去掉其中的位置、相机等信息。你拿手机里的照片来传,它的 GPS 坐标不会跟着走。",
+            "关掉开关就是撤下。下一次同步会清空榜单上的这几项并删除已上传的图片;整个关掉排行榜则会连同你那一行一起删除。不是只在你这边隐藏。Beta 限制,如实说明:这次清理发生在「关掉」这个动作到达我们这边的时候,所以如果此时离线、或者 App 的匿名会话已失效无法鉴权,榜上那几项和那张图片会维持原样,直到之后某次尝试成功。也可以联系我们代为删除。",
+            "链接必须以 https:// 开头,接受之前会先校验。文字会经过与展示昵称同一套词表审查,本机一遍、服务端再一遍。",
+          ],
+        },
+      ],
+    },
+    {
       h: "如何验证这些承诺",
       blocks: [
         {
-          p: "我们很清楚“相信我们”这句话本身不够分量。断网状态下应用照常运行——你可以亲自试试。每个 Release 都会发布 SHA-256 校验值与签名状态,Release notes 会单独列出任何隐私/网络变化。源代码目前是私有的,但我们在考虑开放核心的用量读取组件,让“只读日志、默认零上传”可以被独立审计。",
+          p: "我们很清楚“相信我们”这句话本身不够分量。断网状态下应用照常运行——你可以亲自试试。Release 会发布 SHA-256 校验值与签名状态,Release notes 会单独列出任何隐私/网络变化;有四个早期版本例外——v0.1.0、v0.1.1、v0.1.2 未公布校验值,v0.1.9 两样都没有。源代码目前是私有的,但我们在考虑开放核心的用量读取组件,让“只读日志、默认零上传”可以被独立审计。",
         },
       ],
     },
@@ -510,7 +579,10 @@ const ZH: LegalDoc = {
       h: "变更",
       blocks: [
         {
-          p: "未来版本若新增任何数据处理(遥测、崩溃上报、更新检查、新排行榜字段),会在该版本发布之前更新本声明与 App 内同意文案,并在 Release notes 的「Privacy or network changes」一节中明确列出。",
+          p: "未来版本若新增任何数据处理(遥测、崩溃上报、新的网络对端、新排行榜字段),会在该版本发布之前更新本声明与 App 内同意文案,并在 Release notes 的「Privacy or network changes」一节中明确列出。",
+        },
+        {
+          p: "到目前为止按这个流程处理过三次:价格表更新(随 v0.1.5 发布,新增的对端是本站托管商)、更新检查(v0.2.1,新增的对端是 GitHub),以及项目展示(v0.2.2,第一次出现由你自己填写的内容和由你上传的文件)。三者都默认关闭。",
         },
       ],
     },
@@ -518,7 +590,7 @@ const ZH: LegalDoc = {
       h: "联系我们",
       blocks: [
         {
-          code: "发布者:  Poietic Studio\n隐私:    contact@tokenforest.com.au(过渡期;privacy@tokenforest.com.au 将在首个公开版本前启用)\n安全:    见 Security 页\n网站:    https://www.tokenforest.com.au",
+          code: "发布者:  Poietic Studio\n隐私:    contact@tokenforest.com.au(专用信箱 privacy@tokenforest.com.au 正在开通中)\n安全:    见 Security 页\n网站:    https://www.tokenforest.com.au",
         },
       ],
     },
@@ -528,7 +600,7 @@ const ZH: LegalDoc = {
 const JA: LegalDoc = {
   title: "Token Forest プライバシー通知",
   meta: [
-    "バージョン 1.0-beta(プレリリース草案) · 最終更新 2026-07-28 · 最初の公開リリース時に発効",
+    "バージョン 1.0-beta · 最終更新 2026-08-16 · 最初の公開リリース(v0.1.0、2026-07-09)より発効",
     "発行者:Poietic Studio",
   ],
   sections: [
@@ -545,7 +617,7 @@ const JA: LegalDoc = {
         {
           list: [
             "中核機能はすべてお使いのデバイス上で動作します。アカウント、API キー、ネットワークは不要です。",
-            "アプリにはテレメトリ、広告、クラッシュレポート、外部へ通信する自動更新は一切ありません。",
+            "アプリにはテレメトリ、広告、クラッシュレポートはありません。任意の更新チェックは既定でオフで、オンにしてもアプリが自分で何かをインストールすることはありません —— 新しいバージョンがあることを知らせ、あなたが求めた場合にインストーラーをダウンロードするだけで、実行するのはあなたです。",
             "AI コーディングツールがすでにローカルに書き出している使用ログを読み取ります——あなたのソースコードファイルを読むことはありません。",
             "プロンプトや会話内容を保存・アップロードすることはありません。",
             "グローバルリーダーボードは任意機能で、既定でオフです。オンにする前に、同期される全項目を列挙した同意ダイアログを表示します。オフにすると、あなたの記録の削除を要求します。",
@@ -600,6 +672,10 @@ const JA: LegalDoc = {
                 "sync_error.json",
                 "リーダーボードを有効にした場合のみ:最後のリーダーボード同期エラーのメッセージとその時刻(診断専用。アップロードされることはありません)",
               ],
+              [
+                "update_state.json",
+                "更新チェックが実行された場合のみ:最後に成功した時刻と最後に試行した時刻、およびキャッシュされた最新バージョン番号、リリースページのリンク、インストーラーの SHA-256 とサイズ",
+              ],
             ],
           },
         },
@@ -615,12 +691,13 @@ const JA: LegalDoc = {
           p: "既定では、Token Forest はネットワークリクエストを一切行いません。成長、バブル、ショップ、カプセルモード、ダッシュボードはすべてオフラインで動作します。費用の見積もりは同梱の価格表を使用します。",
         },
         {
-          p: "オンラインに接続しうる任意機能は正確に二つだけで、いずれもあなたが操作するまで何も行いません:",
+          p: "オンラインに接続しうる任意機能は、リーダーボード、価格表の更新、更新チェックです。いずれも既定でオフで、あなたが操作するまで何も行いません:",
         },
         {
           list: [
             "リーダーボード — 既定でオフ。次のセクションを参照してください。",
-            "価格表の更新(v0.1.4+)— ダッシュボードで「↻ 価格を更新」をクリックするか、設定で「価格表を自動更新」をオン(既定はオフ。オンでも 1 日に最大 1 回の確認)にすると、静的ファイル https://tokenforest.com.au/pricing.json を 1 つダウンロードし、新しく公開されたモデルをアプリ更新を待たずに価格計算できます。これはダウンロードのみです:リクエストは使用データ・識別子・アカウントを一切含みません。ファイルは検証のうえローカルにキャッシュされ、失敗時はアプリが同梱/キャッシュ済みの表を静かに使い続けます。",
+            "価格表の更新(v0.1.5+)— ダッシュボードで「↻ 価格を更新」をクリックするか、設定で「価格表を自動更新」をオン(既定はオフ。オンでも 1 日に最大 1 回の確認)にすると、静的ファイル https://tokenforest.com.au/pricing.json を 1 つダウンロードし、新しく公開されたモデルをアプリ更新を待たずに価格計算できます。これはダウンロードのみです:リクエストは使用データ・識別子・アカウントを一切含みません。ファイルは検証のうえローカルにキャッシュされ、失敗時はアプリが同梱/キャッシュ済みの表を静かに使い続けます。",
+            "更新チェック(v0.2.1+)— 既定でオフです。初回起動時のウェルカム画面、または設定 → について から有効にできます。ほかに手動の「更新を確認…」もあり、これは一度だけリクエストを送るもので、自動チェックが勝手に有効になることはありません。オンにすると、アプリは GitHub に最新リリースを問い合わせます:GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest。頻度は成功後は 1 日に最大 1 回、接続できないときは最大 6 時間ごとに再試行(1 日あたり最大 4 回)です。リクエストにはボディもクエリ文字列も Cookie も Authorization もなく、アプリが設定するヘッダーは 3 つの固定値(User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28)のみで、すべてのインストールで同一です。バージョン番号、プラットフォーム、識別子、使用量データは一切含まれません —— バージョンの比較はお使いのマシン上で行われます。「更新をダウンロード」をクリックするまで何もダウンロードされません。ダウンロードしたファイルは同じ GitHub リリースが公開している SHA-256 と照合され、macOS の quarantine / Windows の MOTW 属性を保持したまま、Finder / エクスプローラーで場所を示すだけです。アプリがインストールしたり、自分自身を置き換えたり、権限昇格を求めたりすることはありません。これを有効にすると GitHub が新たな通信相手になります:他のオンラインサービスと同様に、GitHub および経路上のネットワークは各社のポリシーに基づき IP アドレス、リクエスト時刻、標準的なサーバーログを処理する可能性があり、更新チェックをオンにしたマシンは「おおよそどの日に起動されていたか」という痕跡を GitHub 側に残します。",
           ],
         },
         {
@@ -642,8 +719,8 @@ const JA: LegalDoc = {
             head: ["項目", "公開表示?"],
             rows: [
               [
-                "ランダムな匿名 ID(Supabase が生成。あなたの記録を識別するためだけに使用)",
-                "いいえ",
+                "ランダムな匿名 ID(Supabase が生成。記録の識別に加え、バッジ画像とプロジェクト画像のアドレスにもなります)",
+                "はい(この 2 つのリンクに現れます)",
               ],
               ["表示名(空欄の場合は「Anonymous#id」形式の名前を生成)", "はい"],
               ["収集した木のトークン合計", "はい"],
@@ -660,18 +737,25 @@ const JA: LegalDoc = {
                 "回収したトークンのモデル別内訳——モデル名、その提供元、入力/出力/キャッシュ読み/キャッシュ書き込みの数量とその合計、日付なし(v0.2.0+)",
                 "はい(モデルランキング)",
               ],
+              [
+                "プロジェクト紹介 —— ご自身が入力したプロジェクト名、ひとこと紹介、リンク、画像 1 枚(v0.2.2+)。既定はオフで、ランキング設定の中にあります。画像は端末を出る前に 512px / 64 KB 以内に縮小し、位置情報やカメラ情報を削除します。スイッチをオフにすると、次回の同期でこれらの項目が消去され、アップロード済みの画像も削除されます(下記「プロジェクト紹介」の節を参照)。",
+                "はい",
+              ],
               ["サーバーが生成する作成/更新のタイムスタンプ", "表示される場合あり"],
             ],
           },
         },
         {
-          p: "この内訳は、トークンランキングのほかに 2 つの公開ランキングにも使われます。ベンダー使用量ランキングは全プレイヤーのトークンをベンダー別・モデル別に合算したもので、コミュニティ全体の合計であり、個人の使用量を読み取ることはできません。フォレスト価値ランキングは、集めたトークンの推定金額を表示します。金額は当社のサーバー側で、すでに同期されている数量に各モデルの公開価格を掛けて算出します——金額がお使いのマシンから送信されることはなく、新たな項目のアップロードもありません。これは請求書ではなく推定です:サブスクリプション・割引・無料枠は反映されず、ベンダーが価格を変更すれば全員の数値が同時に動きます。また各トークンがどのモデルに属するかはご自身のマシン由来で、独立した検証は行われていません。両ランキングとも、集計済みトークン全体のうちどれだけをカバーしているかを明示します。 細目:名前を空欄にすると、生成される匿名名はアプリの言語で表示されるため、リーダーボードにはお使いの UI 言語が間接的に反映されます。",
+          p: "この列の「はい」は公開ページに表示されることを、「いいえ」は表示されないことを意味します。不正防止の 4 つの数値は、さらにデータベース側でも施錠されています:アプリとウェブサイトが使う公開読み取り専用キーは、これらの列の読み取り自体を拒否されます。",
+        },
+        {
+          p: "細目:名前を空欄にすると、生成される匿名名はアプリの言語で表示されるため、リーダーボードにはお使いの UI 言語が間接的に反映されます。",
         },
         {
           p: "モデル別内訳(v0.2.0+)。ランキングには「木の大きさ」以外にも、最も使われたモデル、提供元どうしの比較といったボードがあります。これらはトークンのモデル別内訳——モデル名(例 claude-opus-4-8)、その提供元、4 種のトークン数量とその合計——によって支えられています。",
         },
         {
-          p: "対象はあなたが自分で回収したバブルのみです。各バブルは「どのモデルが消費したか」の内訳を保持しており、その内訳はバブルを回収した瞬間——ツリーのスコアが増えるのと同じ瞬間、同じエネルギー——に記録されます。回収されずに期限切れとなったバブルはどちらにも入りません。この集計のためにインストール前のログを遡ることはありません。",
+          p: "この内訳は、トークンランキングのほかに 2 つの公開ランキングにも使われます。ベンダー使用量ランキングは全プレイヤーのトークンをベンダー別・モデル別に合算したもので、コミュニティ全体の合計です。ウェブサイトに表示されるのはこの合計ですが、その元になっているプレイヤー別・モデル別の行は、当社の公開データベース接続経由で読み取ることができ、匿名 ID と結びつけることが可能です。フォレスト価値ランキングは、集めたトークンの推定金額を表示します。金額は当社のサーバー側で、すでに同期されている数量に各モデルの公開価格を掛けて算出します——金額がお使いのマシンから送信されることはなく、新たな項目のアップロードもありません。これは請求書ではなく推定です:サブスクリプション・割引・無料枠は反映されず、ベンダーが価格を変更すれば全員の数値が同時に動きます。また各トークンがどのモデルに属するかはご自身のマシン由来で、独立した検証は行われていません。両ランキングとも、集計済みトークン全体のうちどれだけをカバーしているかを明示します。対象はあなたが自分で回収したバブルのみです。各バブルは「どのモデルが消費したか」の内訳を保持しており、その内訳はバブルを回収した瞬間——ツリーのスコアが増えるのと同じ瞬間、同じエネルギー——に記録されます。回収されずに期限切れとなったバブルはどちらにも入りません。この集計のためにインストール前のログを遡ることはありません。",
         },
         {
           p: "提供元はモデル名から導出され、どの CLI がログを書いたかには依存しません:DeepSeek や GLM、Kimi を ANTHROPIC_BASE_URL 経由で Claude Code に接続する使い方は一般的で、ログの出所で判断すると Claude に誤集計されるためです。",
@@ -680,7 +764,7 @@ const JA: LegalDoc = {
           p: "日付は含みません。累計のみで、日別・時間別・セッション別の分割はないため、不正防止の 4 つの数値と同様に作業時間を復元できません。日付別の内訳は端末に留まり、ダッシュボードで使われます。",
         },
         {
-          p: "集計は v0.1.10 から開始します。それ以前に回収したトークンはモデル情報を持たず遡って補完されないため、モデル合計は通常スコアより少なくなります。1 回の同期で最大 30 モデル。モデル名は 2 段階で検証され、アプリは厳格な文字集合を外れるものを単一の「unknown」にまとめ、サーバー側でも文字集合と禁止語リストを独立に再確認し、通らない行は破棄します。",
+          p: "集計は v0.2.0 から開始します。それ以前に回収したトークンはモデル情報を持たず遡って補完されないため、モデル合計は通常スコアより少なくなります。1 回の同期で最大 30 モデル(実際のユーザーは通常 5〜15)。超過分はトークン数の少ない順に切り捨てられます。モデル名は 2 段階で検証され、アプリは厳格な文字集合を外れるものを単一の「unknown」にまとめ、サーバー側でも文字集合と禁止語リストを独立に再確認し、通らない行は破棄します。",
         },
         {
           p: "いかなるモードでもアップロードしないもの:生ログ、プロンプトや会話内容、ソースコード、セッションタイトル、ファイルパス、プロジェクト名、Git ブランチ、セッション別の使用状況、費用の見積もり、回収していないトークンに関する一切、およびトークン使用の区間別・時間帯別の内訳一切——上記のモデル別数値の日付別内訳を含みます。",
@@ -734,10 +818,10 @@ const JA: LegalDoc = {
       h: "ウェブサイト",
       blocks: [
         {
-          p: "本ウェブサイトは、アナリティクス、広告トラッカー、マーケティング Cookie を一切使用しません。ホスティングプロバイダーは、サイトの提供と保護のために標準的なサーバーログ(IP アドレス、ユーザーエージェント、要求されたページ、時刻)を処理します。リーダーボードのページは上記の公開リーダーボードの行を読み取り、閲覧にログインは不要です。将来アナリティクス等のサービスを追加する場合は、本通知を先に更新します。",
+          p: "本ウェブサイトは、アナリティクス、広告トラッカー、マーケティング Cookie を一切使用しません。ホスティングプロバイダーは、サイトの提供と保護のために標準的なサーバーログ(IP アドレス、ユーザーエージェント、要求されたページ、時刻)を処理します。リーダーボードのページは上記の公開リーダーボードの行を読み取り、閲覧にログインは不要です。当サイトは、希望するプレイヤーにバッジ画像も配信します:そのアドレスにはあなたの匿名 ID が含まれ、表示されるのはリーダーボードのあなたの行と同じ公開情報です。貼り付けた先のページの訪問者——またはその運営元の画像プロキシ——が当サイトから取得するため、上記のとおり標準的なサーバーログにそのリクエストが残ります。将来アナリティクス等のサービスを追加する場合は、本通知を先に更新します。",
         },
         {
-          p: "ホームページには YouTube でホストされているデモ動画を掲載しています。再生するまで YouTube へのリクエストは発生せず、静止状態では当サイトから配信される静止画のみが表示されます。再生すると、動画は YouTube の no-cookie プレーヤードメインから読み込まれ、その時点以降、YouTube は Google のプライバシーポリシーに基づき独自の Cookie を設定し、IP アドレスを受け取る場合があります。動画を再生しなければ、これを完全に避けられます。",
+          p: "ホームページにはデモ動画を掲載しています。再生するまで、いずれの動画プラットフォームにもリクエストは発生せず、静止状態では当サイトから配信される静止画のみが表示されます。再生する、または配信元を切り替えるボタンを押すと、動画は YouTube の no-cookie プレーヤードメインから、切り替えた場合は Bilibili から読み込まれ、その時点以降、そのプラットフォームは自社のプライバシーポリシーに基づき独自の Cookie を設定し、IP アドレスを受け取る場合があります。動画を再生しなければ、いずれも完全に避けられます。",
         },
       ],
     },
@@ -750,10 +834,28 @@ const JA: LegalDoc = {
       ],
     },
     {
+      h: "プロジェクト紹介(v0.2.2+、既定はオフ)",
+      blocks: [
+        {
+          p: "リーダーボード設定の中に「プロジェクト紹介」というスイッチがあります。オンにすると、プロジェクト名(24 文字以内)、ひとこと紹介(80 文字以内)、リンク 1 つ、画像 1 枚を登録できます。この 4 つはリーダーボードの同期と一緒に送られ、あなたの行の隣に公開表示されます。はっきり述べておくべきことがいくつかあります:",
+        },
+        {
+          list: [
+            "既定でオフであり、リーダーボード自体がオフの間は何もしません。一度もオンにしていなければ、この 4 項目が送信されることはありません。オフに切り替えたときだけ、保存済みの内容を消すために 4 項目が空の値として一度送信されます。",
+            "内容はご自身が書いたものが、前後の空白を除いてそのまま表示されます。公開したくない情報は入力しないでください。",
+            "掲載を見合わせることがあります。アカウントが確認中の場合、担当者が確認するまでプロジェクト紹介はランキングに表示されません。ランキングのそれ以外の項目は影響を受けず、待っている間に入力内容が削除されることもありません。「表示されない」は「隠される」とは異なります:公開ページから外れるだけで、入力された内容は当社側に残り、画像も元の直接アドレスのままです。",
+            "画像は端末を出る前に再エンコードされます —— 長辺 512 ピクセル以内・64 KB 以内に縮小し、その過程で位置情報やカメラ情報を取り除きます。スマートフォンの写真を選んでも、GPS 座標は一緒に送られません。",
+            "スイッチをオフにすることが取り下げです。次の同期でランキング上のこれらの項目が消去され、アップロード済みの画像も削除されます。リーダーボードごとオフにした場合は、あなたの行ごと削除されます。手元で隠すだけではありません。ベータの制限事項として率直に述べます:この片付けはオフの操作が当社に届いた時点で行われるため、オフラインの場合や、アプリの匿名セッションが期限切れで認証できなくなっている場合は、後の試行が成功するまでランキング上の項目も画像もそのまま残ります。当社にご連絡いただければ、代わりに削除します。",
+            "リンクは https:// で始まる必要があり、受け付ける前に検証されます。テキストは表示名と同じ単語フィルターを、端末側で 1 回、サーバー側でもう 1 回通ります。",
+          ],
+        },
+      ],
+    },
+    {
       h: "これらの主張の検証",
       blocks: [
         {
-          p: "当社は「信じてください」だけでは不十分だと承知しています。ネットワークを完全に無効にしてもアプリは動作します——ぜひお試しください。各リリースは SHA-256 チェックサムと署名ステータスを公開し、リリースノートでプライバシーやネットワークに関する変更を明示します。ソースコードは現在非公開ですが、「ログを読むだけで何もアップロードしない」という主張を独立して監査できるよう、中核となる使用状況リーダーコンポーネントの公開を検討しています。",
+          p: "当社は「信じてください」だけでは不十分だと承知しています。ネットワークを完全に無効にしてもアプリは動作します——ぜひお試しください。リリースは SHA-256 チェックサムと署名ステータスを公開し、リリースノートでプライバシーやネットワークに関する変更を明示します。ただし初期の 4 ビルドは例外です——v0.1.0、v0.1.1、v0.1.2 はチェックサムを公開しておらず、v0.1.9 はどちらもありません。ソースコードは現在非公開ですが、「ログを読むだけで何もアップロードしない」という主張を独立して監査できるよう、中核となる使用状況リーダーコンポーネントの公開を検討しています。",
         },
       ],
     },
@@ -775,7 +877,10 @@ const JA: LegalDoc = {
       h: "変更",
       blocks: [
         {
-          p: "将来のバージョンが新たなデータ処理(テレメトリ、クラッシュレポート、自動更新チェック、新しいリーダーボード項目)を追加する場合は、そのバージョンの提供前に本通知とアプリ内の同意内容を更新し、リリースノートの「Privacy or network changes」の項目で明示します。",
+          p: "将来のバージョンが新たなデータ処理(テレメトリ、クラッシュレポート、新たな通信先、新しいリーダーボード項目)を追加する場合は、そのバージョンの提供前に本通知とアプリ内の同意内容を更新し、リリースノートの「Privacy or network changes」の項目で明示します。",
+        },
+        {
+          p: "これまでにこの手順を 3 回踏んでいます:価格表の更新(v0.1.5 で提供、新たな通信相手は当サイトのホスティング事業者)、更新チェック(v0.2.1、新たな通信相手は GitHub)、そしてプロジェクト紹介(v0.2.2、初めてご自身が書く項目とアップロードするファイルが加わりました)。いずれも既定でオフです。",
         },
       ],
     },
@@ -783,7 +888,7 @@ const JA: LegalDoc = {
       h: "お問い合わせ",
       blocks: [
         {
-          code: "発行者:      Poietic Studio\nプライバシー:  contact@tokenforest.com.au(暫定;privacy@tokenforest.com.au は最初の公開リリース前に有効化)\nセキュリティ:  Security ページを参照\nウェブサイト:  https://www.tokenforest.com.au",
+          code: "発行者:      Poietic Studio\nプライバシー:  contact@tokenforest.com.au(専用の privacy@tokenforest.com.au は準備中)\nセキュリティ:  Security ページを参照\nウェブサイト:  https://www.tokenforest.com.au",
         },
       ],
     },
@@ -793,7 +898,7 @@ const JA: LegalDoc = {
 const KO: LegalDoc = {
   title: "Token Forest 개인정보 보호정책",
   meta: [
-    "버전 1.0-beta(사전 공개 초안) · 최종 업데이트 2026-07-28 · 최초 공개 릴리스 시 발효",
+    "버전 1.0-beta · 최종 업데이트 2026-08-16 · 최초 공개 릴리스(v0.1.0, 2026-07-09)부터 발효",
     "발행자: Poietic Studio",
   ],
   sections: [
@@ -810,7 +915,7 @@ const KO: LegalDoc = {
         {
           list: [
             "핵심 기능은 전적으로 사용자의 기기에서 실행됩니다. 계정, API 키, 네트워크가 필요 없습니다.",
-            "앱에는 텔레메트리, 광고, 오류 보고, 외부로 연결되는 자동 업데이트가 전혀 없습니다.",
+            "앱에는 텔레메트리, 광고, 오류 보고가 없습니다. 선택적인 업데이트 확인은 기본적으로 꺼져 있으며, 켜더라도 앱이 스스로 무언가를 설치하지 않습니다 —— 새 버전이 있다는 사실을 알려주고, 원하시면 설치 파일을 내려받아 드릴 뿐 실행은 사용자가 합니다.",
             "AI 코딩 도구가 이미 로컬에 기록해 둔 사용 로그를 읽습니다 — 사용자의 소스 코드 파일은 읽지 않습니다.",
             "프롬프트나 대화 내용을 저장하거나 업로드하지 않습니다.",
             "글로벌 리더보드는 선택 기능이며 기본적으로 꺼져 있습니다. 켜지기 전에 동기화될 모든 항목을 나열한 동의 창을 표시합니다. 끄면 사용자의 기록 삭제를 요청합니다.",
@@ -859,6 +964,10 @@ const KO: LegalDoc = {
                 "sync_error.json",
                 "리더보드를 활성화한 경우에만: 마지막 리더보드 동기화 오류 메시지와 그 시각(진단용일 뿐이며 업로드되지 않습니다)",
               ],
+              [
+                "update_state.json",
+                "업데이트 확인이 실행된 경우에만: 마지막으로 성공한 시각과 마지막으로 시도한 시각, 그리고 캐시된 최신 버전 번호, 릴리스 페이지 링크, 설치 파일의 SHA-256과 크기",
+              ],
             ],
           },
         },
@@ -874,12 +983,13 @@ const KO: LegalDoc = {
           p: "기본적으로 Token Forest는 어떠한 네트워크 요청도 하지 않습니다. 성장, 버블, 상점, 캡슐 모드, 대시보드는 모두 오프라인에서 작동합니다. 비용 추정은 내장된 가격표를 사용합니다.",
         },
         {
-          p: "온라인에 연결될 수 있는 선택 기능은 정확히 두 가지뿐이며, 둘 다 사용자가 조작하기 전에는 아무 일도 하지 않습니다:",
+          p: "온라인에 연결될 수 있는 선택 기능은 리더보드, 가격표 업데이트, 업데이트 확인입니다. 모두 기본적으로 꺼져 있으며, 사용자가 조작하기 전에는 아무 일도 하지 않습니다:",
         },
         {
           list: [
             "리더보드 — 기본적으로 꺼짐. 다음 섹션을 참조하세요.",
-            "가격표 업데이트(v0.1.4+) — 대시보드에서 「↻ 가격 업데이트」를 클릭하거나 설정에서 「가격표 자동 업데이트」를 켜면(기본값은 꺼짐, 켜도 하루 최대 1회 확인) 정적 파일 https://tokenforest.com.au/pricing.json 하나를 내려받아, 새로 출시된 모델을 앱 업데이트를 기다리지 않고 가격 계산할 수 있습니다. 이는 다운로드일 뿐입니다: 요청은 사용 데이터, 식별자, 계정을 전혀 담지 않습니다. 파일은 검증 후 로컬에 캐시되며, 실패 시 앱은 내장/캐시된 표를 조용히 계속 사용합니다.",
+            "가격표 업데이트(v0.1.5+) — 대시보드에서 「↻ 가격 업데이트」를 클릭하거나 설정에서 「가격표 자동 업데이트」를 켜면(기본값은 꺼짐, 켜도 하루 최대 1회 확인) 정적 파일 https://tokenforest.com.au/pricing.json 하나를 내려받아, 새로 출시된 모델을 앱 업데이트를 기다리지 않고 가격 계산할 수 있습니다. 이는 다운로드일 뿐입니다: 요청은 사용 데이터, 식별자, 계정을 전혀 담지 않습니다. 파일은 검증 후 로컬에 캐시되며, 실패 시 앱은 내장/캐시된 표를 조용히 계속 사용합니다.",
+            "업데이트 확인(v0.2.1+) — 기본적으로 꺼져 있습니다. 첫 실행 시 환영 창이나 설정 → 정보에서 켤 수 있고, 아무것도 켜지 않고 한 번만 보내는 수동 「업데이트 확인…」도 있습니다. 켜면 앱이 GitHub에 최신 릴리스를 한 번 물어봅니다: GET https://api.github.com/repos/Ericcccccc777/Poietic-TokenForest/releases/latest. 빈도는 성공 후 하루 최대 한 번이며, 연결되지 않을 때는 최대 6시간마다 재시도합니다(하루 최대 4회). 요청에는 본문도, 쿼리 문자열도, 쿠키도, Authorization도 없으며 앱이 설정하는 헤더는 세 개의 고정 상수(User-Agent: TokenForest-update, Accept: application/vnd.github+json, X-GitHub-Api-Version: 2022-11-28)뿐으로 모든 설치에서 동일합니다. 버전 번호, 플랫폼, 식별자, 사용량 데이터는 전혀 담기지 않으며 —— 버전 비교는 사용자의 컴퓨터에서 이루어집니다. 「업데이트 다운로드」를 누르기 전에는 아무것도 내려받지 않습니다. 내려받은 파일은 같은 GitHub 릴리스가 공개한 SHA-256과 대조되고, macOS의 quarantine / Windows의 MOTW 표시를 유지한 채 Finder / 파일 탐색기에서 위치만 알려 줍니다. 앱이 대신 설치하거나, 스스로를 교체하거나, 권한 상승을 요구하는 일은 없습니다. 이 기능을 켜면 GitHub가 새로운 통신 상대가 됩니다: 다른 온라인 서비스와 마찬가지로 GitHub와 그 경로의 네트워크는 자체 정책에 따라 IP 주소, 요청 시각, 표준 서버 로그를 처리할 수 있으며, 업데이트 확인을 켠 컴퓨터는 「대략 어떤 날에 켜져 있었는지」라는 흔적을 GitHub 쪽에 남깁니다.",
           ],
         },
         {
@@ -900,7 +1010,10 @@ const KO: LegalDoc = {
           table: {
             head: ["항목", "공개 표시?"],
             rows: [
-              ["무작위 익명 ID(Supabase가 생성; 사용자의 기록을 식별하는 데만 사용)", "아니요"],
+              [
+                "무작위 익명 ID(Supabase가 생성; 기록 식별과 함께 배지 이미지와 프로젝트 이미지의 주소로도 쓰입니다)",
+                "예(이 두 링크에 나타납니다)",
+              ],
               ["표시 이름(비우면 「Anonymous#id」 형식의 이름 생성)", "예"],
               ["수집한 나무 토큰 합계", "예"],
               ["나무별 토큰 합계와 성장 단계", "예(나무 상세)"],
@@ -916,18 +1029,25 @@ const KO: LegalDoc = {
                 "수집한 토큰의 모델별 구성——모델명, 해당 제공사, 입력/출력/캐시 읽기/캐시 쓰기 수량과 그 합계, 날짜 없음(v0.2.0+)",
                 "예(모델 리더보드)",
               ],
+              [
+                "프로젝트 소개 —— 사용자가 직접 입력한 프로젝트 이름, 한 줄 소개, 링크, 이미지 1장(v0.2.2+). 기본값은 꺼짐이며 리더보드 설정 안에 있습니다. 이미지는 기기를 떠나기 전에 512px / 64 KB로 축소되고 위치·카메라 정보가 제거됩니다. 스위치를 끄면 다음 동기화에서 이 항목들이 지워지고 업로드된 이미지도 삭제됩니다(아래 「프로젝트 소개」 섹션 참조).",
+                "예",
+              ],
               ["서버가 생성한 생성/수정 타임스탬프", "표시될 수 있음"],
             ],
           },
         },
         {
-          p: "이 구성은 토큰 리더보드 외에 두 개의 공개 리더보드에도 사용됩니다. 벤더 사용량 리더보드는 모든 플레이어의 토큰을 벤더별·모델별로 합산한 것으로, 커뮤니티 전체 합계이며 개인의 사용량은 읽어낼 수 없습니다. 숲 가치 리더보드는 수집한 토큰의 추정 금액을 보여줍니다. 금액은 저희 서버에서 이미 동기화된 수량에 모델별 공개 단가를 곱해 계산합니다 — 사용자의 기기에서 금액이 전송되지 않으며 새로 업로드되는 항목도 없습니다. 이는 청구서가 아니라 추정치입니다: 구독·할인·무료 한도는 반영되지 않고, 벤더가 가격을 바꾸면 모두의 수치가 동시에 움직이며, 각 토큰이 어느 모델에 속하는지는 사용자 기기에서 온 정보로 독립 검증되지 않습니다. 두 리더보드 모두 집계된 전체 토큰 중 얼마를 포함하는지 명시합니다. 세부 사항: 이름을 비우면 생성되는 익명 이름이 앱 언어로 표시되므로, 리더보드에 사용자의 UI 언어가 간접적으로 반영됩니다.",
+          p: "이 열에서 「예」는 공개 페이지에 표시된다는 뜻이고, 「아니요」는 표시되지 않는다는 뜻입니다. 부정행위 방지용 네 숫자는 데이터베이스 차원에서도 잠겨 있습니다: 앱과 웹사이트가 사용하는 공개 읽기 전용 키는 해당 열을 읽는 것 자체가 거부됩니다.",
+        },
+        {
+          p: "세부 사항: 이름을 비우면 생성되는 익명 이름이 앱 언어로 표시되므로, 리더보드에 사용자의 UI 언어가 간접적으로 반영됩니다.",
         },
         {
           p: "모델별 구성(v0.2.0+). 리더보드에는 「나무 크기」 외에도 가장 많이 쓴 모델, 제공사 간 비교 같은 보드가 있습니다. 이들은 토큰의 모델별 구성——모델명(예: claude-opus-4-8), 해당 제공사, 4종 토큰 수량과 그 합계——으로 채워집니다.",
         },
         {
-          p: "대상은 직접 누른 버블뿐입니다. 각 버블은 「어떤 모델이 소비했는지」의 구성을 지니며, 그 구성은 버블을 수집하는 바로 그 순간——나무 점수가 오르는 것과 같은 순간, 같은 에너지——에 기록됩니다. 누르지 않고 만료된 버블은 양쪽 모두 계산되지 않습니다. 이 집계를 위해 설치 이전의 로그를 뒤지지 않습니다.",
+          p: "이 구성은 토큰 리더보드 외에 두 개의 공개 리더보드에도 사용됩니다. 벤더 사용량 리더보드는 모든 플레이어의 토큰을 벤더별·모델별로 합산한 것으로, 커뮤니티 전체 합계입니다. 웹사이트에 표시되는 것은 이 합계이지만, 그 바탕이 되는 플레이어별·모델별 행은 저희 공개 데이터베이스 인터페이스를 통해 읽을 수 있으며 익명 ID와 연결될 수 있습니다. 숲 가치 리더보드는 수집한 토큰의 추정 금액을 보여줍니다. 금액은 저희 서버에서 이미 동기화된 수량에 모델별 공개 단가를 곱해 계산합니다 — 사용자의 기기에서 금액이 전송되지 않으며 새로 업로드되는 항목도 없습니다. 이는 청구서가 아니라 추정치입니다: 구독·할인·무료 한도는 반영되지 않고, 벤더가 가격을 바꾸면 모두의 수치가 동시에 움직이며, 각 토큰이 어느 모델에 속하는지는 사용자 기기에서 온 정보로 독립 검증되지 않습니다. 두 리더보드 모두 집계된 전체 토큰 중 얼마를 포함하는지 명시합니다. 대상은 직접 누른 버블뿐입니다. 각 버블은 「어떤 모델이 소비했는지」의 구성을 지니며, 그 구성은 버블을 수집하는 바로 그 순간——나무 점수가 오르는 것과 같은 순간, 같은 에너지——에 기록됩니다. 누르지 않고 만료된 버블은 양쪽 모두 계산되지 않습니다. 이 집계를 위해 설치 이전의 로그를 뒤지지 않습니다.",
         },
         {
           p: "제공사는 모델명에서 파생되며 어느 CLI가 로그를 남겼는지와는 무관합니다: DeepSeek·GLM·Kimi를 ANTHROPIC_BASE_URL로 Claude Code에 연결해 쓰는 경우가 흔한데, 출처로 분류하면 Claude로 잘못 집계되기 때문입니다.",
@@ -936,7 +1056,7 @@ const KO: LegalDoc = {
           p: "날짜는 담지 않습니다. 누적값만 있고 일별·시간별·세션별 분할이 없으므로, 부정행위 방지용 네 숫자와 마찬가지로 언제 일하고 언제 쉬는지 알아낼 수 없습니다. 날짜별 내역은 기기에 남아 대시보드에서 사용됩니다.",
         },
         {
-          p: "집계는 v0.1.10부터 시작합니다. 그 이전에 수집한 토큰은 모델 정보가 없고 소급 보정하지 않으므로 모델 합계는 보통 점수보다 적습니다. 한 번의 동기화에 최대 30개 모델이 실립니다. 모델명은 두 단계로 검증되어, 앱은 엄격한 문자 집합을 벗어나는 것을 단일 「unknown」으로 묶고, 서버도 문자 집합과 금지어 목록을 독립적으로 재확인해 통과하지 못한 행은 버립니다.",
+          p: "집계는 v0.2.0부터 시작합니다. 그 이전에 수집한 토큰은 모델 정보가 없고 소급 보정하지 않으므로 모델 합계는 보통 점수보다 적습니다. 한 번의 동기화에 최대 30개 모델이 실리며(실제 사용자는 보통 5~15개), 초과분은 토큰 수가 적은 순서로 잘려 나갑니다. 모델명은 두 단계로 검증되어, 앱은 엄격한 문자 집합을 벗어나는 것을 단일 「unknown」으로 묶고, 서버도 문자 집합과 금지어 목록을 독립적으로 재확인해 통과하지 못한 행은 버립니다.",
         },
         {
           p: "어떤 모드에서도 업로드하지 않는 것: 원본 로그, 프롬프트나 대화 내용, 소스 코드, 세션 제목, 파일 경로, 프로젝트 이름, Git 브랜치, 세션별 사용량, 비용 추정, 수집하지 않은 토큰에 관한 일체, 그리고 토큰 사용의 구간별·시간대별 내역 일체——위 모델별 수치의 날짜별 내역을 포함합니다.",
@@ -990,10 +1110,10 @@ const KO: LegalDoc = {
       h: "웹사이트",
       blocks: [
         {
-          p: "본 웹사이트는 분석 도구, 광고 추적기, 마케팅 쿠키를 일절 사용하지 않습니다. 호스팅 제공업체는 사이트를 제공하고 보호하기 위해 표준 서버 로그(IP 주소, 사용자 에이전트, 요청한 페이지, 시각)를 처리합니다. 리더보드 페이지는 위에서 설명한 공개 리더보드 행을 읽으며, 열람에 로그인이 필요 없습니다. 향후 분석 등의 서비스를 추가할 경우 본 정책을 먼저 업데이트합니다.",
+          p: "본 웹사이트는 분석 도구, 광고 추적기, 마케팅 쿠키를 일절 사용하지 않습니다. 호스팅 제공업체는 사이트를 제공하고 보호하기 위해 표준 서버 로그(IP 주소, 사용자 에이전트, 요청한 페이지, 시각)를 처리합니다. 리더보드 페이지는 위에서 설명한 공개 리더보드 행을 읽으며, 열람에 로그인이 필요 없습니다. 본 사이트는 원하는 플레이어에게 배지 이미지도 제공합니다: 그 주소에는 사용자의 익명 ID가 들어 있으며, 리더보드의 해당 행과 같은 공개 수치를 보여 줍니다. 어디에 붙이든 그 페이지의 방문자 — 또는 해당 서비스의 이미지 프록시 — 가 본 사이트에서 이미지를 가져오므로, 위에서 설명한 표준 서버 로그에 그 요청이 남습니다. 향후 분석 등의 서비스를 추가할 경우 본 정책을 먼저 업데이트합니다.",
         },
         {
-          p: "홈페이지에는 YouTube에 호스팅된 데모 영상이 있습니다. 재생을 누르기 전까지 YouTube로 요청을 보내지 않으며, 정지 상태에서는 본 사이트가 제공하는 정지 이미지만 표시됩니다. 재생을 누르면 영상은 YouTube의 no-cookie 플레이어 도메인에서 불러와지고, 그 시점부터 YouTube가 Google 개인정보처리방침에 따라 자체 쿠키를 설정하고 IP 주소를 수신할 수 있습니다. 영상을 재생하지 않으면 이를 완전히 피할 수 있습니다.",
+          p: "홈페이지에는 데모 영상이 있습니다. 재생을 누르기 전까지 어떤 영상 플랫폼으로도 요청을 보내지 않으며, 정지 상태에서는 본 사이트가 제공하는 정지 이미지만 표시됩니다. 재생을 누르거나 재생 출처를 바꾸는 버튼을 누르면, 영상은 YouTube의 no-cookie 플레이어 도메인에서, 출처를 바꾼 경우에는 Bilibili에서 불러와지며, 그 시점부터 해당 플랫폼이 자체 개인정보처리방침에 따라 쿠키를 설정하고 IP 주소를 수신할 수 있습니다. 영상을 재생하지 않으면 양쪽 모두 완전히 피할 수 있습니다.",
         },
       ],
     },
@@ -1006,10 +1126,28 @@ const KO: LegalDoc = {
       ],
     },
     {
+      h: "프로젝트 소개(v0.2.2+, 기본값 꺼짐)",
+      blocks: [
+        {
+          p: "리더보드 설정 안에 「프로젝트 소개」라는 스위치가 있습니다. 켜면 프로젝트 이름(24자 이내), 한 줄 소개(80자 이내), 링크 하나, 이미지 한 장을 입력할 수 있습니다. 이 네 가지는 리더보드 동기화와 함께 전송되어 여러분의 행 옆에 공개적으로 표시됩니다. 분명히 말해 둘 것이 몇 가지 있습니다:",
+        },
+        {
+          list: [
+            "기본값은 꺼짐이며, 리더보드 자체가 꺼져 있는 동안에는 아무 일도 하지 않습니다. 한 번도 켠 적이 없다면 이 네 항목은 전혀 전송되지 않습니다. 끄는 순간에만, 저장된 내용을 지우기 위해 네 항목이 빈 값으로 한 번 전송됩니다.",
+            "내용은 여러분이 직접 쓴 그대로, 앞뒤 공백만 제거하여 표시됩니다. 공개하고 싶지 않은 정보는 넣지 마십시오.",
+            "게시를 보류할 수 있습니다. 계정이 검토 중이면 담당자가 확인할 때까지 프로젝트 소개가 리더보드에 표시되지 않습니다. 기록의 나머지 부분은 영향을 받지 않으며, 기다리는 동안 입력한 내용이 삭제되지도 않습니다. 「표시되지 않음」은 「숨겨짐」과 다릅니다: 공개 페이지에서 내려갈 뿐, 입력한 내용은 저희 쪽에 남고 이미지도 원래의 직접 주소를 그대로 유지합니다.",
+            "이미지는 기기를 떠나기 전에 다시 인코딩됩니다 —— 가장 긴 변이 512픽셀 이내, 64 KB 이내로 축소되며 그 과정에서 위치·카메라 정보가 제거됩니다. 휴대폰 사진을 골라도 GPS 좌표는 함께 가지 않습니다.",
+            "스위치를 끄는 것이 곧 내리는 것입니다. 다음 동기화에서 리더보드의 해당 항목이 지워지고 업로드된 이미지도 삭제됩니다. 리더보드를 통째로 끄면 여러분의 행과 함께 삭제됩니다. 여러분 쪽에서만 숨기는 것이 아닙니다. 베타 제한 사항을 솔직히 밝힙니다: 이 정리는 끄기 동작이 당사에 도달한 시점에 이루어지므로, 오프라인이거나 앱의 익명 세션이 만료되어 인증할 수 없는 경우에는 이후 어떤 시도가 성공할 때까지 리더보드의 해당 항목과 이미지가 그대로 남습니다. 당사에 문의하시면 대신 삭제해 드립니다.",
+            "링크는 https:// 로 시작해야 하며 수락 전에 검증됩니다. 텍스트는 표시 이름과 동일한 단어 필터를 기기에서 한 번, 서버에서 다시 한 번 통과합니다.",
+          ],
+        },
+      ],
+    },
+    {
       h: "이 주장의 검증",
       blocks: [
         {
-          p: "당사는 「믿어 달라」는 말만으로는 충분하지 않다는 것을 잘 알고 있습니다. 네트워크를 완전히 비활성화해도 앱은 작동합니다 — 직접 시험해 보십시오. 각 릴리스는 SHA-256 체크섬과 서명 상태를 공개하며, 릴리스 노트에 개인정보나 네트워크 관련 변경 사항을 명시합니다. 소스 코드는 현재 비공개이지만, 「로그만 읽고 아무것도 업로드하지 않는다」는 주장을 독립적으로 감사할 수 있도록 핵심 사용량 리더 구성 요소의 공개를 검토하고 있습니다.",
+          p: "당사는 「믿어 달라」는 말만으로는 충분하지 않다는 것을 잘 알고 있습니다. 네트워크를 완전히 비활성화해도 앱은 작동합니다 — 직접 시험해 보십시오. 릴리스는 SHA-256 체크섬과 서명 상태를 공개하며, 릴리스 노트에 개인정보나 네트워크 관련 변경 사항을 명시합니다. 다만 초기 네 개 빌드는 예외입니다 — v0.1.0, v0.1.1, v0.1.2는 체크섬을 공개하지 않았고 v0.1.9는 둘 다 없습니다. 소스 코드는 현재 비공개이지만, 「로그만 읽고 아무것도 업로드하지 않는다」는 주장을 독립적으로 감사할 수 있도록 핵심 사용량 리더 구성 요소의 공개를 검토하고 있습니다.",
         },
       ],
     },
@@ -1031,7 +1169,10 @@ const KO: LegalDoc = {
       h: "변경",
       blocks: [
         {
-          p: "향후 버전이 새로운 데이터 처리(텔레메트리, 오류 보고, 자동 업데이트 확인, 새 리더보드 항목)를 추가하는 경우, 해당 버전을 제공하기 전에 본 정책과 앱 내 동의 내용을 업데이트하고, 릴리스 노트의 「Privacy or network changes」 항목에서 명시합니다.",
+          p: "향후 버전이 새로운 데이터 처리(텔레메트리, 오류 보고, 새로운 네트워크 통신 대상, 새 리더보드 항목)를 추가하는 경우, 해당 버전을 제공하기 전에 본 정책과 앱 내 동의 내용을 업데이트하고, 릴리스 노트의 「Privacy or network changes」 항목에서 명시합니다.",
+        },
+        {
+          p: "지금까지 이 절차를 세 번 거쳤습니다: 가격표 업데이트(v0.1.5에 포함, 새로 추가된 통신 상대는 당사 사이트의 호스팅 제공업체), 업데이트 확인(v0.2.1, 새로 추가된 통신 상대는 GitHub), 그리고 프로젝트 소개(v0.2.2, 사용자가 직접 쓰는 항목과 업로드하는 파일이 처음으로 추가되었습니다). 셋 다 기본값은 꺼짐입니다.",
         },
       ],
     },
@@ -1039,7 +1180,7 @@ const KO: LegalDoc = {
       h: "문의",
       blocks: [
         {
-          code: "발행자:      Poietic Studio\n개인정보:    contact@tokenforest.com.au(임시; privacy@tokenforest.com.au는 최초 공개 릴리스 전 활성화)\n보안:        Security 페이지 참조\n웹사이트:    https://www.tokenforest.com.au",
+          code: "발행자:      Poietic Studio\n개인정보:    contact@tokenforest.com.au(전용 privacy@tokenforest.com.au 메일함은 준비 중)\n보안:        Security 페이지 참조\n웹사이트:    https://www.tokenforest.com.au",
         },
       ],
     },

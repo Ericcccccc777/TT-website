@@ -1,4 +1,34 @@
+# A production deploy costs 15 credits no matter how long the build takes, so a
+# commit that only touches specs, harness files or README must not spend one.
+# Exit 0 skips the build, non-zero runs it; `git diff --quiet` exits 0 exactly
+# when nothing outside the excluded paths changed. When $CACHED_COMMIT_REF is
+# missing (first build, cleared cache) git exits non-zero, so the fallback is
+# "build" rather than "silently skip".
+[build]
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)docs' ':(exclude)docs-harness' ':(exclude).harness' ':(exclude).claude' ':(exclude).codex' ':(exclude).github' ':(exclude)*.md'"
+
 # Netlify secret scanning treats inlined Supabase anon URL/key (NEXT_PUBLIC) as
 # findings in the Next.js client bundle. Those vars are intended for the browser; omit by name.
 [build.environment]
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY"
+
+# Files under public/ carry no content hash, so they ship with Next's default
+# `max-age=0, must-revalidate` and every repeat visit re-validates every sprite.
+# The art only changes when we ship new art: give it a week of browser freshness
+# plus a month of stale-while-revalidate. Rename a file to bust it early.
+# pricing.json is deliberately left out — the desktop app polls it for price
+# updates and has to keep seeing the current copy.
+[[headers]]
+  for = "/sprites/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+[[headers]]
+  for = "/badge-guide/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
+
+[[headers]]
+  for = "/token-forest-demo.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"

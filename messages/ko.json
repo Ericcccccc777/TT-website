@@ -325,9 +325,14 @@
     "usageVendorAria": "{provider} — {tokens} 토큰, 귀속 사용량의 {pct}",
     "usageEmptyHeading": "아직 귀속된 사용량이 없습니다",
     "usageEmptyBody": "현재 버전으로 버블을 모으면 벤더별 수치가 쌓이기 시작합니다.",
-    "valueBorrowed": "이 중 약 {amount}는 대체 단가 기준",
-    "valueAllBorrowed": "전액이 대체 단가 기준",
-    "usageModelsTruncated": "상위 {shown}개 표시(전체 {total}개)"
+    "usageModelsTruncated": "상위 {shown}개 표시(전체 {total}개)",
+    "projectExpand": "{username} 님의 프로젝트 펼치기",
+    "projectCollapse": "{username} 님의 프로젝트 접기",
+    "projectLinkLabel": "링크",
+    "projectLeaveTitle": "Token Forest를 벗어납니다",
+    "projectLeaveBody": "이 사이트는 당사가 운영하지 않으며, 내용에 대해 보증할 수 없습니다.",
+    "projectLeaveConfirm": "그래도 이동",
+    "projectLeaveCancel": "여기 남기"
   },
   "DownloadPage": {
     "heroTreeAlt": "완전히 자란 Token Forest 사과나무",

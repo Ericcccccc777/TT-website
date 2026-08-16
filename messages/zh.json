@@ -325,9 +325,14 @@
     "usageVendorAria": "{provider} — {tokens} tokens,占已归属用量的 {pct}",
     "usageEmptyHeading": "还没有已归属的用量",
     "usageEmptyBody": "玩家用当前版本收取气泡之后,厂商的数字就会开始累积。",
-    "valueBorrowed": "其中约 {amount} 用的是回退价格",
-    "valueAllBorrowed": "全部使用回退价格计算",
-    "usageModelsTruncated": "显示前 {shown} 个,共 {total} 个"
+    "usageModelsTruncated": "显示前 {shown} 个,共 {total} 个",
+    "projectExpand": "展开 {username} 的项目",
+    "projectCollapse": "收起 {username} 的项目",
+    "projectLinkLabel": "链接",
+    "projectLeaveTitle": "你正在离开 Token Forest",
+    "projectLeaveBody": "这个网站不是我们运营的,我们无法为它的内容负责。",
+    "projectLeaveConfirm": "仍要前往",
+    "projectLeaveCancel": "留在这里"
   },
   "DownloadPage": {
     "heroTreeAlt": "Token Forest 成熟苹果树",

@@ -87,7 +87,8 @@ for every visitor.
 
 Because `unpriced_tokens` now sits near zero for most accounts, the view reports
 `estimated_usd` alongside `value_usd` — the share of the money that came from a
-borrowed rate. Without it, "this number is an estimate" would be invisible.
+borrowed rate. The board no longer prints that share (see *The public board*),
+but the figure is still computed and still correct.
 
 ## What the database will accept as model usage
 
@@ -203,10 +204,15 @@ publishing it would tell a held player exactly how much was taken.
 the vendor board (see `usage-board.md`). Three sibling routes, `<Link>`-switched,
 no client-side tab widget — the board is the URL.
 
-Every amount is prefixed `≈`. Where part of it rests on a rate borrowed from an
-older model in the same family, the row says how much: without that line a tree
-valued almost entirely by fallback looks identical to one priced from published
-rates. Rows with unpriced tokens carry a `+ N unpriced` line for the same reason.
+Every amount is prefixed `≈`, and that prefix is now the only estimate claim the
+board makes. Rows with unpriced tokens still carry a `+ N unpriced` line.
+
+The row used to print how much of the amount rested on a rate borrowed from an
+older model in the same family. The product owner removed that line on 2026-08-12:
+a tree valued almost entirely by fallback now reads identically to one priced from
+published rates, and `≈` is left to carry the whole caveat. `estimated_usd` is
+still selected and still correct, so the line can be restored as a display-layer
+change.
 
 Who is absent still matters. A player with no per-model rows at all is not in
 `leaderboard_value` and never ranks — they are unmeasured, not worth $0. A player

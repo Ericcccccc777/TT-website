@@ -1,16 +1,39 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getLeaderboard, getGlobalStats, LEADERBOARD_PAGE_SIZE } from "@/lib/leaderboard";
+import {
+  getLeaderboard,
+  getGlobalStats,
+  hasProject,
+  LEADERBOARD_PAGE_SIZE,
+} from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
 import { PixelCrown } from "@/components/pixel-crown";
 import type { Locale } from "@/i18n/routing";
 import { localizedMetadata, localizedUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/json-ld";
 import { BoardTabs } from "@/components/leaderboard/board-tabs";
-import { MEDAL, regionInfo, formatTokens, compactTokens } from "@/lib/leaderboard-format";
+import {
+  ProjectShowcaseProvider,
+  ProjectTrigger,
+  ProjectPanelRow,
+} from "@/components/leaderboard/project-showcase";
+import { ExternalLinkDialog } from "@/components/leaderboard/external-link-dialog";
+import {
+  MEDAL,
+  regionInfo,
+  formatTokens,
+  compactTokens,
+  projectHostname,
+  bustedImageSrc,
+  panelLabelId,
+} from "@/lib/leaderboard-format";
 import { redirect } from "next/navigation";
+
+/** Thumbnail box. Fixed, so no uploaded aspect ratio can reflow the board. */
+const PROJECT_THUMB = 88;
 
 export async function generateMetadata({
   params,
@@ -38,7 +61,11 @@ export async function generateMetadata({
 type TFunc = Awaited<ReturnType<typeof getTranslations<"LeaderboardPage">>>;
 
 function relativeTime(iso: string, t: TFunc): string {
-  const diff = Date.now() - new Date(iso).getTime();
+  const parsed = new Date(iso).getTime();
+  // An unparseable timestamp would otherwise render as "NaNd ago". Treating it
+  // as "just now" is the honest fallback: we do not know when it was.
+  if (!Number.isFinite(parsed)) return t("relativeJustNow");
+  const diff = Date.now() - parsed;
   const minutes = Math.floor(diff / 60_000);
   if (minutes < 1) return t("relativeJustNow");
   if (minutes < 60) return t("relativeMinutes", { n: minutes });
@@ -63,7 +90,6 @@ const TREE_PREFIX: Record<string, string> = {
 function treeSpritePrefix(tree: string): string {
   return TREE_PREFIX[tree] ?? "AppleTree";
 }
-
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -90,8 +116,11 @@ export default async function LeaderboardPage({
   const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
 
   // A manually-typed ?page beyond the last page → send them to the last page,
-  // so the pager never shows "Page 3 of 2" over an empty table.
-  if (page > totalPages) {
+  // so the pager never shows "Page 3 of 2" over an empty table. Only when the
+  // read actually succeeded: a failed read reports a total of 0, which makes
+  // every page "past the end", and redirecting would swallow the error banner
+  // below and send the visitor to a page that is just as broken.
+  if (!error && page > totalPages) {
     redirect(`/${locale}/leaderboard${totalPages > 1 ? `?page=${totalPages}` : ""}`);
   }
 
@@ -261,109 +290,203 @@ export default async function LeaderboardPage({
                     </th>
                   </tr>
                 </thead>
-                <tbody>
-                  {entries.map((entry, i) => {
-                    const rank = offset + i + 1;
-                    const medalColor = MEDAL[rank];
-                    // The user's trees for the popup — main (current) tree first.
-                    const treeViews = entry.trees.map((tv) => {
-                      const sStage = spriteStage(tv.stage_index);
-                      return {
-                        prefix: treeSpritePrefix(tv.kind),
-                        stage: sStage,
-                        speciesLabel: speciesLabel(tv.kind),
-                        tokensLabel: compactTokens(tv.tokens, locale),
-                        stageLabel: t("treeModalStage", { n: sStage }),
-                        alt: t("treeModalAlt", { username: entry.username }),
-                      };
-                    });
-                    const region = regionInfo(entry.region, locale);
-                    // cap the entrance stagger so deep rows don't wait seconds
-                    const animDelay = `${Math.min(i, 12) * 60}ms`;
-                    return (
-                      <tr
-                        key={entry.id}
-                        className="lb-row-light border-t border-leaf-deep/20 bg-surface-card/60"
-                        style={{
-                          animation: `row-slide-in 320ms ease both`,
-                          animationDelay: animDelay,
-                          fontFamily: "var(--font-body)",
-                          fontSize: "var(--text-body)",
-                        }}
-                      >
-                        <td
-                          className="whitespace-nowrap px-4 py-3 font-bold leading-none"
-                          style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "var(--text-caption)",
-                            color: medalColor ?? "var(--color-text-muted-light)",
-                            boxShadow: medalColor ? `inset 3px 0 0 ${medalColor}` : undefined,
-                          }}
-                        >
-                          {rank <= 3 ? `0${rank}` : rank}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <TreeModalButton
-                              username={entry.username}
-                              trees={treeViews}
-                              triggerLabel={t("treeViewAria", { username: entry.username })}
-                              closeLabel={t("treeModalClose")}
-                              tokensUnit={t("tokenUnit")}
-                              mainLabel={t("treeModalMain")}
-                              totalLabel={t("treeModalTotal")}
-                              totalTokensLabel={formatTokens(entry.score, locale)}
-                              prevLabel={t("treeModalPrev")}
-                              nextLabel={t("treeModalNext")}
-                            />
-                            <span className="truncate text-text-forest">{entry.username}</span>
-                            {rank === 1 && (
-                              <span className="relative inline-flex shrink-0" aria-hidden>
-                                <PixelCrown />
-                                <span
-                                  className="absolute -right-2 -top-1 text-accent-gold"
+                {/*
+                  The provider renders no DOM of its own — it only holds which
+                  row is open, which has to live above the rows because only one
+                  panel may be open at a time.
+                */}
+                <ProjectShowcaseProvider>
+                  <tbody>
+                    {entries.map((entry, i) => {
+                      const rank = offset + i + 1;
+                      const medalColor = MEDAL[rank];
+                      // The user's trees for the popup — main (current) tree first.
+                      const treeViews = entry.trees.map((tv) => {
+                        const sStage = spriteStage(tv.stage_index);
+                        return {
+                          prefix: treeSpritePrefix(tv.kind),
+                          stage: sStage,
+                          speciesLabel: speciesLabel(tv.kind),
+                          tokensLabel: compactTokens(tv.tokens, locale),
+                          stageLabel: t("treeModalStage", { n: sStage }),
+                          alt: t("treeModalAlt", { username: entry.username }),
+                        };
+                      });
+                      const region = regionInfo(entry.region, locale);
+                      // cap the entrance stagger so deep rows don't wait seconds
+                      const animDelay = `${Math.min(i, 12) * 60}ms`;
+                      // 0025's view has already decided this: a held account with
+                      // no admin allowance reports all four fields as null, so
+                      // there is nothing here to suppress a second time.
+                      const showProject = hasProject(entry);
+                      const projectHost = entry.project_url
+                        ? projectHostname(entry.project_url)
+                        : null;
+                      return (
+                        <Fragment key={entry.id}>
+                          <tr
+                            className="lb-row-light border-t border-leaf-deep/20 bg-surface-card/60"
+                            style={{
+                              animation: `row-slide-in 320ms ease both`,
+                              animationDelay: animDelay,
+                              fontFamily: "var(--font-body)",
+                              fontSize: "var(--text-body)",
+                            }}
+                          >
+                            <td
+                              className="whitespace-nowrap px-4 py-3 font-bold leading-none"
+                              style={{
+                                fontFamily: "var(--font-pixel)",
+                                fontSize: "var(--text-caption)",
+                                color: medalColor ?? "var(--color-text-muted-light)",
+                                boxShadow: medalColor ? `inset 3px 0 0 ${medalColor}` : undefined,
+                              }}
+                            >
+                              {rank <= 3 ? `0${rank}` : rank}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex min-w-0 items-center gap-2">
+                                <TreeModalButton
+                                  username={entry.username}
+                                  trees={treeViews}
+                                  triggerLabel={t("treeViewAria", { username: entry.username })}
+                                  closeLabel={t("treeModalClose")}
+                                  tokensUnit={t("tokenUnit")}
+                                  mainLabel={t("treeModalMain")}
+                                  totalLabel={t("treeModalTotal")}
+                                  totalTokensLabel={formatTokens(entry.score, locale)}
+                                  prevLabel={t("treeModalPrev")}
+                                  nextLabel={t("treeModalNext")}
+                                />
+                                <span className="truncate text-text-forest">{entry.username}</span>
+                                {rank === 1 && (
+                                  <span className="relative inline-flex shrink-0" aria-hidden>
+                                    <PixelCrown />
+                                    <span
+                                      className="absolute -right-2 -top-1 text-accent-gold"
+                                      style={{
+                                        fontSize: 7,
+                                        lineHeight: 1,
+                                        animation: "star-twinkle 3.6s ease-in-out infinite",
+                                      }}
+                                    >
+                                      ✦
+                                    </span>
+                                  </span>
+                                )}
+                                {region && (
+                                  <span
+                                    role="img"
+                                    aria-label={region.name}
+                                    title={region.name}
+                                    className="shrink-0 leading-none"
+                                    style={{ fontSize: "1rem" }}
+                                  >
+                                    {region.flag}
+                                  </span>
+                                )}
+                                {/* Only rows that actually have something get a marker;
+                                on a board where most players have nothing, one on
+                                every row would promise what is not there. */}
+                                {showProject && (
+                                  <ProjectTrigger
+                                    id={entry.id}
+                                    labelOpen={t("projectExpand", { username: entry.username })}
+                                    labelClose={t("projectCollapse", { username: entry.username })}
+                                  />
+                                )}
+                              </div>
+                            </td>
+                            <td
+                              className="hidden px-4 py-3 text-right text-accent-gold sm:table-cell"
+                              style={{
+                                fontFamily: "var(--font-pixel)",
+                                fontSize: "var(--text-caption)",
+                              }}
+                            >
+                              {formatTokens(entry.score, locale)}
+                            </td>
+                            <td
+                              className="whitespace-nowrap px-4 py-3 text-right text-text-muted-light"
+                              style={{ fontSize: "var(--text-small)" }}
+                            >
+                              {relativeTime(entry.updated_at, t)}
+                            </td>
+                          </tr>
+                          {/*
+                        Rendered on the server even while collapsed, so the words
+                        are in the HTML from first paint (a settled decision: they
+                        are for search engines too) and so aria-controls has a
+                        target that exists. Only the picture waits for a click.
+                        colSpan is 4 on every viewport — the colgroup fixes the
+                        table at four columns; the third is merely hidden on small
+                        screens, which does not change the count.
+                      */}
+                          {showProject && (
+                            <ProjectPanelRow
+                              id={entry.id}
+                              colSpan={4}
+                              image={
+                                entry.project_image
+                                  ? {
+                                      src: bustedImageSrc(entry.project_image, entry.updated_at),
+                                      width: PROJECT_THUMB,
+                                      height: PROJECT_THUMB,
+                                    }
+                                  : null
+                              }
+                            >
+                              {/* The panel's accessible name — the region inside
+                              ProjectPanelRow points its aria-labelledby here, so
+                              a screen reader announces whose project it just
+                              opened instead of an unnamed region. */}
+                              <p
+                                id={panelLabelId(entry.id)}
+                                className="text-leaf-deep"
+                                style={{
+                                  fontFamily: "var(--font-pixel)",
+                                  fontSize: "var(--text-caption)",
+                                }}
+                              >
+                                {entry.project_name}
+                              </p>
+                              {entry.project_desc && (
+                                <p
+                                  className="mt-2 text-text-forest"
                                   style={{
-                                    fontSize: 7,
-                                    lineHeight: 1,
-                                    animation: "star-twinkle 3.6s ease-in-out infinite",
+                                    fontFamily: "var(--font-body)",
+                                    fontSize: "var(--text-small)",
                                   }}
                                 >
-                                  ✦
-                                </span>
-                              </span>
-                            )}
-                            {region && (
-                              <span
-                                role="img"
-                                aria-label={region.name}
-                                title={region.name}
-                                className="shrink-0 leading-none"
-                                style={{ fontSize: "1rem" }}
-                              >
-                                {region.flag}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td
-                          className="hidden px-4 py-3 text-right text-accent-gold sm:table-cell"
-                          style={{
-                            fontFamily: "var(--font-pixel)",
-                            fontSize: "var(--text-caption)",
-                          }}
-                        >
-                          {formatTokens(entry.score, locale)}
-                        </td>
-                        <td
-                          className="whitespace-nowrap px-4 py-3 text-right text-text-muted-light"
-                          style={{ fontSize: "var(--text-small)" }}
-                        >
-                          {relativeTime(entry.updated_at, t)}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+                                  {entry.project_desc}
+                                </p>
+                              )}
+                              {entry.project_url && projectHost && (
+                                <p
+                                  className="mt-2 text-text-muted-light"
+                                  style={{
+                                    fontFamily: "var(--font-body)",
+                                    fontSize: "var(--text-small)",
+                                  }}
+                                >
+                                  <span className="mr-1">{t("projectLinkLabel")}</span>
+                                  <ExternalLinkDialog
+                                    href={entry.project_url}
+                                    hostname={projectHost}
+                                    title={t("projectLeaveTitle")}
+                                    body={t("projectLeaveBody")}
+                                    confirmLabel={t("projectLeaveConfirm")}
+                                    cancelLabel={t("projectLeaveCancel")}
+                                  />
+                                </p>
+                              )}
+                            </ProjectPanelRow>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </ProjectShowcaseProvider>
               </table>
             </div>
           </div>

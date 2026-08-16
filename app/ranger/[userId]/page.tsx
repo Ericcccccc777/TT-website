@@ -15,6 +15,7 @@ import {
   type Severity,
 } from "@/lib/ranger/analysis";
 import { getRangerLang, t, type Key, type Lang } from "@/lib/ranger/i18n";
+import { isOwnProjectImage } from "@/lib/leaderboard-format";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
 import { BarsChart, ChartCard, CumulativeChart } from "@/components/ranger/charts";
 import { BatchBar } from "../batch-bar";
@@ -22,6 +23,10 @@ import {
   acknowledgeAction,
   banAction,
   batchEventAction,
+  allowProjectAction,
+  blockProjectAction,
+  unblockProjectAction,
+  disallowProjectAction,
   holdEventAction,
   releaseEventAction,
   unacknowledgeAction,
@@ -84,7 +89,10 @@ function SevBadge({
   const m = map[severity];
   if (!m) return <span className="text-[10px] opacity-45">{t(lang, "sevOk")}</span>;
   return (
-    <span className="rounded-[2px] px-1.5 py-0.5 text-[10px]" style={{ background: m.bg, color: m.fg }}>
+    <span
+      className="rounded-[2px] px-1.5 py-0.5 text-[10px]"
+      style={{ background: m.bg, color: m.fg }}
+    >
       {t(lang, m.key)}
     </span>
   );
@@ -108,7 +116,10 @@ function SevBadge({
 function BucketPanel({ row, lang }: { row: AnalyzedRow; lang: Lang }) {
   const b = row.bucket;
   const cell = "rounded-[2px] px-3 py-2";
-  const cellStyle = { border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" };
+  const cellStyle = {
+    border: "1px solid var(--color-soil)",
+    background: "var(--color-surface-parchment)",
+  };
 
   if (!b) {
     // No evidence — NOT a red flag. Old clients cannot produce a summary, and a current
@@ -177,7 +188,11 @@ function BucketPanel({ row, lang }: { row: AnalyzedRow; lang: Lang }) {
       {b.problems.length > 0 && (
         <ul
           className="rounded-[2px] px-3 py-2 text-[11px]"
-          style={{ border: "1px solid #b91c1c", background: "rgba(185,28,28,0.06)", color: "#b91c1c" }}
+          style={{
+            border: "1px solid #b91c1c",
+            background: "rgba(185,28,28,0.06)",
+            color: "#b91c1c",
+          }}
         >
           {b.problems.map((p, i) => (
             <li key={i}>• {t(lang, p.key as never, p.p)}</li>
@@ -314,10 +329,20 @@ export default async function RangerUserPage({
       label: `${fmtWhen(r.at)} · busiest window ${fmtTokens(r.bucket!.max)} (${r.bucket!.n} windows over ${fmtGap(r.bucket!.span)})`,
     }));
 
+  // What the public board is actually doing with this player's project. Three
+  // inputs, all already on the row:
+  //  - a ban hides the WHOLE row, project included — `leaderboard_public` is a
+  //    security_invoker view, so 0005's policy still filters it out (0026);
+  //  - held gains hide the project unless an admin has allowed it (0025);
+  //  - the allowance itself may be unreadable, and then we say so instead of
+  //    guessing. It only decides anything for an account with held gains.
+  const pjAllowed = row?.projectAllowed === true;
+  const pjAllowanceUnreadable = !!row && row.projectAllowed === "unknown" && row.heldTokens > 0;
+
   // Table columns — right-align the numeric metrics for a clean, scannable grid.
   const BATCH_FORM = "ranger-batch";
   const cols: { label: string; align: "left" | "right" }[] = [
-    { label: "", align: "left" },      // 勾选框列
+    { label: "", align: "left" }, // 勾选框列
     { label: t(lang, "thWhen"), align: "left" },
     { label: t(lang, "thInterval"), align: "left" },
     { label: t(lang, "thChange"), align: "left" },
@@ -346,7 +371,11 @@ export default async function RangerUserPage({
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h1
               className="text-leaf-deep"
-              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h1)", lineHeight: 1.3 }}
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-h1)",
+                lineHeight: 1.3,
+              }}
             >
               {row?.username || t(lang, "unknownUser")}
             </h1>
@@ -356,7 +385,9 @@ export default async function RangerUserPage({
               </span>
             )}
           </div>
-          <p className="mt-1.5 font-mono text-[11px] text-[var(--color-text-muted-light)]">{userId}</p>
+          <p className="mt-1.5 font-mono text-[11px] text-[var(--color-text-muted-light)]">
+            {userId}
+          </p>
 
           {/* Verdict banner — the page's headline judgement */}
           <div
@@ -421,6 +452,191 @@ export default async function RangerUserPage({
           </Panel>
         )}
 
+        {/*
+          What this player published, and whether the board is showing it.
+          Read from the BASE table, not the public view — the point of this panel
+          is to see the content BEFORE deciding whether to publish it.
+        */}
+        {row && (
+          <Panel title={t(lang, "sectProject")} className="mt-4">
+            <div className="px-5 py-4 font-body text-small text-text-muted-light">
+              {!row.projectName ? (
+                <p>{t(lang, "pjNone")}</p>
+              ) : (
+                <>
+                  <dl className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+                    <Field label={t(lang, "pjName")} value={row.projectName} />
+                    <Field label={t(lang, "pjDesc")} value={row.projectDesc || "—"} />
+                    <Field label={t(lang, "pjLink")} value={row.projectUrl || "—"} />
+                    <Field label={t(lang, "pjImage")} value={row.projectImage ? "✓" : "—"} />
+                  </dl>
+
+                  {row.projectImage &&
+                    (isOwnProjectImage(row.projectImage) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={row.projectImage}
+                        alt=""
+                        width={88}
+                        height={88}
+                        className="mt-3 rounded-[2px]"
+                        style={{
+                          width: 88,
+                          height: 88,
+                          objectFit: "contain",
+                          border: "1px solid var(--color-soil)",
+                        }}
+                      />
+                    ) : (
+                      // A foreign host reaches this page only through a row that
+                      // predates 0024's pin or was written with the service role
+                      // — which is precisely the row an admin opens. Print the
+                      // address as text instead of fetching it.
+                      <p className="mt-3 leading-snug break-all">
+                        {t(lang, "pjImageRejected")}
+                        <br />
+                        <span className="font-mono text-[11px]">{row.projectImage}</span>
+                      </p>
+                    ))}
+
+                  <p className="mt-4 font-semibold text-text-forest">
+                    {row.banned
+                      ? `${t(lang, "pjLiveNo")} — ${t(lang, "pjHiddenBanned")}`
+                      : pjAllowanceUnreadable
+                        ? t(lang, "pjLiveUnknown")
+                        : row.heldTokens === 0 || pjAllowed
+                          ? t(lang, "pjLiveYes")
+                          : t(lang, "pjLiveNo")}
+                    {pjAllowed && ` — ${t(lang, "pjAllowedBy")}`}
+                  </p>
+                </>
+              )}
+
+              {/*
+                The allowance state and its switch sit OUTSIDE the "has a project"
+                branch on purpose. An allowance outlives the text it was granted
+                for: a player can clear their project and keep the allowance, and
+                if the switch only rendered next to a project there would be no
+                way left to withdraw it — a stale allowance would then silently
+                republish whatever they write next. That is the case the block
+                below calls out by name.
+              */}
+              {pjAllowanceUnreadable ? (
+                // No switch while the current state is unknown: both actions
+                // write the same table this failed to read, so either button
+                // would only throw the same error at the admin.
+                <p className="mt-3 leading-snug">{t(lang, "pjAllowUnknownWhy")}</p>
+              ) : (
+                (row.heldTokens > 0 || pjAllowed) && (
+                  <>
+                    {!row.projectName && pjAllowed && (
+                      <p className="mt-3 leading-snug">{t(lang, "pjAllowanceStale")}</p>
+                    )}
+                    {row.projectName && !pjAllowed && row.heldTokens > 0 && !row.banned && (
+                      <p className="mt-1 leading-snug">{t(lang, "pjHiddenWhy")}</p>
+                    )}
+                    {/*
+                      Withdraw stays available while the player is hidden — an
+                      allowance must always be undoable. Allow does not: a hidden
+                      player's whole row is dropped from the public board, so the
+                      write would succeed and change nothing, which is a button
+                      that lies about what it does.
+                    */}
+                    {row.banned && !pjAllowed ? (
+                      <p className="mt-3 leading-snug">{t(lang, "pjAllowBlockedBanned")}</p>
+                    ) : (
+                      <form
+                        action={pjAllowed ? disallowProjectAction : allowProjectAction}
+                        className="mt-3"
+                      >
+                        <input type="hidden" name="userId" value={userId} />
+                        <button
+                          type="submit"
+                          className={
+                            pjAllowed
+                              ? "ranger-btn ranger-btn-lift rounded-[2px] px-3 py-1 text-[11px] text-text-forest"
+                              : "ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-3 py-1 text-[11px] text-text-cream"
+                          }
+                          style={
+                            pjAllowed
+                              ? {
+                                  border: "1px solid var(--color-soil)",
+                                  background: "var(--color-surface-parchment)",
+                                }
+                              : undefined
+                          }
+                        >
+                          {pjAllowed ? t(lang, "pjDisallow") : t(lang, "pjAllow")}
+                        </button>
+                      </form>
+                    )}
+                  </>
+                )
+              )}
+
+              {/*
+                Takedown (0029). Deliberately OUTSIDE the "has a project" branch
+                and outside the held/allowed logic: a block decides something for
+                every account, and it has to stay liftable for a player who has
+                since cleared their content — otherwise the only way back is the
+                database. It is also the one control that must remain available
+                while a player is hidden, since hiding and refusing content are
+                separate judgements.
+              */}
+              <div className="mt-5 border-t border-soil/25 pt-4">
+                <p className="font-semibold text-text-forest">{t(lang, "pjBlockTitle")}</p>
+                <p className="mt-1 leading-snug">{t(lang, "pjBlockWhat")}</p>
+
+                {row.projectBlocked === "unknown" ? (
+                  <p className="mt-3 leading-snug">{t(lang, "pjBlockUnknown")}</p>
+                ) : row.projectBlocked ? (
+                  <>
+                    <p className="mt-3 font-semibold text-text-forest">
+                      {t(lang, "pjBlockedNow")}
+                      {row.blockReason ? ` — ${row.blockReason}` : ""}
+                      {row.blockedAt ? ` · ${fmtWhen(row.blockedAt)}` : ""}
+                    </p>
+                    <form action={unblockProjectAction} className="mt-3">
+                      <input type="hidden" name="userId" value={userId} />
+                      <button
+                        type="submit"
+                        className="ranger-btn ranger-btn-lift rounded-[2px] px-3 py-1 text-[11px] text-text-forest"
+                        style={{
+                          border: "1px solid var(--color-soil)",
+                          background: "var(--color-surface-parchment)",
+                        }}
+                      >
+                        {t(lang, "pjBlockUndo")}
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <form action={blockProjectAction} className="mt-3 flex flex-wrap gap-2">
+                    <input type="hidden" name="userId" value={userId} />
+                    <input
+                      type="text"
+                      name="reason"
+                      placeholder={t(lang, "pjBlockReasonPh")}
+                      className="min-w-0 flex-1 rounded-[2px] px-2 py-1 text-[11px]"
+                      style={{
+                        border: "1px solid var(--color-soil)",
+                        background: "var(--color-surface-parchment)",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="ranger-btn ranger-btn-lift rounded-[2px] px-3 py-1 text-[11px] text-text-cream"
+                      style={{ background: "#b91c1c" }}
+                    >
+                      {t(lang, "pjBlockDo")}
+                    </button>
+                  </form>
+                )}
+              </div>
+            </div>
+          </Panel>
+        )}
+
         <Panel title={t(lang, "sectAnalysis")} className="mt-4">
           <dl className="grid grid-cols-2 gap-x-8 gap-y-4 px-5 py-4 font-body text-small text-text-muted-light sm:grid-cols-4">
             <Field label={t(lang, "aTracked")} value={String(summary.changeCount)} />
@@ -428,13 +644,20 @@ export default async function RangerUserPage({
             <Field label={t(lang, "aActiveSpan")} value={summary.activeSpanLabel} />
             <Field label={t(lang, "aAvgInterval")} value={summary.avgGapLabel} />
             <Field label={t(lang, "aOverallPace")} value={summary.avgRateLabel} />
-            <Field label={t(lang, "aPeakRate")} value={summary.peakRateLabel} hint={fmtWhen(summary.peakRateAt)} />
+            <Field
+              label={t(lang, "aPeakRate")}
+              value={summary.peakRateLabel}
+              hint={fmtWhen(summary.peakRateAt)}
+            />
             <Field
               label={t(lang, "aLargestJump")}
               value={summary.largestJump === null ? "—" : fmtSigned(summary.largestJump)}
               hint={fmtWhen(summary.largestJumpAt)}
             />
-            <Field label={t(lang, "aWatchSusp")} value={`${summary.watchCount} / ${summary.suspiciousCount}`} />
+            <Field
+              label={t(lang, "aWatchSusp")}
+              value={`${summary.watchCount} / ${summary.suspiciousCount}`}
+            />
           </dl>
         </Panel>
 
@@ -485,7 +708,11 @@ export default async function RangerUserPage({
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
             <h2
               className="text-leaf-deep"
-              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h2)", lineHeight: 1.3 }}
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-h2)",
+                lineHeight: 1.3,
+              }}
             >
               {t(lang, "sectHistory")}
             </h2>
@@ -495,23 +722,51 @@ export default async function RangerUserPage({
               <SegGroup
                 label={t(lang, "cView")}
                 items={[
-                  { key: "all", label: `${t(lang, "cAll")} (${allCount})`, href: href("all", sort), active: view === "all" },
-                  { key: "flagged", label: `${t(lang, "cFlagged")} (${flaggedCount})`, href: href("flagged", sort), active: view === "flagged" },
+                  {
+                    key: "all",
+                    label: `${t(lang, "cAll")} (${allCount})`,
+                    href: href("all", sort),
+                    active: view === "all",
+                  },
+                  {
+                    key: "flagged",
+                    label: `${t(lang, "cFlagged")} (${flaggedCount})`,
+                    href: href("flagged", sort),
+                    active: view === "flagged",
+                  },
                 ]}
               />
               <SegGroup
                 label={t(lang, "cSort")}
                 items={[
-                  { key: "time", label: t(lang, "cNewest"), href: href(view, "time"), active: sort === "time" },
-                  { key: "jump", label: t(lang, "cBiggestJump"), href: href(view, "jump"), active: sort === "jump" },
-                  { key: "rate", label: t(lang, "cFastestRate"), href: href(view, "rate"), active: sort === "rate" },
+                  {
+                    key: "time",
+                    label: t(lang, "cNewest"),
+                    href: href(view, "time"),
+                    active: sort === "time",
+                  },
+                  {
+                    key: "jump",
+                    label: t(lang, "cBiggestJump"),
+                    href: href(view, "jump"),
+                    active: sort === "jump",
+                  },
+                  {
+                    key: "rate",
+                    label: t(lang, "cFastestRate"),
+                    href: href(view, "rate"),
+                    active: sort === "rate",
+                  },
                 ]}
               />
             </div>
           </div>
 
           <div className="mt-4 overflow-x-auto">
-            <div className="overflow-hidden rounded-[2px]" style={{ border: "var(--border-pixel)" }}>
+            <div
+              className="overflow-hidden rounded-[2px]"
+              style={{ border: "var(--border-pixel)" }}
+            >
               <table
                 className="w-full border-collapse text-left"
                 style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
@@ -540,134 +795,156 @@ export default async function RangerUserPage({
                     const tint = h.acknowledged ? "rgba(21,128,61,0.06)" : SEV_TINT[h.severity];
                     return (
                       <Fragment key={h.id}>
-                      <tr
-                        className="border-t border-leaf-deep/20"
-                        style={{ background: tint }}
-                      >
-                        {/* Belongs to the batch form outside the table via `form=`;
+                        <tr className="border-t border-leaf-deep/20" style={{ background: tint }}>
+                          {/* Belongs to the batch form outside the table via `form=`;
                             nesting a form inside the per-row ones would be invalid. */}
-                        <td className="px-3 py-2.5 align-top">
-                          {isBaseline(h) ? null : (
-                            <input
-                              type="checkbox"
-                              name="eventIds"
-                              value={h.id}
-                              form={BATCH_FORM}
-                              data-held={h.quarantined ? "1" : "0"}
-                              aria-label={`${h.id}`}
-                            />
-                          )}
-                        </td>
-                        <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
-                          {/* Clicking the timestamp opens the breakdown below it. URL state,
+                          <td className="px-3 py-2.5 align-top">
+                            {isBaseline(h) ? null : (
+                              <input
+                                type="checkbox"
+                                name="eventIds"
+                                value={h.id}
+                                form={BATCH_FORM}
+                                data-held={h.quarantined ? "1" : "0"}
+                                aria-label={`${h.id}`}
+                              />
+                            )}
+                          </td>
+                          <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
+                            {/* Clicking the timestamp opens the breakdown below it. URL state,
                               server-rendered — same idiom as the segmented controls, no client JS. */}
-                          <Link
-                            href={href(view, sort, open ? null : h.id)}
-                            scroll={false}
-                            className="ranger-btn inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                            <Link
+                              href={href(view, sort, open ? null : h.id)}
+                              scroll={false}
+                              className="ranger-btn inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                            >
+                              <span aria-hidden className="opacity-50">
+                                {open ? "▾" : "▸"}
+                              </span>
+                              {fmtWhen(h.at)}
+                            </Link>
+                          </td>
+                          <td className="px-3 py-2.5 align-top whitespace-nowrap">{h.gapLabel}</td>
+                          <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
+                            {fmtTokens(h.oldScore)} → {fmtTokens(h.newScore)}
+                          </td>
+                          <td
+                            className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
+                            style={{
+                              color:
+                                (h.trueDelta ?? h.delta) < 0
+                                  ? "#b91c1c"
+                                  : "var(--color-text-forest)",
+                            }}
                           >
-                            <span aria-hidden className="opacity-50">{open ? "▾" : "▸"}</span>
-                            {fmtWhen(h.at)}
-                          </Link>
-                        </td>
-                        <td className="px-3 py-2.5 align-top whitespace-nowrap">{h.gapLabel}</td>
-                        <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
-                          {fmtTokens(h.oldScore)} → {fmtTokens(h.newScore)}
-                        </td>
-                        <td
-                          className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
-                          style={{ color: (h.trueDelta ?? h.delta) < 0 ? "#b91c1c" : "var(--color-text-forest)" }}
-                        >
-                          {fmtSigned(h.trueDelta ?? h.delta)}
-                        </td>
-                        <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
-                          {h.rateLabel}
-                        </td>
-                        <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
-                          {fmtPct(h.jumpPct)}
-                        </td>
-                        <td className="px-3 py-2.5 align-top text-[11px]">
-                          <div className="flex items-start gap-2">
-                            <SevBadge severity={h.severity} acknowledged={h.acknowledged} lang={lang} />
-                            <span className="opacity-80">
-                              {h.signals.map((sg) => t(lang, sg.key as never, sg.p)).join(" ")}
-                            </span>
-                          </div>
-                          {showMarkOk && (
-                            <form action={acknowledgeAction} className="mt-1.5">
-                              <input type="hidden" name="historyId" value={h.id} />
-                              <input type="hidden" name="userId" value={userId} />
-                              <button
-                                type="submit"
-                                className="ranger-btn rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
-                                style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
-                              >
-                                {t(lang, "markOk")}
-                              </button>
-                            </form>
-                          )}
-                          {/* Quarantine (0016). Held increases are not in the
+                            {fmtSigned(h.trueDelta ?? h.delta)}
+                          </td>
+                          <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
+                            {h.rateLabel}
+                          </td>
+                          <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
+                            {fmtPct(h.jumpPct)}
+                          </td>
+                          <td className="px-3 py-2.5 align-top text-[11px]">
+                            <div className="flex items-start gap-2">
+                              <SevBadge
+                                severity={h.severity}
+                                acknowledged={h.acknowledged}
+                                lang={lang}
+                              />
+                              <span className="opacity-80">
+                                {h.signals.map((sg) => t(lang, sg.key as never, sg.p)).join(" ")}
+                              </span>
+                            </div>
+                            {showMarkOk && (
+                              <form action={acknowledgeAction} className="mt-1.5">
+                                <input type="hidden" name="historyId" value={h.id} />
+                                <input type="hidden" name="userId" value={userId} />
+                                <button
+                                  type="submit"
+                                  className="ranger-btn rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                                  style={{
+                                    border: "1px solid var(--color-soil)",
+                                    background: "var(--color-surface-parchment)",
+                                  }}
+                                >
+                                  {t(lang, "markOk")}
+                                </button>
+                              </form>
+                            )}
+                            {/* Quarantine (0016). Held increases are not in the
                               player's public score; releasing one puts it back.
                               Distinct from "mark ok" above, which only silences
                               the severity badge and moves no tokens. */}
-                          {h.quarantined ? (
-                            <div className="mt-1.5">
-                              <div className="text-[10px] text-amber-800">
-                                {t(lang, "qHeld")} −{(h.trueDelta ?? h.delta).toLocaleString()}
-                                {h.decidedBy ? ` · ${t(lang, "qDecidedBy", { who: h.decidedBy })}` : ""}
-                              </div>
-                              {/* The machine's codes mean nothing to a human at
-                                  a glance; spell out what actually happened. */}
-                              {explainHold(h.holdReasons).map((r) => (
-                                <div key={r.short} className="mt-0.5 text-[10px] leading-snug">
-                                  <span className="font-semibold text-amber-900">
-                                    {t(lang, r.short as never)}
-                                  </span>
-                                  <span className="text-text-muted-light"> — {t(lang, r.why as never)}</span>
+                            {h.quarantined ? (
+                              <div className="mt-1.5">
+                                <div className="text-[10px] text-amber-800">
+                                  {t(lang, "qHeld")} −{(h.trueDelta ?? h.delta).toLocaleString()}
+                                  {h.decidedBy
+                                    ? ` · ${t(lang, "qDecidedBy", { who: h.decidedBy })}`
+                                    : ""}
                                 </div>
-                              ))}
-                              <form action={releaseEventAction} className="mt-1">
+                                {/* The machine's codes mean nothing to a human at
+                                  a glance; spell out what actually happened. */}
+                                {explainHold(h.holdReasons).map((r) => (
+                                  <div key={r.short} className="mt-0.5 text-[10px] leading-snug">
+                                    <span className="font-semibold text-amber-900">
+                                      {t(lang, r.short as never)}
+                                    </span>
+                                    <span className="text-text-muted-light">
+                                      {" "}
+                                      — {t(lang, r.why as never)}
+                                    </span>
+                                  </div>
+                                ))}
+                                <form action={releaseEventAction} className="mt-1">
+                                  <input type="hidden" name="eventId" value={h.id} />
+                                  <input type="hidden" name="userId" value={userId} />
+                                  <button
+                                    type="submit"
+                                    className="ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-2 py-0.5 text-[10px] text-text-cream"
+                                  >
+                                    {t(lang, "qRelease")}
+                                  </button>
+                                </form>
+                              </div>
+                            ) : (
+                              <form action={holdEventAction} className="mt-1.5">
                                 <input type="hidden" name="eventId" value={h.id} />
                                 <input type="hidden" name="userId" value={userId} />
                                 <button
                                   type="submit"
-                                  className="ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-2 py-0.5 text-[10px] text-text-cream"
+                                  className="ranger-btn ranger-btn-lift rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                                  style={{
+                                    border: "1px solid var(--color-soil)",
+                                    background: "var(--color-surface-parchment)",
+                                  }}
                                 >
-                                  {t(lang, "qRelease")}
+                                  {t(lang, "qHold")}
                                 </button>
                               </form>
-                            </div>
-                          ) : (
-                            <form action={holdEventAction} className="mt-1.5">
-                              <input type="hidden" name="eventId" value={h.id} />
-                              <input type="hidden" name="userId" value={userId} />
-                              <button
-                                type="submit"
-                                className="ranger-btn ranger-btn-lift rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
-                                style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-parchment)" }}
-                              >
-                                {t(lang, "qHold")}
-                              </button>
-                            </form>
-                          )}
-                          {h.acknowledged && (
-                            <form action={unacknowledgeAction} className="mt-1.5">
-                              <input type="hidden" name="historyId" value={h.id} />
-                              <input type="hidden" name="userId" value={userId} />
-                              <button type="submit" className="ranger-btn text-[10px] underline underline-offset-2 opacity-70">
-                                {t(lang, "undo")}
-                              </button>
-                            </form>
-                          )}
-                        </td>
-                      </tr>
-                      {open && (
-                        <tr style={{ background: tint }}>
-                          <td colSpan={8} className="px-3 pb-4">
-                            <BucketPanel row={h} lang={lang} />
+                            )}
+                            {h.acknowledged && (
+                              <form action={unacknowledgeAction} className="mt-1.5">
+                                <input type="hidden" name="historyId" value={h.id} />
+                                <input type="hidden" name="userId" value={userId} />
+                                <button
+                                  type="submit"
+                                  className="ranger-btn text-[10px] underline underline-offset-2 opacity-70"
+                                >
+                                  {t(lang, "undo")}
+                                </button>
+                              </form>
+                            )}
                           </td>
                         </tr>
-                      )}
+                        {open && (
+                          <tr style={{ background: tint }}>
+                            <td colSpan={8} className="px-3 pb-4">
+                              <BucketPanel row={h} lang={lang} />
+                            </td>
+                          </tr>
+                        )}
                       </Fragment>
                     );
                   })}
@@ -698,7 +975,11 @@ export default async function RangerUserPage({
                   countNone: t(lang, "qSelectedNone"),
                   countHeld: t(lang, "qSelectedHeld", { n: "{n}" }),
                   countOpen: t(lang, "qSelectedOpen", { n: "{n}" }),
-                  countMixed: t(lang, "qSelectedMixed", { n: "{n}", held: "{held}", open: "{open}" }),
+                  countMixed: t(lang, "qSelectedMixed", {
+                    n: "{n}",
+                    held: "{held}",
+                    open: "{open}",
+                  }),
                   hintIdle: t(lang, "qHintIdle"),
                   hintHeld: t(lang, "qHintHeld"),
                   hintOpen: t(lang, "qHintOpen"),
@@ -717,7 +998,11 @@ export default async function RangerUserPage({
           >
             <h2
               className="text-leaf-deep"
-              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h2)", lineHeight: 1.3 }}
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-h2)",
+                lineHeight: 1.3,
+              }}
             >
               {t(lang, "decision")}
             </h2>
