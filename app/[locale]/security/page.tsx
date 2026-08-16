@@ -35,7 +35,7 @@ const EN: LegalDoc = {
         {
           list: [
             `Preferred: GitHub private vulnerability reporting — ${GITHUB_SECURITY}`,
-            "Email: security@tokenforest.com.au (mailbox activating before the first public release)",
+            "Email: contact@tokenforest.com.au with a subject line starting with [SECURITY]. A dedicated security@tokenforest.com.au inbox is being set up",
           ],
         },
         {
@@ -157,7 +157,7 @@ const ZH: LegalDoc = {
         {
           list: [
             `首选:GitHub 私密漏洞报告——${GITHUB_SECURITY}`,
-            "邮件:security@tokenforest.com.au(邮箱将在首个公开版本前启用)",
+            "邮件:contact@tokenforest.com.au,主题以 [SECURITY] 开头。专用的 security@tokenforest.com.au 信箱正在开通中",
           ],
         },
         {
@@ -277,7 +277,7 @@ const JA: LegalDoc = {
         {
           list: [
             `推奨:GitHub の非公開脆弱性報告——${GITHUB_SECURITY}`,
-            "メール:security@tokenforest.com.au(最初の公開リリース前に有効化されるメールボックス)",
+            "メール:contact@tokenforest.com.au(件名を [SECURITY] で始めてください)。専用の security@tokenforest.com.au は準備中です",
           ],
         },
         {
@@ -401,7 +401,7 @@ const KO: LegalDoc = {
         {
           list: [
             `권장: GitHub 비공개 취약점 신고 — ${GITHUB_SECURITY}`,
-            "이메일: security@tokenforest.com.au(최초 공개 릴리스 전에 활성화되는 메일함)",
+            "이메일: contact@tokenforest.com.au(제목을 [SECURITY] 로 시작해 주십시오). 전용 security@tokenforest.com.au 메일함은 준비 중입니다",
           ],
         },
         {
