@@ -214,13 +214,31 @@ nobody is told anything"). Two things make it acceptable rather than fatal:
 public score is visibly lower than the total their app shows them — and the
 alternative breaks a behaviour the owner asked for.
 
-Mitigate the casual path anyway: **revoke `anon`'s direct SELECT on the four
-project columns** and have the website read them through a view that applies the
-rule. `authenticated` keeps its grants — the desktop app's
-`INSERT … ON CONFLICT DO UPDATE` needs SELECT on every column it reads
-(`0023` header). That closes the one-request path without a session; it does not
-close a path for someone who signs in anonymously the way the app does, and this
-file does not claim otherwise.
+**We tried to mitigate the casual path and had to give it back.** `0025` revoked
+`anon`'s SELECT on the four project columns so the view would be the only way in.
+That broke the whole board: a `security_invoker` view requires the caller to hold
+SELECT on **every column it references**, and a missing one fails the entire query
+rather than blanking that column — `0017`'s header says exactly this, and `0025`
+did not follow it. Live symptom: `42501 permission denied for table leaderboard`
+on every visit.
+
+The choice at that point was between two failure modes:
+
+- keep the revoke ⇒ the view must become `security definer` ⇒ `0005`'s ban policy
+  no longer applies to it, so the ban filter has to be hand-copied into the view.
+  If that copy ever drifts, **banned players reappear on the public board**;
+- give the columns back ⇒ someone with the public key can read a held account's
+  project text straight from the base table.
+
+`0026` takes the second. The first failure is unacceptable and silent; the second
+is the leak this section already accepted and refused to pretend otherwise about.
+The product goal — the board does not hand a flagged account a promotional slot —
+still holds, because the board reads the view.
+
+The mechanism is `0017`'s: a `security definer` function
+(`public.project_visible(uuid)`) reads `held_tokens` itself and returns only a
+boolean, so the view never references a restricted column. Same shape as
+`private.hold_ratio`.
 
 ### The allowance table
 
