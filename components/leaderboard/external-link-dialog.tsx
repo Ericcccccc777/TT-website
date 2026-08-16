@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * A project link, plus the confirmation step in front of it.
@@ -99,77 +100,90 @@ export function ExternalLinkDialog({
         <span aria-hidden>↗</span>
       </a>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) close();
-          }}
-        >
+      {/*
+        Portalled to <body>, not rendered in place. Two reasons, both real:
+
+         - the link sits inside a <p> in a table cell, and a <div> may not be a
+           descendant of a <p> — React rewrites the tree and the page throws four
+           hydration errors;
+         - the panel lives inside an overflow-hidden wrapper, and the rows around
+           it are animated with a transform. A transformed ancestor makes
+           `position: fixed` resolve against that ancestor instead of the
+           viewport, so an in-place modal would be clipped into the row.
+      */}
+      {open &&
+        createPortal(
           <div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={title}
-            className="w-full max-w-sm rounded-[2px] bg-surface-card p-5"
-            style={{ border: "var(--border-pixel)" }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) close();
+            }}
           >
-            <p
-              className="text-leaf-deep"
-              style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
+            <div
+              ref={panelRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={title}
+              className="w-full max-w-sm rounded-[2px] bg-surface-card p-5"
+              style={{ border: "var(--border-pixel)" }}
             >
-              {title}
-            </p>
-            <p
-              className="mt-3 text-text-forest"
-              style={{
-                fontFamily: "var(--font-body)",
-                fontSize: "var(--text-body)",
-                overflowWrap: "anywhere",
-                wordBreak: "break-word",
-              }}
-            >
-              {hostname}
-            </p>
-            <p
-              className="mt-2 text-text-muted-light"
-              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
-            >
-              {body}
-            </p>
-            <div className="mt-5 flex flex-wrap justify-end gap-2">
-              <button
-                type="button"
-                onClick={close}
-                className="rounded-[2px] px-4 py-2 text-text-forest transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
-                style={{
-                  border: "1px solid var(--color-soil)",
-                  background: "var(--color-surface-parchment)",
-                  fontFamily: "var(--font-pixel)",
-                  fontSize: "var(--text-caption)",
-                }}
-              >
-                {cancelLabel}
-              </button>
-              <button
-                ref={confirmRef}
-                type="button"
-                onClick={() => {
-                  // String form, not `window.open(href, "_blank")` — see the
-                  // component header. Without "noopener" the destination gets a
-                  // live handle on this page.
-                  window.open(href, "_blank", "noopener,noreferrer");
-                  close();
-                }}
-                className="rounded-[2px] bg-leaf-deep px-4 py-2 text-text-cream shadow-pixel transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              <p
+                className="text-leaf-deep"
                 style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
               >
-                {confirmLabel}
-              </button>
+                {title}
+              </p>
+              <p
+                className="mt-3 text-text-forest"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  fontSize: "var(--text-body)",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {hostname}
+              </p>
+              <p
+                className="mt-2 text-text-muted-light"
+                style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
+              >
+                {body}
+              </p>
+              <div className="mt-5 flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={close}
+                  className="rounded-[2px] px-4 py-2 text-text-forest transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5"
+                  style={{
+                    border: "1px solid var(--color-soil)",
+                    background: "var(--color-surface-parchment)",
+                    fontFamily: "var(--font-pixel)",
+                    fontSize: "var(--text-caption)",
+                  }}
+                >
+                  {cancelLabel}
+                </button>
+                <button
+                  ref={confirmRef}
+                  type="button"
+                  onClick={() => {
+                    // String form, not `window.open(href, "_blank")` — see the
+                    // component header. Without "noopener" the destination gets a
+                    // live handle on this page.
+                    window.open(href, "_blank", "noopener,noreferrer");
+                    close();
+                  }}
+                  className="rounded-[2px] bg-leaf-deep px-4 py-2 text-text-cream shadow-pixel transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                  style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
+                >
+                  {confirmLabel}
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
