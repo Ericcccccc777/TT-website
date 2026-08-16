@@ -152,7 +152,7 @@ const EN: LegalDoc = {
           p: "Small print: if you leave the name blank, the generated anonymous name is rendered in your app language, so the leaderboard indirectly reflects which UI language you use.",
         },
         {
-          p: "The model breakdown (v0.2.0+). The leaderboard has boards beyond \"biggest tree\" — most-used model, one vendor against another. They are fed by a per-model breakdown of your tokens: the model name (say claude-opus-4-8), the vendor it belongs to, and the four token counts plus their sum.",
+          p: 'The model breakdown (v0.2.0+). The leaderboard has boards beyond "biggest tree" — most-used model, one vendor against another. They are fed by a per-model breakdown of your tokens: the model name (say claude-opus-4-8), the vendor it belongs to, and the four token counts plus their sum.',
         },
         {
           p: "Two public boards are built from this breakdown, besides the token board. Vendor usage adds every player's tokens together per vendor and per model — whole-community totals, from which no single player's usage can be read back. Forest value shows an estimate of what your collected tokens would have cost, worked out on our server by multiplying the counts you already sync by each model's published price: no money figure is ever sent from your machine and no new field is uploaded. It is an estimate and not a bill — subscriptions, discounts and free allowances are ignored, a vendor price change moves everyone at once, and the model each token is filed under comes from your own machine and is not independently verified. Both boards state how much of all counted tokens they cover. It covers only the bubbles you popped yourself. Every bubble carries the breakdown of which models burned it, and that breakdown is banked at the exact moment you collect the bubble — the same instant, the same energy, that raises your tree score. A bubble that expires unpopped counts for neither. Token Forest does not go digging through logs from before you installed it in order to build this.",
@@ -164,7 +164,7 @@ const EN: LegalDoc = {
           p: "It carries no dates. Running totals only — no per-day, per-hour or per-session split — so like the four anti-cheat numbers it cannot reconstruct when you work and when you rest. The per-date breakdown stays on your machine, for the dashboard.",
         },
         {
-          p: "Tracking begins with v0.1.10. Tokens collected before it have no model attribution and are not backfilled, so the model total is normally lower than your score. A sync carries at most 30 models; model names pass two checks — the app folds anything outside a strict character set into a single \"unknown\" entry, and the server independently re-checks the character set and a banned-word list, dropping rows that fail.",
+          p: 'Tracking begins with v0.2.0. Tokens collected before it have no model attribution and are not backfilled, so the model total is normally lower than your score. A sync carries at most 30 models; model names pass two checks — the app folds anything outside a strict character set into a single "unknown" entry, and the server independently re-checks the character set and a banned-word list, dropping rows that fail.',
         },
         {
           p: "Never uploaded, in any mode: raw logs, prompts or conversation content, source code, session titles, file paths, project names, Git branches, per-session usage, cost estimates, anything about tokens you never collected, or any per-window / time-of-day breakdown of your token use — including any per-date breakdown of the model figures above.",
@@ -234,6 +234,23 @@ const EN: LegalDoc = {
       ],
     },
     {
+      h: "Project showcase (v0.2.2+, off by default)",
+      blocks: [
+        {
+          p: "Inside the leaderboard settings there is a switch called Project showcase. Turn it on and you can add a project name (up to 24 characters), a one-line description (up to 80), a link, and one image. Those four things are synced along with your leaderboard entry and shown publicly next to it. A few things worth stating plainly:",
+        },
+        {
+          list: [
+            "It is off by default, and it does nothing while the leaderboard itself is off. While the switch is off, none of these four fields is sent at all.",
+            "You write it, so it appears exactly as written. Do not put anything there you would not want public.",
+            "The image is re-encoded on your machine before it is uploaded — resized to at most 512 pixels on its longest side and 64 KB, and stripped of location and camera metadata in the process. If you pick a photo from your phone, its GPS coordinates do not go with it.",
+            "Turning the switch off takes it down. The next sync clears those fields on the leaderboard and deletes the uploaded image; turning the leaderboard off entirely deletes them along with your whole entry. It is not merely hidden on your side.",
+            "Links must start with https:// and are checked before they are accepted. The text goes through the same word filter as display names, on your machine and again on the server.",
+          ],
+        },
+      ],
+    },
+    {
       h: "Verifying these claims",
       blocks: [
         {
@@ -260,6 +277,9 @@ const EN: LegalDoc = {
       blocks: [
         {
           p: "If a future version adds any new data processing — telemetry, crash reporting, auto-update checks, new leaderboard fields — this notice and the in-app consent will be updated before that version ships, and the release notes will call it out under “Privacy or network changes”.",
+        },
+        {
+          p: "This has happened twice so far: the price-table update (v0.1.4, which added our website's hosting provider as a counterparty) and the update check (v0.2.1, which added GitHub). Both are off by default, download-only, and send no identifiers.",
         },
       ],
     },
@@ -425,7 +445,7 @@ const ZH: LegalDoc = {
           p: "它不带日期。只有累计量,没有按天、按小时、按会话的拆分,因此和防作弊那四个数字一样,还原不出你几点在工作、几点在休息。按日期的拆分留在你的机器上,供数据面板使用。",
         },
         {
-          p: "记账从 v0.1.10 开始。更早收取的 token 没有模型归属,也不会补算,所以模型合计通常小于你的分数。一次同步最多带 30 个模型;模型名要过两道校验——App 这边把字符集不合规的归进单独一格「unknown」,服务端再独立复核一次字符集与违禁词表,没过的行直接丢弃。",
+          p: "记账从 v0.2.0 开始。更早收取的 token 没有模型归属,也不会补算,所以模型合计通常小于你的分数。一次同步最多带 30 个模型;模型名要过两道校验——App 这边把字符集不合规的归进单独一格「unknown」,服务端再独立复核一次字符集与违禁词表,没过的行直接丢弃。",
         },
         {
           p: "任何模式下都不会上传:原始日志、prompt/对话正文、源代码、会话标题、文件路径、项目名、Git 分支、按会话用量、成本估算、未被你收取的 token 的任何信息,以及任何逐片段/按时段的 token 使用明细——包括上面那份模型构成的按日期拆分。",
@@ -495,6 +515,23 @@ const ZH: LegalDoc = {
       ],
     },
     {
+      h: "项目展示(v0.2.2+,默认关闭)",
+      blocks: [
+        {
+          p: "排行榜设置里有一个叫「项目展示」的开关。打开之后可以填项目名称(最多 24 字)、一句话简介(最多 80 字)、一个链接,以及一张图片。这四项会随排行榜同步一起公开显示在你那一行旁边。有几件事必须说清楚:",
+        },
+        {
+          list: [
+            "默认关闭,而且排行榜本身没开时它什么也不做。开关关着的时候,这四项一个字节都不会发送。",
+            "内容由你自己写,也会原样显示。不要填任何你不希望公开的信息。",
+            "图片在离开你的机器之前会被重新编码 —— 缩到最长边不超过 512 像素、64 KB 以内,并在这一步去掉其中的位置、相机等信息。你拿手机里的照片来传,它的 GPS 坐标不会跟着走。",
+            "关掉开关就是撤下。下一次同步会清空榜单上的这几项并删除已上传的图片;整个关掉排行榜则会连同你那一行一起删除。不是只在你这边隐藏。",
+            "链接必须以 https:// 开头,接受之前会先校验。文字会经过与展示昵称同一套词表审查,本机一遍、服务端再一遍。",
+          ],
+        },
+      ],
+    },
+    {
       h: "如何验证这些承诺",
       blocks: [
         {
@@ -521,6 +558,9 @@ const ZH: LegalDoc = {
       blocks: [
         {
           p: "未来版本若新增任何数据处理(遥测、崩溃上报、更新检查、新排行榜字段),会在该版本发布之前更新本声明与 App 内同意文案,并在 Release notes 的「Privacy or network changes」一节中明确列出。",
+        },
+        {
+          p: "到目前为止按这个流程处理过两次:价格表更新(v0.1.4,新增的对端是本站托管商)与更新检查(v0.2.1,新增的对端是 GitHub)。两者都默认关闭、都是纯下载、都不发送任何标识符。",
         },
       ],
     },
@@ -695,7 +735,7 @@ const JA: LegalDoc = {
           p: "日付は含みません。累計のみで、日別・時間別・セッション別の分割はないため、不正防止の 4 つの数値と同様に作業時間を復元できません。日付別の内訳は端末に留まり、ダッシュボードで使われます。",
         },
         {
-          p: "集計は v0.1.10 から開始します。それ以前に回収したトークンはモデル情報を持たず遡って補完されないため、モデル合計は通常スコアより少なくなります。1 回の同期で最大 30 モデル。モデル名は 2 段階で検証され、アプリは厳格な文字集合を外れるものを単一の「unknown」にまとめ、サーバー側でも文字集合と禁止語リストを独立に再確認し、通らない行は破棄します。",
+          p: "集計は v0.2.0 から開始します。それ以前に回収したトークンはモデル情報を持たず遡って補完されないため、モデル合計は通常スコアより少なくなります。1 回の同期で最大 30 モデル。モデル名は 2 段階で検証され、アプリは厳格な文字集合を外れるものを単一の「unknown」にまとめ、サーバー側でも文字集合と禁止語リストを独立に再確認し、通らない行は破棄します。",
         },
         {
           p: "いかなるモードでもアップロードしないもの:生ログ、プロンプトや会話内容、ソースコード、セッションタイトル、ファイルパス、プロジェクト名、Git ブランチ、セッション別の使用状況、費用の見積もり、回収していないトークンに関する一切、およびトークン使用の区間別・時間帯別の内訳一切——上記のモデル別数値の日付別内訳を含みます。",
@@ -765,6 +805,23 @@ const JA: LegalDoc = {
       ],
     },
     {
+      h: "プロジェクト紹介(v0.2.2+、既定はオフ)",
+      blocks: [
+        {
+          p: "リーダーボード設定の中に「プロジェクト紹介」というスイッチがあります。オンにすると、プロジェクト名(24 文字以内)、ひとこと紹介(80 文字以内)、リンク 1 つ、画像 1 枚を登録できます。この 4 つはリーダーボードの同期と一緒に送られ、あなたの行の隣に公開表示されます。はっきり述べておくべきことがいくつかあります:",
+        },
+        {
+          list: [
+            "既定でオフであり、リーダーボード自体がオフの間は何もしません。スイッチがオフの間、この 4 項目は 1 バイトも送信されません。",
+            "内容はご自身が書いたものが、そのまま表示されます。公開したくない情報は入力しないでください。",
+            "画像は端末を出る前に再エンコードされます —— 長辺 512 ピクセル以内・64 KB 以内に縮小し、その過程で位置情報やカメラ情報を取り除きます。スマートフォンの写真を選んでも、GPS 座標は一緒に送られません。",
+            "スイッチをオフにすることが取り下げです。次の同期でランキング上のこれらの項目が消去され、アップロード済みの画像も削除されます。リーダーボードごとオフにした場合は、あなたの行ごと削除されます。手元で隠すだけではありません。",
+            "リンクは https:// で始まる必要があり、受け付ける前に検証されます。テキストは表示名と同じ単語フィルターを、端末側で 1 回、サーバー側でもう 1 回通ります。",
+          ],
+        },
+      ],
+    },
+    {
       h: "これらの主張の検証",
       blocks: [
         {
@@ -791,6 +848,9 @@ const JA: LegalDoc = {
       blocks: [
         {
           p: "将来のバージョンが新たなデータ処理(テレメトリ、クラッシュレポート、自動更新チェック、新しいリーダーボード項目)を追加する場合は、そのバージョンの提供前に本通知とアプリ内の同意内容を更新し、リリースノートの「Privacy or network changes」の項目で明示します。",
+        },
+        {
+          p: "これまでにこの手順を 2 回踏んでいます:価格表の更新(v0.1.4、新たな通信相手は当サイトのホスティング事業者)と更新チェック(v0.2.1、新たな通信相手は GitHub)。いずれも既定でオフ、ダウンロードのみ、識別子は一切送信しません。",
         },
       ],
     },
@@ -956,7 +1016,7 @@ const KO: LegalDoc = {
           p: "날짜는 담지 않습니다. 누적값만 있고 일별·시간별·세션별 분할이 없으므로, 부정행위 방지용 네 숫자와 마찬가지로 언제 일하고 언제 쉬는지 알아낼 수 없습니다. 날짜별 내역은 기기에 남아 대시보드에서 사용됩니다.",
         },
         {
-          p: "집계는 v0.1.10부터 시작합니다. 그 이전에 수집한 토큰은 모델 정보가 없고 소급 보정하지 않으므로 모델 합계는 보통 점수보다 적습니다. 한 번의 동기화에 최대 30개 모델이 실립니다. 모델명은 두 단계로 검증되어, 앱은 엄격한 문자 집합을 벗어나는 것을 단일 「unknown」으로 묶고, 서버도 문자 집합과 금지어 목록을 독립적으로 재확인해 통과하지 못한 행은 버립니다.",
+          p: "집계는 v0.2.0부터 시작합니다. 그 이전에 수집한 토큰은 모델 정보가 없고 소급 보정하지 않으므로 모델 합계는 보통 점수보다 적습니다. 한 번의 동기화에 최대 30개 모델이 실립니다. 모델명은 두 단계로 검증되어, 앱은 엄격한 문자 집합을 벗어나는 것을 단일 「unknown」으로 묶고, 서버도 문자 집합과 금지어 목록을 독립적으로 재확인해 통과하지 못한 행은 버립니다.",
         },
         {
           p: "어떤 모드에서도 업로드하지 않는 것: 원본 로그, 프롬프트나 대화 내용, 소스 코드, 세션 제목, 파일 경로, 프로젝트 이름, Git 브랜치, 세션별 사용량, 비용 추정, 수집하지 않은 토큰에 관한 일체, 그리고 토큰 사용의 구간별·시간대별 내역 일체——위 모델별 수치의 날짜별 내역을 포함합니다.",
@@ -1026,6 +1086,23 @@ const KO: LegalDoc = {
       ],
     },
     {
+      h: "프로젝트 소개(v0.2.2+, 기본값 꺼짐)",
+      blocks: [
+        {
+          p: "리더보드 설정 안에 「프로젝트 소개」라는 스위치가 있습니다. 켜면 프로젝트 이름(24자 이내), 한 줄 소개(80자 이내), 링크 하나, 이미지 한 장을 입력할 수 있습니다. 이 네 가지는 리더보드 동기화와 함께 전송되어 여러분의 행 옆에 공개적으로 표시됩니다. 분명히 말해 둘 것이 몇 가지 있습니다:",
+        },
+        {
+          list: [
+            "기본값은 꺼짐이며, 리더보드 자체가 꺼져 있는 동안에는 아무 일도 하지 않습니다. 스위치가 꺼져 있는 동안 이 네 항목은 단 1바이트도 전송되지 않습니다.",
+            "내용은 여러분이 직접 쓴 그대로 표시됩니다. 공개하고 싶지 않은 정보는 넣지 마십시오.",
+            "이미지는 기기를 떠나기 전에 다시 인코딩됩니다 —— 가장 긴 변이 512픽셀 이내, 64 KB 이내로 축소되며 그 과정에서 위치·카메라 정보가 제거됩니다. 휴대폰 사진을 골라도 GPS 좌표는 함께 가지 않습니다.",
+            "스위치를 끄는 것이 곧 내리는 것입니다. 다음 동기화에서 리더보드의 해당 항목이 지워지고 업로드된 이미지도 삭제됩니다. 리더보드를 통째로 끄면 여러분의 행과 함께 삭제됩니다. 여러분 쪽에서만 숨기는 것이 아닙니다.",
+            "링크는 https:// 로 시작해야 하며 수락 전에 검증됩니다. 텍스트는 표시 이름과 동일한 단어 필터를 기기에서 한 번, 서버에서 다시 한 번 통과합니다.",
+          ],
+        },
+      ],
+    },
+    {
       h: "이 주장의 검증",
       blocks: [
         {
@@ -1052,6 +1129,9 @@ const KO: LegalDoc = {
       blocks: [
         {
           p: "향후 버전이 새로운 데이터 처리(텔레메트리, 오류 보고, 자동 업데이트 확인, 새 리더보드 항목)를 추가하는 경우, 해당 버전을 제공하기 전에 본 정책과 앱 내 동의 내용을 업데이트하고, 릴리스 노트의 「Privacy or network changes」 항목에서 명시합니다.",
+        },
+        {
+          p: "지금까지 이 절차를 두 번 거쳤습니다: 가격표 업데이트(v0.1.4, 새로 추가된 통신 상대는 당사 사이트의 호스팅 제공업체)와 업데이트 확인(v0.2.1, 새로 추가된 통신 상대는 GitHub). 둘 다 기본값은 꺼짐이고, 다운로드 전용이며, 식별자를 전혀 전송하지 않습니다.",
         },
       ],
     },
