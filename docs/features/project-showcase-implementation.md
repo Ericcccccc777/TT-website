@@ -39,7 +39,7 @@ Two narrowings the table must be read against:
   New decision, not settled here.
 - **`project_image` pins the filename, not the host.** See the next section.
 
-## Migration 0024 — pin the image host and path (LAUNCH GATE)
+## Migration 0024 — pin the image host and path (written; NOT YET APPLIED)
 
 `0022:174` matches `^https://[a-z0-9]+\.supabase\.co/…`. `[a-z0-9]+` accepts
 **any** Supabase project ref, not ours. Verified by replaying the regex:
@@ -57,15 +57,24 @@ visitor IPs never reach the third party. It is three things:
   is an **open image proxy** any client can drive. `minimumCacheTTL` does not
   blunt it, because nothing repeats.
 
-Fix both gates from `NEXT_PUBLIC_SUPABASE_URL`:
+Both gates are now closed in code:
 
-- `0024` — `create or replace` the trigger function with the project ref
-  interpolated, so the host is exact. Idempotent, same shape as 0023.
-- `next.config.ts` — exact hostname **and** narrow the pathname to
-  `/storage/v1/object/public/project-images/**`. Pinning only the hostname still
-  leaves every other public bucket in our own project proxyable.
+- `supabase/migrations/0024_project_image_host_pin.sql` — `create or replace`s the
+  trigger function. The expected prefix lives in its own
+  `public.project_image_prefix()` so a staging rebuild has one thing to change
+  rather than a constant buried mid-function; the prefix is compared with `left()`
+  / `substr()` rather than interpolated into a regex, because `.` and `/` would
+  need escaping and one missed `.` reopens exactly the hole 0022 fell into.
+- `next.config.ts` — hostname derived from `NEXT_PUBLIC_SUPABASE_URL` (so it
+  cannot drift from the URL the app actually uses; empty env ⇒ empty allow-list ⇒
+  fails closed), **and** the pathname narrowed to
+  `/storage/v1/object/public/project-images/**`. Pinning only the hostname would
+  still leave every other public bucket in our own project proxyable.
 
-Cheapest now: one row holds an image, and it is ours.
+**The gate is not closed until 0024 is run in the SQL Editor.** Its self-check
+block includes a query that lists any existing row the new rule would reject —
+run that before and after, and expect zero rows both times. Cheapest moment: one
+row holds an image, and it is ours.
 
 ## Rendering
 
@@ -362,7 +371,9 @@ to the type but not to the select string.
 
 Neither document may be signed off as shippable until all four hold.
 
-1. **0024** — pin the image host and path (§ Migration 0024).
+1. **0024 applied to the live database.** The migration and the matching
+   `next.config.ts` change are written; running it in the SQL Editor is what
+   closes the gate (§ Migration 0024).
 2. **Held-account blanking** — write-time, not read-time (§ Held accounts), plus
    someone to manufacture the test state.
 3. **A takedown action.** `app/ranger/actions.ts` exposes ban/unban/

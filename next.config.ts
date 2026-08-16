@@ -6,6 +6,12 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
+// Host of our own Supabase project, for the image allow-list below. Derived
+// rather than written out, so it cannot drift from the URL the app actually
+// talks to. Empty when the env var is missing — the allow-list then matches
+// nothing, which fails closed (no images) instead of open (any host).
+const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : "";
+
 const nextConfig: NextConfig = {
   // Pin the Turbopack workspace root to this project directory so Next 16
   // resolves tailwindcss from the correct location.
@@ -22,13 +28,20 @@ const nextConfig: NextConfig = {
     // derivatives for a week instead of re-validating on every visit. Matches
     // the Cache-Control we set for /sprites/* in netlify.toml.
     minimumCacheTTL: 604800,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "*.supabase.co",
-        pathname: "/storage/v1/object/public/**",
-      },
-    ],
+    // Project-showcase pictures, and nothing else. Both halves are load-bearing:
+    // a `*.supabase.co` wildcard would make /_next/image an open proxy for any
+    // Supabase project on earth, and a `/object/public/**` path would proxy every
+    // other public bucket in our own. The database pins the same URL from the
+    // other side — see supabase/migrations/0024_project_image_host_pin.sql.
+    remotePatterns: supabaseHost
+      ? [
+          {
+            protocol: "https",
+            hostname: supabaseHost,
+            pathname: "/storage/v1/object/public/project-images/**",
+          },
+        ]
+      : [],
   },
   // Baseline security headers.
   async headers() {
