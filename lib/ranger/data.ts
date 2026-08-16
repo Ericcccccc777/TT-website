@@ -34,8 +34,12 @@ export type RangerRow = {
   projectDesc: string | null;
   projectUrl: string | null;
   projectImage: string | null;
-  /** An admin has allowed this account's project despite its held gains. */
-  projectAllowed: boolean;
+  /**
+   * An admin has allowed this account's project despite its held gains.
+   * `"unknown"` means the allowance read itself failed — never collapse that to
+   * `false`, which would show a permissions failure as a decision an admin made.
+   */
+  projectAllowed: boolean | "unknown";
 };
 
 /**
@@ -65,9 +69,16 @@ export async function getRangerLeaderboard(): Promise<{
 
     if (lb.error) return { rows: [], deletableOrphanIds: [], error: lb.error.message };
     if (bans.error) return { rows: [], deletableOrphanIds: [], error: bans.error.message };
-    if (allows.error) return { rows: [], deletableOrphanIds: [], error: allows.error.message };
 
-    const allowedUsers = new Set((allows.data ?? []).map((a) => a.user_id as string));
+    // Non-fatal on purpose, and null (not an empty set) when the read failed.
+    // The allowances table (0025) only annotates the project column; failing the
+    // whole call over it would blank the board and take ban/unban and orphan
+    // cleanup — features that predate this table — down with it. Same defensive
+    // posture as the reviews fetch in getRangerUserDetail. Rows then report
+    // their allowance as "unknown" rather than as a decision nobody made.
+    const allowedUsers = allows.error
+      ? null
+      : new Set((allows.data ?? []).map((a) => a.user_id as string));
 
     const banByUser = new Map(
       (bans.data ?? []).map((b) => [
@@ -96,7 +107,7 @@ export async function getRangerLeaderboard(): Promise<{
         projectDesc: (r.project_desc as string | null) ?? null,
         projectUrl: (r.project_url as string | null) ?? null,
         projectImage: (r.project_image as string | null) ?? null,
-        projectAllowed: allowedUsers.has(r.user_id as string),
+        projectAllowed: allowedUsers ? allowedUsers.has(r.user_id as string) : "unknown",
       };
     });
 
@@ -233,7 +244,10 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
           projectDesc: (r.project_desc as string | null) ?? null,
           projectUrl: (r.project_url as string | null) ?? null,
           projectImage: (r.project_image as string | null) ?? null,
-          projectAllowed: !!allow.data,
+          // A failed read is NOT "no allowance": reporting it as one would make
+          // the detail page offer an Allow button for an account that may
+          // already be allowed, and that click would throw on the same error.
+          projectAllowed: allow.error ? "unknown" : !!allow.data,
         }
       : null;
 

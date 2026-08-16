@@ -28,6 +28,7 @@ import {
   compactTokens,
   projectHostname,
   bustedImageSrc,
+  panelLabelId,
 } from "@/lib/leaderboard-format";
 import { redirect } from "next/navigation";
 
@@ -60,7 +61,11 @@ export async function generateMetadata({
 type TFunc = Awaited<ReturnType<typeof getTranslations<"LeaderboardPage">>>;
 
 function relativeTime(iso: string, t: TFunc): string {
-  const diff = Date.now() - new Date(iso).getTime();
+  const parsed = new Date(iso).getTime();
+  // An unparseable timestamp would otherwise render as "NaNd ago". Treating it
+  // as "just now" is the honest fallback: we do not know when it was.
+  if (!Number.isFinite(parsed)) return t("relativeJustNow");
+  const diff = Date.now() - parsed;
   const minutes = Math.floor(diff / 60_000);
   if (minutes < 1) return t("relativeJustNow");
   if (minutes < 60) return t("relativeMinutes", { n: minutes });
@@ -111,8 +116,11 @@ export default async function LeaderboardPage({
   const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
 
   // A manually-typed ?page beyond the last page → send them to the last page,
-  // so the pager never shows "Page 3 of 2" over an empty table.
-  if (page > totalPages) {
+  // so the pager never shows "Page 3 of 2" over an empty table. Only when the
+  // read actually succeeded: a failed read reports a total of 0, which makes
+  // every page "past the end", and redirecting would swallow the error banner
+  // below and send the visitor to a page that is just as broken.
+  if (!error && page > totalPages) {
     redirect(`/${locale}/leaderboard${totalPages > 1 ? `?page=${totalPages}` : ""}`);
   }
 
@@ -428,7 +436,12 @@ export default async function LeaderboardPage({
                                   : null
                               }
                             >
+                              {/* The panel's accessible name — the region inside
+                              ProjectPanelRow points its aria-labelledby here, so
+                              a screen reader announces whose project it just
+                              opened instead of an unnamed region. */}
                               <p
+                                id={panelLabelId(entry.id)}
                                 className="text-leaf-deep"
                                 style={{
                                   fontFamily: "var(--font-pixel)",

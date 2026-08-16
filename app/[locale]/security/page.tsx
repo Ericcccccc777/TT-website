@@ -5,7 +5,8 @@ import { localizedMetadata } from "@/lib/seo";
 import { LegalDocView, type LegalDoc } from "@/components/legal-doc";
 
 // Mirror of Poietic-TokenForest/SECURITY.md (same version). Edit the canonical
-// file first, then mirror here — see docs/trust/PRIVACY_ARCHITECTURE.md.
+// file first, then mirror here. The canonical files live in the product repo
+// (Ericcccccc777/Poietic-TokenForest): SECURITY.md and SECURITY.zh-CN.md.
 
 const GITHUB_SECURITY = "https://github.com/Ericcccccc777/Poietic-TokenForest/security";
 
@@ -16,7 +17,7 @@ const EN: LegalDoc = {
     {
       blocks: [
         {
-          p: "Token Forest is a proprietary desktop application published by Poietic Studio. We take reports about its security and privacy behaviour seriously — especially anything that contradicts our published Privacy Notice.",
+          p: "Token Forest is a proprietary, local-first desktop application published by Poietic Studio, with no network access by default. We take reports about its security and privacy behaviour seriously — especially anything that contradicts our published Privacy Notice.",
         },
       ],
     },
@@ -124,7 +125,7 @@ const EN: LegalDoc = {
       h: "Release authenticity",
       blocks: [
         {
-          p: "Official downloads come only from this website and the product repository's GitHub Releases, each with a SHA-256 checksum and a stated signing status. Do not run a download that fails verification — delete it, re-download from an official channel, and report it if the mismatch persists.",
+          p: "Official downloads come only from this website and the product repository's GitHub Releases, each with a SHA-256 checksum and a stated signing status — except four early builds: v0.1.0, v0.1.1 and v0.1.2 published no checksum, and v0.1.9 neither a checksum nor a signing status. Do not run a download that fails verification — delete it, re-download from an official channel, and report it if the mismatch persists.",
         },
       ],
     },
@@ -138,7 +139,7 @@ const ZH: LegalDoc = {
     {
       blocks: [
         {
-          p: "Token Forest 是由 Poietic Studio 发布的闭源桌面应用。我们认真对待有关其安全与隐私行为的报告——尤其是任何与我们已发布的《隐私声明》不一致的情形。",
+          p: "Token Forest 是由 Poietic Studio 发布的闭源、本地优先、默认不联网的桌面应用。我们认真对待有关其安全与隐私行为的报告——尤其是任何与我们已发布的《隐私声明》不一致的情形。",
         },
       ],
     },
@@ -244,7 +245,7 @@ const ZH: LegalDoc = {
       h: "发行真实性",
       blocks: [
         {
-          p: "官方下载只来自本网站和产品仓库的 GitHub Releases,每个都附带 SHA-256 校验值和已声明的签名状态。请不要运行未通过校验的下载——将其删除,从官方渠道重新下载,若不一致仍然存在请报告。",
+          p: "官方下载只来自本网站和产品仓库的 GitHub Releases,每个都附带 SHA-256 校验值和已声明的签名状态——四个早期版本除外:v0.1.0、v0.1.1、v0.1.2 未公布校验值,v0.1.9 两样都没有。请不要运行未通过校验的下载——将其删除,从官方渠道重新下载,若不一致仍然存在请报告。",
         },
       ],
     },
@@ -258,7 +259,7 @@ const JA: LegalDoc = {
     {
       blocks: [
         {
-          p: "Token Forest は Poietic Studio が提供するプロプライエタリ(非公開ソース)のデスクトップアプリです。当社は、そのセキュリティおよびプライバシーの挙動に関する報告を真剣に受け止めます——とりわけ、公開している《プライバシー通知》と矛盾する事項を重視します。",
+          p: "Token Forest は Poietic Studio が提供するプロプライエタリ(非公開ソース)でローカル優先、既定ではネットワークに接続しないデスクトップアプリです。当社は、そのセキュリティおよびプライバシーの挙動に関する報告を真剣に受け止めます——とりわけ、公開している《プライバシー通知》と矛盾する事項を重視します。",
         },
       ],
     },
@@ -368,7 +369,7 @@ const JA: LegalDoc = {
       h: "リリースの真正性",
       blocks: [
         {
-          p: "公式のダウンロードは本ウェブサイトおよびプロダクトリポジトリの GitHub Releases からのみ提供され、それぞれに SHA-256 チェックサムと署名ステータスの表示が付きます。検証に失敗したダウンロードは実行しないでください——削除し、公式チャネルから再ダウンロードし、不一致が続く場合は報告してください。",
+          p: "公式のダウンロードは本ウェブサイトおよびプロダクトリポジトリの GitHub Releases からのみ提供され、それぞれに SHA-256 チェックサムと署名ステータスの表示が付きます——初期の 4 ビルドは例外で、v0.1.0、v0.1.1、v0.1.2 はチェックサムを公開しておらず、v0.1.9 はどちらもありません。検証に失敗したダウンロードは実行しないでください——削除し、公式チャネルから再ダウンロードし、不一致が続く場合は報告してください。",
         },
       ],
     },
@@ -382,7 +383,7 @@ const KO: LegalDoc = {
     {
       blocks: [
         {
-          p: "Token Forest는 Poietic Studio가 발행하는 독점(비공개 소스) 데스크톱 애플리케이션입니다. 당사는 그 보안 및 개인정보 관련 동작에 대한 신고를 진지하게 받아들입니다 — 특히 당사가 게시한 《개인정보 보호정책》과 모순되는 사항을 중요하게 다룹니다.",
+          p: "Token Forest는 Poietic Studio가 발행하는 독점(비공개 소스) 로컬 우선 데스크톱 애플리케이션이며, 기본적으로 네트워크에 접속하지 않습니다. 당사는 그 보안 및 개인정보 관련 동작에 대한 신고를 진지하게 받아들입니다 — 특히 당사가 게시한 《개인정보 보호정책》과 모순되는 사항을 중요하게 다룹니다.",
         },
       ],
     },
@@ -488,7 +489,7 @@ const KO: LegalDoc = {
       h: "릴리스 진위성",
       blocks: [
         {
-          p: "공식 다운로드는 본 웹사이트와 제품 저장소의 GitHub Releases에서만 제공되며, 각각 SHA-256 체크섬과 명시된 서명 상태가 첨부됩니다. 검증에 실패한 다운로드는 실행하지 마십시오 — 삭제하고 공식 채널에서 다시 다운로드하며, 불일치가 계속되면 신고해 주십시오.",
+          p: "공식 다운로드는 본 웹사이트와 제품 저장소의 GitHub Releases에서만 제공되며, 각각 SHA-256 체크섬과 명시된 서명 상태가 첨부됩니다 — 초기 네 개 빌드는 예외로, v0.1.0, v0.1.1, v0.1.2는 체크섬을 공개하지 않았고 v0.1.9는 둘 다 없습니다. 검증에 실패한 다운로드는 실행하지 마십시오 — 삭제하고 공식 채널에서 다시 다운로드하며, 불일치가 계속되면 신고해 주십시오.",
         },
       ],
     },

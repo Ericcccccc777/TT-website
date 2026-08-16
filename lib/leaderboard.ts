@@ -130,6 +130,25 @@ export async function getLeaderboard(page = 1): Promise<{
       .range(from, to);
 
     if (error) {
+      // "Past the last page" is not a failure, but PostgREST reports it down the
+      // same channel as one: an offset beyond the end answers PGRST103 with a
+      // null count, exactly where a revoked grant or a dead database would put
+      // its message. Keep the two apart, because the page does opposite things
+      // with them — a typed `?page=99` is redirected to the last real page, a
+      // genuine failure has to stay put and show the error. Collapsing them
+      // means one of the two behaves as the other.
+      if (error.code === "PGRST103") {
+        // supabase-js drops the count that PostgREST puts on the 416, so the
+        // real total has to be fetched separately. Returning 0 here would make
+        // totalPages 1 and send every out-of-range page to page 1 — the exact
+        // opposite of what the caller's redirect promises. Invisible while the
+        // board fits on one page; wrong from the 51st player onwards.
+        const { count: realCount, error: countError } = await client
+          .from("leaderboard_public")
+          .select("id", { count: "exact", head: true });
+        if (countError) return { entries: [], total: 0, error: countError.message };
+        return { entries: [], total: realCount ?? 0, error: null };
+      }
       return { entries: [], total: 0, error: error.message };
     }
 
@@ -147,8 +166,9 @@ export async function getLeaderboard(page = 1): Promise<{
           Number(row.score ?? 0),
           Number(row.stage_index ?? 0),
         ),
-        // Kept nullable rather than defaulted to "": the panel distinguishes
-        // "not filled in" from "filled in", and 0025 already normalises blanks.
+        // Kept nullable rather than defaulted to "": 0022's trigger already
+        // normalises blanks to NULL on write, so null is the one shape that
+        // means "not filled in" and the panel never has to test for "".
         project_name: (row.project_name as string | null) ?? null,
         project_desc: (row.project_desc as string | null) ?? null,
         project_url: (row.project_url as string | null) ?? null,

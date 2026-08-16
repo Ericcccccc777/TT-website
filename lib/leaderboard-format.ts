@@ -64,6 +64,19 @@ export function formatUsd(n: number, locale: string): string {
 // ── Project showcase ──────────────────────────────────────────────────────────
 
 /**
+ * The two element ids the project panel is wired together with, derived from the
+ * row id: the panel cell that `aria-controls` points at, and the project name
+ * that names the panel (`aria-labelledby`).
+ *
+ * They live here, not beside the components, because the two ends are rendered
+ * on opposite sides of the server/client line — the panel and its trigger are in
+ * a `"use client"` module, the project name is rendered by the page — and a
+ * Server Component cannot call a function exported from a client module.
+ */
+export const panelId = (id: string) => `project-panel-${id}`;
+export const panelLabelId = (id: string) => `project-panel-label-${id}`;
+
+/**
  * The part of a project link we are willing to print.
  *
  * Never render the raw href as text. `project_url` is the one player-written
@@ -73,24 +86,70 @@ export function formatUsd(n: number, locale: string): string {
  * hostname strips the path, and renders a punycode host in its `xn--` form —
  * which is the honest thing to show.
  *
- * Returns null if the URL will not parse; the caller then shows no link at all.
- * The DB regex should make that impossible, but a row written before the
- * trigger existed would not have passed it.
+ * The protocol check is the load-bearing part, not the parse. `new URL()` accepts
+ * anything with a scheme, and plenty of non-web schemes carry a hostname —
+ * `javascript://example.com/%0A…`, `intent://example.com/…`, `vbscript://x.com/`
+ * all parse and all report a perfectly ordinary hostname. The interstitial's
+ * whole job is to tell the visitor where they are about to go, and it can only
+ * show the hostname; without this check it would show `example.com` over a link
+ * that hands the raw value to `window.open` and can invoke an OS protocol
+ * handler. Requiring https also rejects plain http, which would silently
+ * downgrade the visitor.
+ *
+ * Returns null if the URL will not parse or is not https; the caller then shows
+ * no link at all. 0022 screens this on write and 0024 tightened it, so a stored
+ * row should always pass — this is defence in depth against a row written with
+ * the trigger disabled or through the service role, not a legacy-row path
+ * (`project_url` and its validating trigger both arrived in 0022, so no row can
+ * predate the check).
  */
 export function projectHostname(url: string): string | null {
   try {
-    const h = new URL(url).hostname;
-    return h.length > 0 ? h : null;
+    const u = new URL(url);
+    if (u.protocol !== "https:") return null;
+    return u.hostname.length > 0 ? u.hostname : null;
   } catch {
     return null;
   }
 }
 
 /**
+ * Is this project image one of our own stored objects?
+ *
+ * The public board never needs this — it renders through `next/image`, whose
+ * `remotePatterns` allow-list refuses anything else at request time. The admin
+ * page does: it reads the BASE table on purpose, so it is the one surface that
+ * sees rows the public view is refusing to show, and it renders the picture with
+ * a plain `<img>`. Without a check, opening a player's page would make the
+ * admin's browser fetch whatever host that row names — disclosing the admin's
+ * IP, the time they looked, and the referrer. 0024 pins this on write, but a row
+ * written before 0024 (or through the service role) is exactly the row an admin
+ * is most likely to be looking at.
+ *
+ * Same three conditions `next.config.ts` pins: https, our Supabase origin, and
+ * the public project-images path.
+ */
+export function isOwnProjectImage(url: string): boolean {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base) return false;
+  try {
+    const u = new URL(url);
+    return (
+      u.protocol === "https:" &&
+      u.origin === new URL(base).origin &&
+      u.pathname.startsWith("/storage/v1/object/public/project-images/")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Project image URL with a cache-busting token.
  *
- * The stored object name is pinned to `<user_id>.<ext>` forever, so a replaced
- * picture reuses the same URL. Next's optimizer takes
+ * The stored object name is pinned to `<user_id>.<ext>`, so a replacement that
+ * keeps the extension reuses the same URL (a webp -> png swap does change it).
+ * Next's optimizer takes
  * `max(minimumCacheTTL, upstream max-age)` — 604800 against the origin's 300 —
  * so without a token a swapped image would serve stale for up to a week, which
  * is also a review-evasion hole.

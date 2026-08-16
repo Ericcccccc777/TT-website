@@ -46,7 +46,25 @@ export function ExternalLinkDialog({
 
   const close = useCallback(() => {
     setOpen(false);
-    linkRef.current?.focus();
+    // Focus has to be placed by hand, and before the portal unmounts: the button
+    // that was focused is about to be removed from the document, and a removed
+    // focus owner leaves the caret on <body> — the top of the page, for a
+    // keyboard or screen-reader user.
+    //
+    // Normally that place is the link. But the link may by then sit inside a
+    // collapsed panel row (`<tr hidden>`), where .focus() is a silent no-op that
+    // leaves the caret on <body> anyway. So check the link is actually rendered,
+    // and otherwise hand focus to the control that discloses the row it lives
+    // in — which points at that row's cell through `aria-controls`.
+    const link = linkRef.current;
+    if (link && link.getClientRects().length > 0) {
+      link.focus();
+      return;
+    }
+    const cellId = link?.closest("td[id]")?.id;
+    if (cellId) {
+      document.querySelector<HTMLElement>(`[aria-controls="${CSS.escape(cellId)}"]`)?.focus();
+    }
   }, []);
 
   // Focus into the dialog when it opens; trap Tab inside it; Escape closes.
@@ -101,15 +119,17 @@ export function ExternalLinkDialog({
       </a>
 
       {/*
-        Portalled to <body>, not rendered in place. Two reasons, both real:
+        Portalled to <body>, not rendered in place.
 
-         - the link sits inside a <p> in a table cell, and a <div> may not be a
-           descendant of a <p> — React rewrites the tree and the page throws four
-           hydration errors;
-         - the panel lives inside an overflow-hidden wrapper, and the rows around
-           it are animated with a transform. A transformed ancestor makes
-           `position: fixed` resolve against that ancestor instead of the
-           viewport, so an in-place modal would be clipped into the row.
+        The reason is the markup, not the layout: this link sits inside a <p>,
+        and a <div> may not be a descendant of a <p>. Rendered in place, the
+        browser closes the paragraph early and React logs four nesting warnings
+        while the modal lands outside the element it was written in.
+
+        (An earlier version of this note also blamed a transformed ancestor for
+        breaking `position: fixed`. That was wrong and is recorded here so it is
+        not re-added: `row-slide-in` is on the player <tr>, which is a SIBLING of
+        the panel row this dialog lives in, not an ancestor of it.)
       */}
       {open &&
         createPortal(

@@ -86,6 +86,13 @@ that box — nothing a player can upload changes the board's layout.
 It loads only when a panel is opened, never before. Most visitors open none, and
 the pictures are the only expensive part of this feature.
 
+**Turning the showcase off takes the picture down too.** Clearing the project —
+whether by switching the whole showcase off or by only emptying the name — also
+removes the uploaded picture from our side at the next sync. The one thing this
+cannot cover is a switch-off that never reaches us at all: done offline, or with
+a stale sign-in, the entry and the picture stay as they were until an attempt
+gets through. Write to us and we will remove it by hand.
+
 **If the picture cannot be loaded, the panel quietly shows the text alone** — the
 same panel a player with no picture gets. No broken frame, no "failed to load"
 notice. A picture can go missing for real reasons (a player removed it and the
@@ -113,6 +120,23 @@ desktop app and is one of the launch gates below.
   is a switch. Turning it on publishes that player's project while their gains
   stay held; turning it off hides it again. The board reflects the change
   immediately — it does not wait for that player to sync.
+
+  Three details the admin page has to get right, because each one is a way of
+  quietly doing the wrong thing:
+
+  - **The permission outlives the project.** A player can clear their project and
+    keep the permission. It does nothing at that moment, but it would publish
+    whatever they write next without anyone looking. So the page shows the
+    permission, and the button that removes it, even for a player who has written
+    nothing — and says plainly that a leftover permission should usually be taken
+    away.
+  - **No switch for a hidden player.** A player hidden for cheating is off the
+    board entirely, so granting them a panel would change nothing. The page says
+    so instead of offering a button that appears to work. Taking a permission
+    away stays available, always.
+  - **When we cannot read the permission at all**, the page says so, and offers
+    no switch — a guess is worse than an admission, and either button would fail
+    the same way the reading did.
 
   This exists because the two judgements are separate. Holding a gain says "we do
   not believe this number." It does not say "this person may not describe what

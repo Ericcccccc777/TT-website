@@ -1,5 +1,11 @@
 -- Migration: 0026_project_visibility_fix
 --
+-- ⛔ **不要单独重跑这个文件。** 第 2/3 节已被 0028 取代:重跑会把
+--    public.project_visible(uuid) 重新建回 PostgREST 暴露的 public schema,并把视图
+--    指回它 —— 那个匿名扣留探针就这样被重新打开,而且不报任何错。另外重建视图时
+--    这里只授权 anon / authenticated,会再次漏掉 service_role。
+--    要确认改动在不在,跑 0028 文末 8.1 的自检表。
+--
 -- 修 0025 的一颗雷:视图整个查不动,anon 一律 42501
 -- 「permission denied for table leaderboard」。
 --

@@ -54,7 +54,12 @@ export default async function ValueBoardPage({
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / LEADERBOARD_PAGE_SIZE));
-  if (page > totalPages) {
+
+  // Only redirect when the read actually succeeded. A failed read reports a
+  // total of 0, which makes every page "past the end" — redirecting then would
+  // swallow the error banner below and send the visitor to a page that is just
+  // as broken. Same rule as the token board.
+  if (!error && page > totalPages) {
     redirect(`/${locale}/leaderboard/value${totalPages > 1 ? `?page=${totalPages}` : ""}`);
   }
   const offset = (page - 1) * LEADERBOARD_PAGE_SIZE;
@@ -248,9 +253,7 @@ export default async function ValueBoardPage({
             style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
           >
             <PagerLink
-              href={
-                page - 1 <= 1 ? "/leaderboard/value" : `/leaderboard/value?page=${page - 1}`
-              }
+              href={page - 1 <= 1 ? "/leaderboard/value" : `/leaderboard/value?page=${page - 1}`}
               disabled={page <= 1}
               label={`← ${t("paginationPrev")}`}
             />

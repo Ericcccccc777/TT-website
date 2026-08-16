@@ -174,11 +174,21 @@ const en = {
   pjImage: "Image",
   pjLiveYes: "Showing on the public board",
   pjLiveNo: "Hidden from the public board",
+  pjLiveUnknown: "Cannot tell whether the board is showing it",
   pjHiddenWhy:
     "Hidden because this account has held gains. Holding a gain says we do not believe the number — not that this person may not describe what they built. Allow it if the content itself is fine.",
+  pjHiddenBanned: "this player is hidden, so the project is too",
+  pjAllowUnknownWhy:
+    "The allowance record could not be read, so neither the line above nor a switch here would be trustworthy. Usually this means the service role has no grant on leaderboard_project_allowances yet — apply the pending migration, then reload.",
   pjAllow: "Allow on the board",
   pjDisallow: "Withdraw from the board",
   pjAllowedBy: "Allowed by an admin",
+  pjAllowanceStale:
+    "An allowance is on file for this player even though they have published nothing. It does nothing today, but it would republish whatever they write next without another review. Withdraw it unless you meant to leave it.",
+  pjAllowBlockedBanned:
+    "No switch while this player is hidden: hiding removes their whole row from the public board, so allowing the project would change nothing. Un-hide first, then decide.",
+  pjImageRejected:
+    "Not shown — this address is not one of our own image files. Deliberately not loaded, so opening this page cannot make your browser contact someone else's server.",
   qHold: "Hold (stop counting)",
   qDecidedBy: "by {who}",
   qSelectAll: "Select all held",
@@ -396,11 +406,21 @@ const zh: typeof en = {
   pjImage: "图片",
   pjLiveYes: "正在公开榜单上显示",
   pjLiveNo: "未在公开榜单上显示",
+  pjLiveUnknown: "无法判断榜单上是否在显示",
   pjHiddenWhy:
     "因为这个账号有被扣留的增量而不显示。扣留说的是「我们不相信这个数字」,不是「这个人不许介绍自己做的东西」。内容本身没问题就放行。",
+  pjHiddenBanned: "这个玩家已被隐藏,项目也跟着不显示",
+  pjAllowUnknownWhy:
+    "读不到许可记录,所以上面那行状态和这里的开关都不可信。通常是 service_role 还没拿到 leaderboard_project_allowances 的权限 —— 执行待应用的那个迁移后刷新。",
   pjAllow: "允许显示在榜上",
   pjDisallow: "从榜上撤下",
   pjAllowedBy: "已由管理员放行",
+  pjAllowanceStale:
+    "这个玩家什么都没填,但记录里存着一条放行。它现在不起作用,可一旦他之后写了新内容,就会不经复核直接公开。除非是有意留着,否则请撤下。",
+  pjAllowBlockedBanned:
+    "这个玩家处于隐藏状态时不提供开关:隐藏会把整行从公开榜单上拿掉,放行项目也不会有任何变化。要先取消隐藏,再决定。",
+  pjImageRejected:
+    "不显示 —— 这个地址不是我们自己的图片文件。刻意不加载,免得打开这个页面就让你的浏览器去访问别人的服务器。",
   qHold: "扣下(不计入)",
   qDecidedBy: "由 {who} 裁决",
   qSelectAll: "全选已扣的",

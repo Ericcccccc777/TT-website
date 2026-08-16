@@ -11,6 +11,16 @@ stays readable.
 change, a `project-images` storage bucket, and an `AFTER DELETE` trigger that
 drops the object when a row leaves the board.
 
+`0028_project_showcase_hardening.sql` (the closing migration for this group)
+adds a **second** cleanup trigger, `trg_drop_project_image_unset`, on
+`AFTER UPDATE OF project_name, project_image`. Row-delete was the only cleanup
+path before it, so switching the showcase off — which only nulls the columns —
+left the object online. Both cleanup functions now wrap their cross-schema
+`DELETE FROM storage.objects` in an exception block that only raises a warning:
+a storage failure must never abort `DELETE FROM public.leaderboard`, which is
+0003's "take me off the board" path for every user, not just users with a
+picture.
+
 `0023_leaderboard_project_grants.sql` grants the four columns to `anon`
 (SELECT) and `authenticated` (SELECT/INSERT/UPDATE). It exists because 0008 and
 0016 degraded this table from table-level to per-column grants; **any future
@@ -235,10 +245,31 @@ is the leak this section already accepted and refused to pretend otherwise about
 The product goal — the board does not hand a flagged account a promotional slot —
 still holds, because the board reads the view.
 
-The mechanism is `0017`'s: a `security definer` function
-(`public.project_visible(uuid)`) reads `held_tokens` itself and returns only a
-boolean, so the view never references a restricted column. Same shape as
-`private.hold_ratio`.
+The mechanism is `0017`'s: a `security definer` function that reads
+`held_tokens` itself and returns only a boolean, so the view never references a
+restricted column. Same shape as `private.hold_ratio`.
+
+`0026` put that function in `public`, which made it an anonymous oracle: anon can
+list every `user_id` (`0008:112-114`), and `public.project_visible(uid)` answered
+"is this account held and unreleased" for each one — turning a rule that is
+supposed to be silent into a 20-request enumeration of the hold list.
+`0028` moves it to **`private.project_visible(uuid)`** and drops both
+`public.project_visible` and `public.is_project_allowed`. PostgREST exposes only
+`public` and `graphql_public` (`Accept-Profile: private` → PGRST106), so the
+function is unreachable from outside while the view can still call it. The
+allowance lookup is inlined into it as an `EXISTS`, so a row costs one index
+lookup instead of two definer calls.
+
+The base-table leak recorded above is **still open after 0028, deliberately.**
+Two closures were proposed and both rejected: flipping the view to
+`security_invoker = false` puts banned players back on the public board (a
+definer view reads the base table as its owner, so `0005`'s RLS no longer
+applies — reproduced on a local PostgreSQL 16 replay), and moving the projection
+into a `private` definer function only closes the `anon` role, while anonymous
+sign-up is enabled and `authenticated` must keep the column grants for the
+desktop upsert. The picture is a keyless-public URL regardless. See 0028's header
+for the full argument; the privacy notice has been reworded to claim only that a
+held showcase is not *displayed*.
 
 ### The allowance table
 
@@ -256,8 +287,14 @@ admin-only override keyed on the stable auth id:
   `unbanAction` (`ranger-implementation.md` § Ban model), and revalidating
   `/[locale]/leaderboard` so the board reflects it at once.
 
-An allowance on an account with no hold is harmless and does nothing; do not
-special-case it.
+An allowance on an account with no hold does nothing to the board, but it is not
+inert: it survives the project text it was granted for and will republish
+whatever that player writes next without a second review. So the admin page
+renders the allowance state and the Withdraw control **outside** the "has a
+project" branch — otherwise clearing the project would strand an allowance with
+no control able to remove it. Allow is additionally withheld for a banned player:
+a ban drops the whole row out of `leaderboard_public`, so the write would succeed
+and change nothing.
 
 **Live shape, as of 2026-08-16:** one account carries a hold and has no project;
 one account has a project and carries no hold. These figures move on every sync
@@ -484,15 +521,17 @@ Neither document may be signed off as shippable until all four hold.
    local state on sync. That describes the _off_ path only, so it is not
    conclusive, but it suggests a server-side clear on a player whose switch is
    still **on** would be overwritten.
-4. **Bucket enumeration.** `0022:227-230` creates
-   `"project image read" … for select to anon, authenticated`, and it works: an
-   anon list call against `project-images` returns the full inventory with names,
-   timestamps and sizes. Object names are `<user_id>.<ext>`, so this is a second
-   disclosure channel for the same content. It compounds with the ban model —
-   a ban filters the row rather than deleting it (`0005:4`, `:57-62`), so the
-   `AFTER DELETE` cleanup at `0022:252-253` never fires and a banned uploader's
-   object survives, enumerable. **This policy ships with this feature; it is not
-   pre-existing.**
+4. **Bucket enumeration — CLOSED by `0028`.** `0022:227-230` created
+   `"project image read" … for select to anon, authenticated`, and it worked: an
+   anon list call against `project-images` returned the full inventory with
+   names, timestamps and sizes. Object names are `<user_id>.<ext>`, so it was a
+   second disclosure channel for the same content. `0028` replaces it with
+   `"project image read own"`, `to authenticated` and scoped to the caller's own
+   object. Public reads are unaffected: the bucket is public and
+   `/object/public/…` does not go through RLS. Note what this does **not** fix —
+   a ban filters the row rather than deleting it (`0005:4`, `:57-62`), so no
+   cleanup trigger fires and a banned uploader's object stays reachable by its
+   direct address; it is simply no longer discoverable by listing.
 
 ## Accepted risks
 

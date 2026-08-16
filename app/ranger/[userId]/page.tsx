@@ -15,6 +15,7 @@ import {
   type Severity,
 } from "@/lib/ranger/analysis";
 import { getRangerLang, t, type Key, type Lang } from "@/lib/ranger/i18n";
+import { isOwnProjectImage } from "@/lib/leaderboard-format";
 import { RangerLangSwitcher } from "@/components/ranger/lang-switcher";
 import { BarsChart, ChartCard, CumulativeChart } from "@/components/ranger/charts";
 import { BatchBar } from "../batch-bar";
@@ -326,6 +327,16 @@ export default async function RangerUserPage({
       label: `${fmtWhen(r.at)} · busiest window ${fmtTokens(r.bucket!.max)} (${r.bucket!.n} windows over ${fmtGap(r.bucket!.span)})`,
     }));
 
+  // What the public board is actually doing with this player's project. Three
+  // inputs, all already on the row:
+  //  - a ban hides the WHOLE row, project included — `leaderboard_public` is a
+  //    security_invoker view, so 0005's policy still filters it out (0026);
+  //  - held gains hide the project unless an admin has allowed it (0025);
+  //  - the allowance itself may be unreadable, and then we say so instead of
+  //    guessing. It only decides anything for an account with held gains.
+  const pjAllowed = row?.projectAllowed === true;
+  const pjAllowanceUnreadable = !!row && row.projectAllowed === "unknown" && row.heldTokens > 0;
+
   // Table columns — right-align the numeric metrics for a clean, scannable grid.
   const BATCH_FORM = "ranger-batch";
   const cols: { label: string; align: "left" | "right" }[] = [
@@ -458,49 +469,94 @@ export default async function RangerUserPage({
                     <Field label={t(lang, "pjImage")} value={row.projectImage ? "✓" : "—"} />
                   </dl>
 
-                  {row.projectImage && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={row.projectImage}
-                      alt=""
-                      width={88}
-                      height={88}
-                      className="mt-3 rounded-[2px]"
-                      style={{
-                        width: 88,
-                        height: 88,
-                        objectFit: "contain",
-                        border: "1px solid var(--color-soil)",
-                      }}
-                    />
-                  )}
+                  {row.projectImage &&
+                    (isOwnProjectImage(row.projectImage) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={row.projectImage}
+                        alt=""
+                        width={88}
+                        height={88}
+                        className="mt-3 rounded-[2px]"
+                        style={{
+                          width: 88,
+                          height: 88,
+                          objectFit: "contain",
+                          border: "1px solid var(--color-soil)",
+                        }}
+                      />
+                    ) : (
+                      // A foreign host reaches this page only through a row that
+                      // predates 0024's pin or was written with the service role
+                      // — which is precisely the row an admin opens. Print the
+                      // address as text instead of fetching it.
+                      <p className="mt-3 leading-snug break-all">
+                        {t(lang, "pjImageRejected")}
+                        <br />
+                        <span className="font-mono text-[11px]">{row.projectImage}</span>
+                      </p>
+                    ))}
 
                   <p className="mt-4 font-semibold text-text-forest">
-                    {row.heldTokens === 0 || row.projectAllowed
-                      ? t(lang, "pjLiveYes")
-                      : t(lang, "pjLiveNo")}
-                    {row.projectAllowed && ` — ${t(lang, "pjAllowedBy")}`}
+                    {row.banned
+                      ? `${t(lang, "pjLiveNo")} — ${t(lang, "pjHiddenBanned")}`
+                      : pjAllowanceUnreadable
+                        ? t(lang, "pjLiveUnknown")
+                        : row.heldTokens === 0 || pjAllowed
+                          ? t(lang, "pjLiveYes")
+                          : t(lang, "pjLiveNo")}
+                    {pjAllowed && ` — ${t(lang, "pjAllowedBy")}`}
                   </p>
+                </>
+              )}
 
-                  {row.heldTokens > 0 && (
-                    <>
-                      {!row.projectAllowed && (
-                        <p className="mt-1 leading-snug">{t(lang, "pjHiddenWhy")}</p>
-                      )}
+              {/*
+                The allowance state and its switch sit OUTSIDE the "has a project"
+                branch on purpose. An allowance outlives the text it was granted
+                for: a player can clear their project and keep the allowance, and
+                if the switch only rendered next to a project there would be no
+                way left to withdraw it — a stale allowance would then silently
+                republish whatever they write next. That is the case the block
+                below calls out by name.
+              */}
+              {pjAllowanceUnreadable ? (
+                // No switch while the current state is unknown: both actions
+                // write the same table this failed to read, so either button
+                // would only throw the same error at the admin.
+                <p className="mt-3 leading-snug">{t(lang, "pjAllowUnknownWhy")}</p>
+              ) : (
+                (row.heldTokens > 0 || pjAllowed) && (
+                  <>
+                    {!row.projectName && pjAllowed && (
+                      <p className="mt-3 leading-snug">{t(lang, "pjAllowanceStale")}</p>
+                    )}
+                    {row.projectName && !pjAllowed && row.heldTokens > 0 && !row.banned && (
+                      <p className="mt-1 leading-snug">{t(lang, "pjHiddenWhy")}</p>
+                    )}
+                    {/*
+                      Withdraw stays available while the player is hidden — an
+                      allowance must always be undoable. Allow does not: a hidden
+                      player's whole row is dropped from the public board, so the
+                      write would succeed and change nothing, which is a button
+                      that lies about what it does.
+                    */}
+                    {row.banned && !pjAllowed ? (
+                      <p className="mt-3 leading-snug">{t(lang, "pjAllowBlockedBanned")}</p>
+                    ) : (
                       <form
-                        action={row.projectAllowed ? disallowProjectAction : allowProjectAction}
+                        action={pjAllowed ? disallowProjectAction : allowProjectAction}
                         className="mt-3"
                       >
                         <input type="hidden" name="userId" value={userId} />
                         <button
                           type="submit"
                           className={
-                            row.projectAllowed
+                            pjAllowed
                               ? "ranger-btn ranger-btn-lift rounded-[2px] px-3 py-1 text-[11px] text-text-forest"
                               : "ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-3 py-1 text-[11px] text-text-cream"
                           }
                           style={
-                            row.projectAllowed
+                            pjAllowed
                               ? {
                                   border: "1px solid var(--color-soil)",
                                   background: "var(--color-surface-parchment)",
@@ -508,12 +564,12 @@ export default async function RangerUserPage({
                               : undefined
                           }
                         >
-                          {row.projectAllowed ? t(lang, "pjDisallow") : t(lang, "pjAllow")}
+                          {pjAllowed ? t(lang, "pjDisallow") : t(lang, "pjAllow")}
                         </button>
                       </form>
-                    </>
-                  )}
-                </>
+                    )}
+                  </>
+                )
               )}
             </div>
           </Panel>
