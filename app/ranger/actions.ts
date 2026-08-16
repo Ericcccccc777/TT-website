@@ -102,6 +102,126 @@ export async function unbanAction(formData: FormData): Promise<void> {
 }
 
 /**
+ * Publish a held account's project showcase anyway. Admin-only.
+ *
+ * The two judgements are separate: holding a gain says "we do not believe this
+ * number", not "this person may not describe what they built". Without this
+ * switch the only way to let a held player show a project would be to release
+ * every held token — paying for one decision with another.
+ *
+ * `leaderboard_project_allowances` is RLS-enabled with no anon/authenticated
+ * policy, so only this service-role path can write it. The public board reads
+ * the rule through `leaderboard_public` (0025), which is why the revalidate
+ * below is not optional: the product requirement is that flipping this shows on
+ * the board immediately, not at that player's next sync.
+ */
+export async function allowProjectAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db
+    .from("leaderboard_project_allowances")
+    .upsert({ user_id: userId, allowed_by: admin.email }, { onConflict: "user_id" });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/ranger/${userId}`);
+  revalidatePath("/ranger");
+  revalidatePublicBoards();
+}
+
+/** Withdraw that allowance; a held account goes back to showing no panel. Admin-only. */
+export async function disallowProjectAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.from("leaderboard_project_allowances").delete().eq("user_id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/ranger/${userId}`);
+  revalidatePath("/ranger");
+  revalidatePublicBoards();
+}
+
+/**
+ * Refuse this player's project content at the door (migration 0029). Admin-only.
+ *
+ * This is the third, separate judgement on the same row. Hiding says "we do not
+ * believe this account"; holding says "we do not believe this number"; blocking
+ * says "we will not carry this text" — and it costs the player nothing else:
+ * score, tree and rank stay exactly where they are. Before this existed the only
+ * remedies were to ban someone who had not cheated, or to hand-edit the database.
+ *
+ * WHY A ROW RATHER THAN CLEARING THE COLUMNS — the obvious fix does not hold.
+ * The desktop client re-sends the four project fields on every sync whose
+ * signature changed, and the signature includes the score, so any token the
+ * player collects re-uploads the same content and overwrites the clear. The
+ * takedown therefore has to REJECT the write, which is what 0029's trigger does
+ * off this table. The client already degrades correctly for that case: it
+ * recognises the server's `[project_rejected]` marker, drops the project group,
+ * re-sends the score on its own so the main board is never held hostage by a
+ * card, and raises a flag its Settings window shows the player. Editing any of
+ * the four fields re-arms it, so a player who rewrites the content gets one more
+ * try without restarting the app.
+ *
+ * `leaderboard_project_blocks` is service-role-only, same as the allowance
+ * table, so this path is the only writer.
+ */
+export async function blockProjectAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  const reason = String(formData.get("reason") ?? "").trim() || null;
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db
+    .from("leaderboard_project_blocks")
+    .upsert({ user_id: userId, reason, blocked_by: admin.email }, { onConflict: "user_id" });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/ranger/${userId}`);
+  revalidatePath("/ranger");
+  // The public boards are ISR-cached (revalidate = 60). A block is the button an
+  // admin reaches for when something has to stop being carried, so leaving a
+  // stale panel on the board for up to a minute after the click is the one
+  // behaviour this feature cannot ship with — even though the block itself
+  // governs the next write rather than the row already stored.
+  revalidatePublicBoards();
+}
+
+/**
+ * Lift the takedown; the player's next sync is accepted again. Admin-only.
+ *
+ * Always available, including while the player is hidden — a refusal must stay
+ * undoable by the same screen that imposed it, or the only way back is the
+ * database.
+ */
+export async function unblockProjectAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.from("leaderboard_project_blocks").delete().eq("user_id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/ranger/${userId}`);
+  revalidatePath("/ranger");
+  revalidatePublicBoards();
+}
+
+/**
  * Delete a leaderboard row a re-signed-up client left orphaned (its new row carries prev_uid =
  * this uid). SECURITY — the hard part: prev_uid AND the successor's score/created_at are ALL
  * client-writable on the attacker's own row (RLS only pins auth.uid()=user_id; there is no INSERT
@@ -232,7 +352,7 @@ export async function releaseEventAction(formData: FormData): Promise<void> {
 
   revalidatePath("/ranger");
   if (userId) revalidatePath(`/ranger/${userId}`);
-  revalidatePublicBoards();   // the score just went up in public
+  revalidatePublicBoards(); // the score just went up in public
 }
 
 /** Stop counting an increase the rules let through. Admin-only. */

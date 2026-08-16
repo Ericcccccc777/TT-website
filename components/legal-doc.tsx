@@ -1,8 +1,10 @@
 // Renderer for legal/policy pages (/privacy, /security).
 // The DOC CONTENT is the canonical policy text and must stay byte-identical to
 // the same-version PRIVACY.md / SECURITY.md in the public product repo — edit
-// those first, then mirror here (see docs/trust/PRIVACY_ARCHITECTURE.md in the
-// desktop repo: one canonical text, verbatim mirrors, same version stamp).
+// those first, then mirror here. The canonical files are docs/PRIVACY.md,
+// docs/PRIVACY.zh-CN.md, SECURITY.md and SECURITY.zh-CN.md in the desktop repo
+// (Ericcccccc777/Poietic-TokenForest): one canonical text, verbatim mirrors,
+// same version stamp.
 
 export type LegalBlock =
   | { p: string }

@@ -164,6 +164,44 @@ const en = {
   qRawTotal: "raw total",
   qWithHeld: "{n} with held gains",
   qRelease: "Release (count it)",
+
+  // project showcase (0022) + admin allowance (0025)
+  sectProject: "Project showcase",
+  pjNone: "This player has published nothing.",
+  pjName: "Name",
+  pjDesc: "Description",
+  pjLink: "Link",
+  pjImage: "Image",
+  pjLiveYes: "Showing on the public board",
+  pjLiveNo: "Hidden from the public board",
+  pjLiveUnknown: "Cannot tell whether the board is showing it",
+  pjHiddenWhy:
+    "Hidden because this account has held gains. Holding a gain says we do not believe the number — not that this person may not describe what they built. Allow it if the content itself is fine.",
+  pjHiddenBanned: "this player is hidden, so the project is too",
+  pjAllowUnknownWhy:
+    "The allowance record could not be read, so neither the line above nor a switch here would be trustworthy. Usually this means the service role has no grant on leaderboard_project_allowances yet — apply the pending migration, then reload.",
+  pjAllow: "Allow on the board",
+  pjDisallow: "Withdraw from the board",
+  pjAllowedBy: "Allowed by an admin",
+
+  // takedown (0029) — refuses the content at the door, unlike Hide which removes the player
+  pjBlockTitle: "Takedown",
+  pjBlockWhat:
+    "A takedown refuses this player's project content at the door. Their score, tree and rank are untouched — only the four project fields stop being accepted, and their own app tells them the server did not accept the content. Hide, by contrast, removes the whole player from the board.",
+  pjBlockedNow: "Taken down",
+  pjBlockedBy: "taken down by an admin",
+  pjBlockReason: "Reason",
+  pjBlockDo: "Take the project down",
+  pjBlockUndo: "Lift the takedown",
+  pjBlockReasonPh: "reason (optional, admin-only)",
+  pjBlockUnknown:
+    "Could not read the takedown list, so the current state is unknown. No button is offered: either one would fail the same way the read did.",
+  pjAllowanceStale:
+    "An allowance is on file for this player even though they have published nothing. It does nothing today, but it would republish whatever they write next without another review. Withdraw it unless you meant to leave it.",
+  pjAllowBlockedBanned:
+    "No switch while this player is hidden: hiding removes their whole row from the public board, so allowing the project would change nothing. Un-hide first, then decide.",
+  pjImageRejected:
+    "Not shown — this address is not one of our own image files. Deliberately not loaded, so opening this page cannot make your browser contact someone else's server.",
   qHold: "Hold (stop counting)",
   qDecidedBy: "by {who}",
   qSelectAll: "Select all held",
@@ -175,25 +213,34 @@ const en = {
   qSelectedHeld: "{n} selected · all held",
   qSelectedOpen: "{n} selected · all counted",
   qSelectedMixed: "{n} selected · {held} held + {open} counted",
-  qHintIdle: "Tick the gains you want to act on. Release puts tokens back into the public score; Hold takes them out. Both are recorded against your name and survive re-evaluation.",
+  qHintIdle:
+    "Tick the gains you want to act on. Release puts tokens back into the public score; Hold takes them out. Both are recorded against your name and survive re-evaluation.",
   qHintHeld: "These are not counted right now. Release adds them back to the public score.",
   qHintOpen: "These are counted right now. Hold removes them from the public score.",
-  qHintMixed: "Held and counted gains are selected together. The two actions move in opposite directions, so pick one kind at a time.",
+  qHintMixed:
+    "Held and counted gains are selected together. The two actions move in opposite directions, so pick one kind at a time.",
   qThrottleTitle: "Possible throttling — nothing was held",
-  qThrottleBody: "{note} Every individual gain stayed legal, so no rule fired and no tokens were withheld. This is a shape, not proof — judge it yourself.",
-  qThrottleNote: "{hug} of {n} measurable gains sat at or above 60% of a limit without crossing it. Real usage is bursty and rarely comes close; a run this consistent looks governed — as if something is pacing itself just under the line.",
+  qThrottleBody:
+    "{note} Every individual gain stayed legal, so no rule fired and no tokens were withheld. This is a shape, not proof — judge it yourself.",
+  qThrottleNote:
+    "{hug} of {n} measurable gains sat at or above 60% of a limit without crossing it. Real usage is bursty and rarely comes close; a run this consistent looks governed — as if something is pacing itself just under the line.",
 
   // ── Hold reasons ──
   hrPeak: "Impossible burst",
-  hrPeakWhy: "One 5-minute window holds more tokens than any real session has produced (over 250k/second). The busiest honest account on this board peaks at 185k/second.",
+  hrPeakWhy:
+    "One 5-minute window holds more tokens than any real session has produced (over 250k/second). The busiest honest account on this board peaks at 185k/second.",
   hrRate: "Too fast for the time it claims",
-  hrRateWhy: "The tokens it says it burned do not fit in the number of 5-minute windows it reports (over 400M/hour). Heaviest honest account: 337M/hour.",
+  hrRateWhy:
+    "The tokens it says it burned do not fit in the number of 5-minute windows it reports (over 400M/hour). Heaviest honest account: 337M/hour.",
   hrWallclock: "Gained faster than the clock allows",
-  hrWallclockWhy: "The part of the gain that no bucket accounts for arrived faster than 600M/hour of real elapsed time. Buckets vouch for the tokens they cover and nothing else, so the rest is measured against the server's own clock. Heaviest honest remainder here: 334M/hour.",
+  hrWallclockWhy:
+    "The part of the gain that no bucket accounts for arrived faster than 600M/hour of real elapsed time. Buckets vouch for the tokens they cover and nothing else, so the rest is measured against the server's own clock. Heaviest honest remainder here: 334M/hour.",
   hrRelaunder: "Re-added the row to skip the evidence",
-  hrRelaunderWhy: "Switching the leaderboard off deletes the row; switching it back on re-inserts it, and an insert carries no anti-cheat summary. This gain arrived through that gap. Honest accounts insert exactly once, when they first join.",
+  hrRelaunderWhy:
+    "Switching the leaderboard off deletes the row; switching it back on re-inserts it, and an insert carries no anti-cheat summary. This gain arrived through that gap. Honest accounts insert exactly once, when they first join.",
   hrWindows: "Claims more active time than the account has existed",
-  hrWindowsWhy: "Every 5-minute window is a distinct slice of real time, so their total cannot exceed the account's age. This one claims more (a day of grace is allowed for an app that ran before the leaderboard was switched on).",
+  hrWindowsWhy:
+    "Every 5-minute window is a distinct slice of real time, so their total cannot exceed the account's age. This one claims more (a day of grace is allowed for an app that ran before the leaderboard was switched on).",
   hrUnknown: "Unrecognised rule — check the migration.",
 
   // ── Analysis signals ──
@@ -204,18 +251,20 @@ const en = {
   sigX100: "Exact ×100 — matches the one-time v2→v3 metric migration (legit).",
   sigBusyWindow: "Busiest 5-minute window holds {max} tokens ({rate}) — high, but not impossible.",
   sigOverCeiling: "Gained {gain} in {gap} — over the {ceiling} ceiling for that interval.",
-  sigLargeButAccounted: "Large gain ({gain}) but accounted for: {n} five-minute windows over {span}, busiest {max}, total matches.",
+  sigLargeButAccounted:
+    "Large gain ({gain}) but accounted for: {n} five-minute windows over {span}, busiest {max}, total matches.",
   sigGrewPct: "Grew {pct}% in one step.",
   sigNormal: "Within normal bounds.",
   sigNormalWithBuckets: "Within normal bounds — {n} five-minute windows, total matches the delta.",
   sigServerFlagged: "Server-flagged{reason}.",
   sigReviewedOk: "Reviewed OK — cleared by an admin.",
-  sigSumMismatch: "Bucket total ({sum}) does not match the score delta ({delta}) — the uploaded score is not backed by the token log.",
+  sigSumMismatch:
+    "Bucket total ({sum}) does not match the score delta ({delta}) — the uploaded score is not backed by the token log.",
   sigWindowImpossible: "One 5-minute window holds {max} tokens — beyond any real machine.",
-  sigWindowsDontFit: "{n} five-minute windows cannot fit inside a {span} span — the buckets are fabricated.",
+  sigWindowsDontFit:
+    "{n} five-minute windows cannot fit inside a {span} span — the buckets are fabricated.",
   sigMaxOverSum: "Busiest window exceeds the total — internally inconsistent.",
   sigZeroBuckets: "Tokens claimed with zero buckets — internally inconsistent.",
-
 };
 
 const zh: typeof en = {
@@ -360,6 +409,43 @@ const zh: typeof en = {
   qRawTotal: "原始总量",
   qWithHeld: "{n} 人有被扣的涨分",
   qRelease: "放行(计入分数)",
+
+  // 项目展示(0022) + 管理员许可(0025)
+  sectProject: "项目展示",
+  pjNone: "这个玩家没有填写任何内容。",
+  pjName: "名称",
+  pjDesc: "简介",
+  pjLink: "链接",
+  pjImage: "图片",
+  pjLiveYes: "正在公开榜单上显示",
+  pjLiveNo: "未在公开榜单上显示",
+  pjLiveUnknown: "无法判断榜单上是否在显示",
+  pjHiddenWhy:
+    "因为这个账号有被扣留的增量而不显示。扣留说的是「我们不相信这个数字」,不是「这个人不许介绍自己做的东西」。内容本身没问题就放行。",
+  pjHiddenBanned: "这个玩家已被隐藏,项目也跟着不显示",
+  pjAllowUnknownWhy:
+    "读不到许可记录,所以上面那行状态和这里的开关都不可信。通常是 service_role 还没拿到 leaderboard_project_allowances 的权限 —— 执行待应用的那个迁移后刷新。",
+  pjAllow: "允许显示在榜上",
+  pjDisallow: "从榜上撤下",
+  pjAllowedBy: "已由管理员放行",
+
+  // 下架(0029)—— 在门口拒收内容,与「隐藏」不同,后者是把人整个撤下
+  pjBlockTitle: "下架",
+  pjBlockWhat:
+    "下架是在门口拒收这个玩家的项目内容。他的分数、树、名次一动不动 —— 只是那四个项目字段不再被接受,而且他自己的 App 会告诉他「服务器没有接受这段内容」。「隐藏」则相反,是把整个玩家从榜上撤下。",
+  pjBlockedNow: "已下架",
+  pjBlockedBy: "已被管理员下架",
+  pjBlockReason: "理由",
+  pjBlockDo: "下架这个项目",
+  pjBlockUndo: "撤销下架",
+  pjBlockReasonPh: "理由(可选,仅管理员可见)",
+  pjBlockUnknown: "读不到下架名单,当前状态未知。这里不提供按钮:两个按钮都会以同样的方式失败。",
+  pjAllowanceStale:
+    "这个玩家什么都没填,但记录里存着一条放行。它现在不起作用,可一旦他之后写了新内容,就会不经复核直接公开。除非是有意留着,否则请撤下。",
+  pjAllowBlockedBanned:
+    "这个玩家处于隐藏状态时不提供开关:隐藏会把整行从公开榜单上拿掉,放行项目也不会有任何变化。要先取消隐藏,再决定。",
+  pjImageRejected:
+    "不显示 —— 这个地址不是我们自己的图片文件。刻意不加载,免得打开这个页面就让你的浏览器去访问别人的服务器。",
   qHold: "扣下(不计入)",
   qDecidedBy: "由 {who} 裁决",
   qSelectAll: "全选已扣的",
@@ -371,25 +457,33 @@ const zh: typeof en = {
   qSelectedHeld: "已选 {n} 笔 · 全部已扣",
   qSelectedOpen: "已选 {n} 笔 · 全部未扣",
   qSelectedMixed: "已选 {n} 笔 · {held} 已扣 + {open} 未扣",
-  qHintIdle: "勾选要处理的涨分。放行 = 把 token 加回公开分数;扣下 = 从公开分数减掉。两者都会记下是谁裁决的,之后重新评估不会推翻。",
+  qHintIdle:
+    "勾选要处理的涨分。放行 = 把 token 加回公开分数;扣下 = 从公开分数减掉。两者都会记下是谁裁决的,之后重新评估不会推翻。",
   qHintHeld: "这些目前不计入公开分数。放行会把它们加回去。",
   qHintOpen: "这些目前计入公开分数。扣下会把它们减掉。",
   qHintMixed: "选中的里面既有已扣的也有未扣的。这两个操作方向相反,请一次只选一种。",
   qThrottleTitle: "疑似节流 —— 但没有扣留任何涨分",
-  qThrottleBody: "{note} 每一笔单独看都合规,所以没有规则触发、没有 token 被扣。这是一种形状,不是证据 —— 请你自己判断。",
-  qThrottleNote: "{n} 笔可测量的涨分里有 {hug} 笔贴着某条上限的 60% 以上却始终没越线。真实使用是忽高忽低的,很少接近上限;这么稳定的节奏像是被控制过——好像有什么东西在贴着线下方匀速跑。",
+  qThrottleBody:
+    "{note} 每一笔单独看都合规,所以没有规则触发、没有 token 被扣。这是一种形状,不是证据 —— 请你自己判断。",
+  qThrottleNote:
+    "{n} 笔可测量的涨分里有 {hug} 笔贴着某条上限的 60% 以上却始终没越线。真实使用是忽高忽低的,很少接近上限;这么稳定的节奏像是被控制过——好像有什么东西在贴着线下方匀速跑。",
 
   // ── 扣留原因 ──
   hrPeak: "不可能的爆发",
-  hrPeakWhy: "某个 5 分钟窗口里的 token 超过了任何真实会话能产出的量(每秒 25 万以上)。本榜最重度的诚实账号峰值是每秒 18.5 万。",
+  hrPeakWhy:
+    "某个 5 分钟窗口里的 token 超过了任何真实会话能产出的量(每秒 25 万以上)。本榜最重度的诚实账号峰值是每秒 18.5 万。",
   hrRate: "比它声称的时间跑得快",
-  hrRateWhy: "它说烧掉的 token 塞不进它报告的 5 分钟窗口数(每小时 4 亿以上)。最重度的诚实账号:每小时 3.37 亿。",
+  hrRateWhy:
+    "它说烧掉的 token 塞不进它报告的 5 分钟窗口数(每小时 4 亿以上)。最重度的诚实账号:每小时 3.37 亿。",
   hrWallclock: "涨得比时钟允许的还快",
-  hrWallclockWhy: "这笔涨分里没有任何桶为之作证的部分,超过了每小时 6 亿的真实流逝时间。桶只能为它统计到的 token 作证,剩下的只能按服务端自己的时钟衡量。本榜诚实账号的最高余量:每小时 3.34 亿。",
+  hrWallclockWhy:
+    "这笔涨分里没有任何桶为之作证的部分,超过了每小时 6 亿的真实流逝时间。桶只能为它统计到的 token 作证,剩下的只能按服务端自己的时钟衡量。本榜诚实账号的最高余量:每小时 3.34 亿。",
   hrRelaunder: "删掉再加回来,绕过了证据",
-  hrRelaunderWhy: "关闭排行榜会删掉这一行,重新开启则是插入一行新的,而插入不带任何反作弊摘要。这笔涨分正是从这个缺口进来的。诚实账号一生只插入一次——第一次上榜的时候。",
+  hrRelaunderWhy:
+    "关闭排行榜会删掉这一行,重新开启则是插入一行新的,而插入不带任何反作弊摘要。这笔涨分正是从这个缺口进来的。诚实账号一生只插入一次——第一次上榜的时候。",
   hrWindows: "声称的活跃时长超过了账号存在的时间",
-  hrWindowsWhy: "每个 5 分钟窗口都是一段互不重叠的真实时间,总和不可能超过账号的年龄。这个账号声称的超了(已经给了一天宽限,覆盖 App 先跑了一阵才打开排行榜的情况)。",
+  hrWindowsWhy:
+    "每个 5 分钟窗口都是一段互不重叠的真实时间,总和不可能超过账号的年龄。这个账号声称的超了(已经给了一天宽限,覆盖 App 先跑了一阵才打开排行榜的情况)。",
   hrUnknown: "无法识别的规则 —— 去看迁移文件。",
 
   // ── 分析信号 ──
@@ -400,7 +494,8 @@ const zh: typeof en = {
   sigX100: "恰好 ×100 —— 与 v2→v3 那次一次性口径迁移吻合(合法)。",
   sigBusyWindow: "最忙的 5 分钟窗口有 {max} 个 token({rate})—— 偏高,但不是不可能。",
   sigOverCeiling: "{gap} 内涨了 {gain} —— 超过该时长对应的 {ceiling} 上限。",
-  sigLargeButAccounted: "涨幅很大({gain})但有据可查:{n} 个 5 分钟窗口跨 {span},最忙的一个 {max},总数对得上。",
+  sigLargeButAccounted:
+    "涨幅很大({gain})但有据可查:{n} 个 5 分钟窗口跨 {span},最忙的一个 {max},总数对得上。",
   sigGrewPct: "一步涨了 {pct}%。",
   sigNormal: "在正常范围内。",
   sigNormalWithBuckets: "在正常范围内 —— {n} 个 5 分钟窗口,总数与涨幅相符。",
@@ -411,7 +506,6 @@ const zh: typeof en = {
   sigWindowsDontFit: "{n} 个 5 分钟窗口塞不进 {span} 的跨度 —— 这些桶是伪造的。",
   sigMaxOverSum: "最忙窗口超过了总数 —— 自相矛盾。",
   sigZeroBuckets: "声称有 token 却没有任何桶 —— 自相矛盾。",
-
 };
 
 const dict: Record<Lang, typeof en> = { en, zh };
