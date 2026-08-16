@@ -325,7 +325,14 @@
     "usageVendorAria": "{provider} — {tokens} トークン、帰属使用量の {pct}",
     "usageEmptyHeading": "帰属済みの使用量はまだありません",
     "usageEmptyBody": "現行バージョンでバブルを集めると、ベンダー別の数値が積み上がり始めます。",
-    "usageModelsTruncated": "上位 {shown} 件を表示(全 {total} 件)"
+    "usageModelsTruncated": "上位 {shown} 件を表示(全 {total} 件)",
+    "projectExpand": "{username} のプロジェクトを開く",
+    "projectCollapse": "{username} のプロジェクトを閉じる",
+    "projectLinkLabel": "リンク",
+    "projectLeaveTitle": "Token Forest を離れます",
+    "projectLeaveBody": "このサイトは当方が運営しているものではなく、内容について保証できません。",
+    "projectLeaveConfirm": "それでも移動",
+    "projectLeaveCancel": "ここに留まる"
   },
   "DownloadPage": {
     "heroTreeAlt": "完全に成長した Token Forest アップルツリー",

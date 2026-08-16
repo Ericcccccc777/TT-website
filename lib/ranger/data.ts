@@ -25,8 +25,17 @@ export type RangerRow = {
   prevUid: string | null; // the uid this row superseded (set when a dead session re-signed-up), else null
   // Quarantine (migration 0016). `score` is already the public figure —
   // rawScore minus heldTokens — so nothing downstream needs to subtract.
-  rawScore: number;   // what the client says its total is
+  rawScore: number; // what the client says its total is
   heldTokens: number; // sum of the increases not being counted
+  // Project showcase (0022) + the admin override (0025). Admin reads come from
+  // the BASE table, not `leaderboard_public` — the whole point of this screen is
+  // to see what a held player published before deciding whether to publish it.
+  projectName: string | null;
+  projectDesc: string | null;
+  projectUrl: string | null;
+  projectImage: string | null;
+  /** An admin has allowed this account's project despite its held gains. */
+  projectAllowed: boolean;
 };
 
 /**
@@ -42,17 +51,23 @@ export async function getRangerLeaderboard(): Promise<{
   try {
     const admin = getSupabaseAdminClient();
 
-    const [lb, bans] = await Promise.all([
+    const [lb, bans, allows] = await Promise.all([
       admin
         .from("leaderboard")
-        .select("user_id, username, score, raw_score, held_tokens, tree, region, updated_at, created_at, prev_uid")
+        .select(
+          "user_id, username, score, raw_score, held_tokens, tree, region, updated_at, created_at, prev_uid, project_name, project_desc, project_url, project_image",
+        )
         .order("score", { ascending: false })
         .limit(500),
       admin.from("leaderboard_bans").select("user_id, reason, created_at"),
+      admin.from("leaderboard_project_allowances").select("user_id"),
     ]);
 
     if (lb.error) return { rows: [], deletableOrphanIds: [], error: lb.error.message };
     if (bans.error) return { rows: [], deletableOrphanIds: [], error: bans.error.message };
+    if (allows.error) return { rows: [], deletableOrphanIds: [], error: allows.error.message };
+
+    const allowedUsers = new Set((allows.data ?? []).map((a) => a.user_id as string));
 
     const banByUser = new Map(
       (bans.data ?? []).map((b) => [
@@ -77,6 +92,11 @@ export async function getRangerLeaderboard(): Promise<{
         prevUid: (r.prev_uid as string | null) ?? null,
         rawScore: Number(r.raw_score ?? r.score ?? 0),
         heldTokens: Number(r.held_tokens ?? 0),
+        projectName: (r.project_name as string | null) ?? null,
+        projectDesc: (r.project_desc as string | null) ?? null,
+        projectUrl: (r.project_url as string | null) ?? null,
+        projectImage: (r.project_image as string | null) ?? null,
+        projectAllowed: allowedUsers.has(r.user_id as string),
       };
     });
 
@@ -123,10 +143,10 @@ export type HistoryEntry = {
   bktSum: number | null; // Σ over all of them — must equal `delta`
   bktSpan: number | null; // seconds from earliest window to latest
   appVersion: string | null; // which client produced it
-  trueDelta: number | null;   // the real increase; `delta` restates the total on a re-insert
-  quarantined: boolean;       // not counted toward the public score
+  trueDelta: number | null; // the real increase; `delta` restates the total on a re-insert
+  quarantined: boolean; // not counted toward the public score
   holdReasons: string[];
-  decidedBy: string | null;   // a human ruled on this event; re-evaluation leaves it alone
+  decidedBy: string | null; // a human ruled on this event; re-evaluation leaves it alone
   decidedAt: string | null;
 };
 
@@ -164,10 +184,12 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
         .order("id", { ascending: false })
         .limit(200);
 
-    const [lb, ban, histWide] = await Promise.all([
+    const [lb, ban, histWide, allow] = await Promise.all([
       admin
         .from("leaderboard")
-        .select("user_id, username, score, raw_score, held_tokens, tree, region, updated_at, created_at, prev_uid")
+        .select(
+          "user_id, username, score, raw_score, held_tokens, tree, region, updated_at, created_at, prev_uid, project_name, project_desc, project_url, project_image",
+        )
         .eq("user_id", userId)
         .maybeSingle(),
       admin
@@ -176,6 +198,11 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
         .eq("user_id", userId)
         .maybeSingle(),
       histQuery(HIST_BKT),
+      admin
+        .from("leaderboard_project_allowances")
+        .select("user_id")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
 
     const hist = histWide.error ? await histQuery(HIST_BASE) : histWide;
@@ -202,6 +229,11 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
           prevUid: (r.prev_uid as string | null) ?? null,
           rawScore: Number(r.raw_score ?? r.score ?? 0),
           heldTokens: Number(r.held_tokens ?? 0),
+          projectName: (r.project_name as string | null) ?? null,
+          projectDesc: (r.project_desc as string | null) ?? null,
+          projectUrl: (r.project_url as string | null) ?? null,
+          projectImage: (r.project_image as string | null) ?? null,
+          projectAllowed: !!allow.data,
         }
       : null;
 

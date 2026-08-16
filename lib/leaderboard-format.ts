@@ -60,3 +60,46 @@ export function formatUsd(n: number, locale: string): string {
     maximumFractionDigits: digits,
   }).format(n);
 }
+
+// ── Project showcase ──────────────────────────────────────────────────────────
+
+/**
+ * The part of a project link we are willing to print.
+ *
+ * Never render the raw href as text. `project_url` is the one player-written
+ * field the database does not screen for zero-width or bidi characters
+ * (0022 runs the screener over the name and the description only), and its
+ * regex is case-insensitive and admits punycode. Parsing and printing only the
+ * hostname strips the path, and renders a punycode host in its `xn--` form —
+ * which is the honest thing to show.
+ *
+ * Returns null if the URL will not parse; the caller then shows no link at all.
+ * The DB regex should make that impossible, but a row written before the
+ * trigger existed would not have passed it.
+ */
+export function projectHostname(url: string): string | null {
+  try {
+    const h = new URL(url).hostname;
+    return h.length > 0 ? h : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Project image URL with a cache-busting token.
+ *
+ * The stored object name is pinned to `<user_id>.<ext>` forever, so a replaced
+ * picture reuses the same URL. Next's optimizer takes
+ * `max(minimumCacheTTL, upstream max-age)` — 604800 against the origin's 300 —
+ * so without a token a swapped image would serve stale for up to a week, which
+ * is also a review-evasion hole.
+ *
+ * Verified safe: in next@16.2.9 `matchRemotePattern` skips the search check
+ * when `search` is unset, so the query string does not break `remotePatterns`.
+ */
+export function bustedImageSrc(src: string, updatedAt: string): string {
+  const stamp = Date.parse(updatedAt);
+  if (!Number.isFinite(stamp)) return src;
+  return `${src}${src.includes("?") ? "&" : "?"}v=${stamp}`;
+}

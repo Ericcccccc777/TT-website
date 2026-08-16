@@ -102,6 +102,55 @@ export async function unbanAction(formData: FormData): Promise<void> {
 }
 
 /**
+ * Publish a held account's project showcase anyway. Admin-only.
+ *
+ * The two judgements are separate: holding a gain says "we do not believe this
+ * number", not "this person may not describe what they built". Without this
+ * switch the only way to let a held player show a project would be to release
+ * every held token — paying for one decision with another.
+ *
+ * `leaderboard_project_allowances` is RLS-enabled with no anon/authenticated
+ * policy, so only this service-role path can write it. The public board reads
+ * the rule through `leaderboard_public` (0025), which is why the revalidate
+ * below is not optional: the product requirement is that flipping this shows on
+ * the board immediately, not at that player's next sync.
+ */
+export async function allowProjectAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db
+    .from("leaderboard_project_allowances")
+    .upsert({ user_id: userId, allowed_by: admin.email }, { onConflict: "user_id" });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/ranger/${userId}`);
+  revalidatePath("/ranger");
+  revalidatePublicBoards();
+}
+
+/** Withdraw that allowance; a held account goes back to showing no panel. Admin-only. */
+export async function disallowProjectAction(formData: FormData): Promise<void> {
+  const admin = await getAdminUser();
+  if (!admin) throw new Error("Not authorized.");
+
+  const userId = String(formData.get("userId") ?? "").trim();
+  if (!userId) throw new Error("Missing userId.");
+
+  const db = getSupabaseAdminClient();
+  const { error } = await db.from("leaderboard_project_allowances").delete().eq("user_id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/ranger/${userId}`);
+  revalidatePath("/ranger");
+  revalidatePublicBoards();
+}
+
+/**
  * Delete a leaderboard row a re-signed-up client left orphaned (its new row carries prev_uid =
  * this uid). SECURITY — the hard part: prev_uid AND the successor's score/created_at are ALL
  * client-writable on the attacker's own row (RLS only pins auth.uid()=user_id; there is no INSERT
@@ -232,7 +281,7 @@ export async function releaseEventAction(formData: FormData): Promise<void> {
 
   revalidatePath("/ranger");
   if (userId) revalidatePath(`/ranger/${userId}`);
-  revalidatePublicBoards();   // the score just went up in public
+  revalidatePublicBoards(); // the score just went up in public
 }
 
 /** Stop counting an increase the rules let through. Admin-only. */

@@ -325,7 +325,14 @@
     "usageVendorAria": "{provider} — {tokens} tokens, {pct} of attributed usage",
     "usageEmptyHeading": "No attributed usage yet",
     "usageEmptyBody": "Vendor totals start accumulating as players collect bubbles with the current app.",
-    "usageModelsTruncated": "showing the top {shown} of {total}"
+    "usageModelsTruncated": "showing the top {shown} of {total}",
+    "projectExpand": "Show {username}’s project",
+    "projectCollapse": "Hide {username}’s project",
+    "projectLinkLabel": "Link",
+    "projectLeaveTitle": "You are leaving Token Forest",
+    "projectLeaveBody": "This site is not run by us, and we cannot vouch for what is on it.",
+    "projectLeaveConfirm": "Go anyway",
+    "projectLeaveCancel": "Stay here"
   },
   "DownloadPage": {
     "heroTreeAlt": "Fully grown Token Forest apple tree",

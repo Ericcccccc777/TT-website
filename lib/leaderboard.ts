@@ -26,7 +26,28 @@ export type LeaderboardEntry = {
    * app builds that predate the column).
    */
   trees: TreeSnapshot[];
+  /**
+   * Project showcase, written in the desktop app and shown in an expandable
+   * panel under the row. All four arrive already filtered by 0025's view: a row
+   * whose gains are held (without an admin allowance), or whose project name is
+   * blank, reports them as null — the website never sees the values, so it
+   * cannot leak them.
+   *
+   * OPTIONAL on purpose. `lib/leaderboard-boards.ts:122` extends this type and
+   * builds it from an explicit literal with no spread; four required properties
+   * would fail `tsc --noEmit` there and force an edit to the value board, which
+   * this feature deliberately leaves alone.
+   */
+  project_name?: string | null;
+  project_desc?: string | null;
+  project_url?: string | null;
+  project_image?: string | null;
 };
+
+/** A row has a project iff it has a name to head the panel with. */
+export function hasProject(e: LeaderboardEntry): boolean {
+  return (e.project_name ?? "").trim().length > 0;
+}
 
 /**
  * Normalize the DB `trees` jsonb ({ "<kind>": {tokens, stage}, … }) into an
@@ -79,9 +100,11 @@ export const LEADERBOARD_PAGE_SIZE = 50;
 
 /**
  * One page of leaderboard entries (score descending) plus the total number of
- * ranked players, for the pager. Reads the `leaderboard` table via the anon
- * client, so the RLS public-read policy excludes banned/hidden rows from BOTH
- * the returned rows and the count — pagination is over visible players only.
+ * ranked players, for the pager. Reads `leaderboard_public` (0025) via the anon
+ * client — a `security_invoker` view, so the base table's RLS public-read policy
+ * still excludes banned/hidden rows from BOTH the returned rows and the count,
+ * and pagination is over visible players only. The view also decides which rows
+ * report their project fields; see its header.
  * Returns empty + total 0 on error so the page degrades gracefully.
  *
  * The page reads this per request (it is a paginated, dynamically-rendered
@@ -98,10 +121,11 @@ export async function getLeaderboard(page = 1): Promise<{
   try {
     const client = getSupabaseServerClient();
     const { data, count, error } = await client
-      .from("leaderboard")
-      .select("id, username, score, stage_index, tree, region, trees, created_at, updated_at", {
-        count: "exact",
-      })
+      .from("leaderboard_public")
+      .select(
+        "id, username, score, stage_index, tree, region, trees, created_at, updated_at, project_name, project_desc, project_url, project_image",
+        { count: "exact" },
+      )
       .order("score", { ascending: false })
       .range(from, to);
 
@@ -123,6 +147,12 @@ export async function getLeaderboard(page = 1): Promise<{
           Number(row.score ?? 0),
           Number(row.stage_index ?? 0),
         ),
+        // Kept nullable rather than defaulted to "": the panel distinguishes
+        // "not filled in" from "filled in", and 0025 already normalises blanks.
+        project_name: (row.project_name as string | null) ?? null,
+        project_desc: (row.project_desc as string | null) ?? null,
+        project_url: (row.project_url as string | null) ?? null,
+        project_image: (row.project_image as string | null) ?? null,
       };
     }) as LeaderboardEntry[];
 
