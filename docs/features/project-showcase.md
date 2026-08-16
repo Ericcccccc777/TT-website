@@ -78,6 +78,18 @@ readable text, and nobody screens it. A player can register a deliberately
 offensive-looking address and it will appear on the board. The remedy for that is
 the takedown action listed below, not the warning box.
 
+**A takedown hides, it does not destroy.** Blocking a project stops the board
+carrying it and stops us accepting any further version of it, and that is all:
+what the player wrote stays in our records so the admin can see what they acted
+on, and lifting the takedown puts it straight back. The uploaded picture is not
+deleted either — the desktop app will not re-upload a picture it believes it has
+already sent, so deleting one here would take it away permanently, which is the
+wrong outcome for a switch that is meant to be reversible. The consequence worth
+knowing: while a project is taken down the board publishes none of it, but the
+picture itself stays fetchable by anyone who works out its address. If a picture
+must genuinely be gone, that is a separate, deliberate deletion — not something
+a reversible switch should do behind the admin's back.
+
 ## The picture
 
 A fixed-size thumbnail. Whatever shape a player uploads, it is fitted inside
