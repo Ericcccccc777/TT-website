@@ -40,6 +40,21 @@ export type RangerRow = {
    * `false`, which would show a permissions failure as a decision an admin made.
    */
   projectAllowed: boolean | "unknown";
+  /**
+   * An admin has taken this account's project content down (0029): the server
+   * refuses the four project fields on the player's next sync instead of
+   * clearing them, because a clear does not survive — the client re-uploads the
+   * same content the next time the score moves. Same `"unknown"` discipline as
+   * `projectAllowed`, and for the same reason.
+   *
+   * Note the asymmetry with the allowance: an allowance only decides anything
+   * for an account with held gains, but a block decides something for EVERY
+   * account, including one that has published nothing — what it governs is the
+   * next write, not the stored row.
+   */
+  projectBlocked: boolean | "unknown";
+  blockReason: string | null;
+  blockedAt: string | null;
 };
 
 /**
@@ -55,7 +70,7 @@ export async function getRangerLeaderboard(): Promise<{
   try {
     const admin = getSupabaseAdminClient();
 
-    const [lb, bans, allows] = await Promise.all([
+    const [lb, bans, allows, blocks] = await Promise.all([
       admin
         .from("leaderboard")
         .select(
@@ -65,6 +80,7 @@ export async function getRangerLeaderboard(): Promise<{
         .limit(500),
       admin.from("leaderboard_bans").select("user_id, reason, created_at"),
       admin.from("leaderboard_project_allowances").select("user_id"),
+      admin.from("leaderboard_project_blocks").select("user_id, reason, created_at"),
     ]);
 
     if (lb.error) return { rows: [], deletableOrphanIds: [], error: lb.error.message };
@@ -80,6 +96,19 @@ export async function getRangerLeaderboard(): Promise<{
       ? null
       : new Set((allows.data ?? []).map((a) => a.user_id as string));
 
+    // Same posture, same reason: the takedown table (0029) only annotates the
+    // project column, and failing the whole call over it would take ban/unban
+    // and orphan cleanup down with it. `null` — not an empty map — when the read
+    // failed, so rows report "unknown" instead of "nobody has been blocked".
+    const blockByUser = blocks.error
+      ? null
+      : new Map(
+          (blocks.data ?? []).map((b) => [
+            b.user_id as string,
+            b as { reason: string | null; created_at: string },
+          ]),
+        );
+
     const banByUser = new Map(
       (bans.data ?? []).map((b) => [
         b.user_id as string,
@@ -89,6 +118,7 @@ export async function getRangerLeaderboard(): Promise<{
 
     const rows: RangerRow[] = (lb.data ?? []).map((r) => {
       const ban = banByUser.get(r.user_id as string);
+      const block = blockByUser?.get(r.user_id as string);
       return {
         userId: r.user_id as string,
         username: (r.username as string | null) ?? "",
@@ -108,6 +138,9 @@ export async function getRangerLeaderboard(): Promise<{
         projectUrl: (r.project_url as string | null) ?? null,
         projectImage: (r.project_image as string | null) ?? null,
         projectAllowed: allowedUsers ? allowedUsers.has(r.user_id as string) : "unknown",
+        projectBlocked: blockByUser ? !!block : "unknown",
+        blockReason: block?.reason ?? null,
+        blockedAt: block?.created_at ?? null,
       };
     });
 
@@ -195,7 +228,7 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
         .order("id", { ascending: false })
         .limit(200);
 
-    const [lb, ban, histWide, allow] = await Promise.all([
+    const [lb, ban, histWide, allow, block] = await Promise.all([
       admin
         .from("leaderboard")
         .select(
@@ -214,6 +247,11 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
         .select("user_id")
         .eq("user_id", userId)
         .maybeSingle(),
+      admin
+        .from("leaderboard_project_blocks")
+        .select("reason, created_at")
+        .eq("user_id", userId)
+        .maybeSingle(),
     ]);
 
     const hist = histWide.error ? await histQuery(HIST_BASE) : histWide;
@@ -225,6 +263,12 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
 
     const r = lb.data;
     const b = ban.data as { reason: string | null; created_at: string } | null;
+    // Non-fatal like the allowance beside it: a takedown record we cannot read
+    // must not blank the history view. Kept null on error so the reason/date
+    // below cannot be mistaken for "no block on file".
+    const blk = block.error
+      ? null
+      : (block.data as { reason: string | null; created_at: string } | null);
     const row: RangerRow | null = r
       ? {
           userId: r.user_id as string,
@@ -248,6 +292,12 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
           // the detail page offer an Allow button for an account that may
           // already be allowed, and that click would throw on the same error.
           projectAllowed: allow.error ? "unknown" : !!allow.data,
+          // Same argument one step further: reporting an unreadable takedown as
+          // "not blocked" would offer a Block button whose click throws on the
+          // very error that produced the wrong state.
+          projectBlocked: block.error ? "unknown" : !!blk,
+          blockReason: blk?.reason ?? null,
+          blockedAt: blk?.created_at ?? null,
         }
       : null;
 

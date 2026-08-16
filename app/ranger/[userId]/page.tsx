@@ -24,6 +24,8 @@ import {
   banAction,
   batchEventAction,
   allowProjectAction,
+  blockProjectAction,
+  unblockProjectAction,
   disallowProjectAction,
   holdEventAction,
   releaseEventAction,
@@ -571,6 +573,66 @@ export default async function RangerUserPage({
                   </>
                 )
               )}
+
+              {/*
+                Takedown (0029). Deliberately OUTSIDE the "has a project" branch
+                and outside the held/allowed logic: a block decides something for
+                every account, and it has to stay liftable for a player who has
+                since cleared their content — otherwise the only way back is the
+                database. It is also the one control that must remain available
+                while a player is hidden, since hiding and refusing content are
+                separate judgements.
+              */}
+              <div className="mt-5 border-t border-soil/25 pt-4">
+                <p className="font-semibold text-text-forest">{t(lang, "pjBlockTitle")}</p>
+                <p className="mt-1 leading-snug">{t(lang, "pjBlockWhat")}</p>
+
+                {row.projectBlocked === "unknown" ? (
+                  <p className="mt-3 leading-snug">{t(lang, "pjBlockUnknown")}</p>
+                ) : row.projectBlocked ? (
+                  <>
+                    <p className="mt-3 font-semibold text-text-forest">
+                      {t(lang, "pjBlockedNow")}
+                      {row.blockReason ? ` — ${row.blockReason}` : ""}
+                      {row.blockedAt ? ` · ${fmtWhen(row.blockedAt)}` : ""}
+                    </p>
+                    <form action={unblockProjectAction} className="mt-3">
+                      <input type="hidden" name="userId" value={userId} />
+                      <button
+                        type="submit"
+                        className="ranger-btn ranger-btn-lift rounded-[2px] px-3 py-1 text-[11px] text-text-forest"
+                        style={{
+                          border: "1px solid var(--color-soil)",
+                          background: "var(--color-surface-parchment)",
+                        }}
+                      >
+                        {t(lang, "pjBlockUndo")}
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <form action={blockProjectAction} className="mt-3 flex flex-wrap gap-2">
+                    <input type="hidden" name="userId" value={userId} />
+                    <input
+                      type="text"
+                      name="reason"
+                      placeholder={t(lang, "pjBlockReasonPh")}
+                      className="min-w-0 flex-1 rounded-[2px] px-2 py-1 text-[11px]"
+                      style={{
+                        border: "1px solid var(--color-soil)",
+                        background: "var(--color-surface-parchment)",
+                      }}
+                    />
+                    <button
+                      type="submit"
+                      className="ranger-btn ranger-btn-lift rounded-[2px] px-3 py-1 text-[11px] text-text-cream"
+                      style={{ background: "#b91c1c" }}
+                    >
+                      {t(lang, "pjBlockDo")}
+                    </button>
+                  </form>
+                )}
+              </div>
             </div>
           </Panel>
         )}

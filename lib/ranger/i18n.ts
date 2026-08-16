@@ -183,6 +183,19 @@ const en = {
   pjAllow: "Allow on the board",
   pjDisallow: "Withdraw from the board",
   pjAllowedBy: "Allowed by an admin",
+
+  // takedown (0029) — refuses the content at the door, unlike Hide which removes the player
+  pjBlockTitle: "Takedown",
+  pjBlockWhat:
+    "A takedown refuses this player's project content at the door. Their score, tree and rank are untouched — only the four project fields stop being accepted, and their own app tells them the server did not accept the content. Hide, by contrast, removes the whole player from the board.",
+  pjBlockedNow: "Taken down",
+  pjBlockedBy: "taken down by an admin",
+  pjBlockReason: "Reason",
+  pjBlockDo: "Take the project down",
+  pjBlockUndo: "Lift the takedown",
+  pjBlockReasonPh: "reason (optional, admin-only)",
+  pjBlockUnknown:
+    "Could not read the takedown list, so the current state is unknown. No button is offered: either one would fail the same way the read did.",
   pjAllowanceStale:
     "An allowance is on file for this player even though they have published nothing. It does nothing today, but it would republish whatever they write next without another review. Withdraw it unless you meant to leave it.",
   pjAllowBlockedBanned:
@@ -415,6 +428,18 @@ const zh: typeof en = {
   pjAllow: "允许显示在榜上",
   pjDisallow: "从榜上撤下",
   pjAllowedBy: "已由管理员放行",
+
+  // 下架(0029)—— 在门口拒收内容,与「隐藏」不同,后者是把人整个撤下
+  pjBlockTitle: "下架",
+  pjBlockWhat:
+    "下架是在门口拒收这个玩家的项目内容。他的分数、树、名次一动不动 —— 只是那四个项目字段不再被接受,而且他自己的 App 会告诉他「服务器没有接受这段内容」。「隐藏」则相反,是把整个玩家从榜上撤下。",
+  pjBlockedNow: "已下架",
+  pjBlockedBy: "已被管理员下架",
+  pjBlockReason: "理由",
+  pjBlockDo: "下架这个项目",
+  pjBlockUndo: "撤销下架",
+  pjBlockReasonPh: "理由(可选,仅管理员可见)",
+  pjBlockUnknown: "读不到下架名单,当前状态未知。这里不提供按钮:两个按钮都会以同样的方式失败。",
   pjAllowanceStale:
     "这个玩家什么都没填,但记录里存着一条放行。它现在不起作用,可一旦他之后写了新内容,就会不经复核直接公开。除非是有意留着,否则请撤下。",
   pjAllowBlockedBanned:
