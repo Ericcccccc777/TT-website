@@ -193,19 +193,53 @@ returns 42501. The mechanism is not what an earlier draft of this file said:
 degraded SELECT on this table to per-column and `0016:98-100` added them
 afterwards — the exact trap `0023` documents.
 
-**Suppression must happen where the columns themselves become `NULL`, not where
-the website reads them.** `anon` can query the base table directly (`0023:29`),
-so a read-side view or `security definer` accessor is not a privacy boundary: a
-visitor holding the same public key the site holds can diff the API against the
-page, and the difference _is_ the held set. That breaks `0016:10` — "the row
-stays, the rank drops, nobody is told anything."
+### The rule, and why it is read-side
 
-Write-time blanking is mechanically available. `held_tokens` is written by
-`update public.leaderboard` (`0016:420-421`, `:447-448`, `:547-548`), so the
-existing `BEFORE INSERT OR UPDATE` trigger (`0022:186-187`) fires and can null the
-four fields while the account is held; the desktop app's next sync then re-blanks
-silently. If we ship the read-side shape instead, we must record that the hold
-becomes inferable — we do not get to claim both.
+A row's project is published iff **its project name is non-empty AND
+(`held_tokens = 0` OR an admin allowance exists for that account)**.
+
+The product owner requires the admin switch to take effect on the board
+**immediately**, without waiting for that player to sync. That single requirement
+decides the mechanism. Write-time blanking cannot satisfy it: once the trigger
+has nulled the columns, the values exist only in the desktop app, so flipping the
+switch on would publish nothing until the player next syncs — which may be never.
+So the values stay in the base table and the rule is applied on read.
+
+**This costs the silence guarantee, and we take the cost knowingly.** `anon` can
+query the base table directly (`0023:29`), so a visitor holding the same public
+key the site holds can diff the API against the page, and the difference is the
+held-and-not-allowed set. That weakens `0016:10` ("the row stays, the rank drops,
+nobody is told anything"). Two things make it acceptable rather than fatal:
+0016's silence is already imperfect for the affected account — the player's own
+public score is visibly lower than the total their app shows them — and the
+alternative breaks a behaviour the owner asked for.
+
+Mitigate the casual path anyway: **revoke `anon`'s direct SELECT on the four
+project columns** and have the website read them through a view that applies the
+rule. `authenticated` keeps its grants — the desktop app's
+`INSERT … ON CONFLICT DO UPDATE` needs SELECT on every column it reads
+(`0023` header). That closes the one-request path without a session; it does not
+close a path for someone who signs in anonymously the way the app does, and this
+file does not claim otherwise.
+
+### The allowance table
+
+Mirror `leaderboard_bans` (`0005`) exactly — it is the same shape of thing, an
+admin-only override keyed on the stable auth id:
+
+- `leaderboard_project_allowances(user_id PK → auth.users, allowed_by text, created_at timestamptz)`.
+- RLS enabled with **no** `anon`/`authenticated` policy: enabled-plus-no-policy
+  denies all non-privileged access, and only `service_role` (the ranger server
+  actions) reads or writes it.
+- A `security definer` helper, like `0005`'s `is_banned`, so the view can consult
+  a table `anon` cannot read.
+- Ranger: a switch beside each held account, one server action per direction,
+  both re-verifying `getAdminUser()` before writing — matching `banAction` /
+  `unbanAction` (`ranger-implementation.md` § Ban model), and revalidating
+  `/[locale]/leaderboard` so the board reflects it at once.
+
+An allowance on an account with no hold is harmless and does nothing; do not
+special-case it.
 
 **Live shape, as of 2026-08-16:** one account carries a hold and has no project;
 one account has a project and carries no hold. These figures move on every sync
@@ -231,6 +265,39 @@ already return `robots: { index: false, follow: true }`
 Visible text is the hostname, not the href — see the two narrowings under
 § Database. Deriving display text from the parsed hostname also renders any
 punycode host in its `xn--` form, which is the honest thing to show.
+
+### Interstitial
+
+The product owner chose a confirmation step over screening what may be linked to.
+Screening a host is a losing game — registration is free and a blocklist is
+always a day behind — whereas naming the destination works for any address.
+
+The link is therefore **not a plain navigation**. Activating it opens a modal that
+names the destination hostname and states we neither run nor vouch for it; from
+there, "go anyway" opens the destination in a new tab and "stay" dismisses.
+
+- The trigger stays a real `<a href>` with the `rel` and `target` above, so
+  middle-click, ⌘-click and "copy link address" keep working and the href is
+  visible in the status bar. The modal is opened by intercepting a plain
+  left-click only (no modifier keys, primary button) and calling
+  `preventDefault()`. Do not replace it with a `<button>`.
+- "Go anyway" must open with `window.open(url, "_blank", "noopener,noreferrer")`
+  — the string form, because a plain `window.open` hands the destination a live
+  `window.opener` reference to our page even though the anchor was configured
+  correctly.
+- Modal contract: focus moves into the dialog, is trapped while open, and returns
+  to the link on dismiss; `Escape` and a backdrop click both dismiss; `role="dialog"`
+  with `aria-modal="true"` and a label naming the destination. There is no
+  existing modal in this repo that does all of this — `components/tree-modal.tsx`
+  never restores focus — so it is written fresh, not copied.
+- The dialog shows the same hostname text the link shows, never the full href:
+  a 200-character path is exactly where a lookalike would hide.
+
+**What the interstitial does not do.** It protects the visitor at the moment of
+the click. It does nothing about the hostname being rendered as visible text on
+an indexable page — `<slur>.pages.dev` still appears on the board. The remedy for
+that is the takedown action (§ Launch gates), and `nofollow ugc` remains
+necessary regardless.
 
 ## Image handling
 
@@ -329,14 +396,25 @@ or cleared, those four strings change in the same commit.
   image from the panel and render the remaining fields alone.
 - **N2** IF an entry has no project name THEN THE SYSTEM SHALL render no expand
   control for it, regardless of its other project fields.
-- **N3** IF an entry's gains are held THEN THE SYSTEM SHALL render neither an
-  expand control nor any of its project text into the markup.
+- **N3** IF an entry's gains are held AND no admin allowance exists for it THEN
+  THE SYSTEM SHALL render neither an expand control nor any of its project text
+  into the markup.
+- **E8** WHEN a project link is activated by a plain left-click THE SYSTEM SHALL
+  prevent navigation and open a dialog naming the destination hostname.
+- **E9** WHEN that dialog's confirm control is activated THE SYSTEM SHALL open the
+  destination in a new browsing context with no opener reference to this page.
+- **E10** WHEN that dialog is dismissed THE SYSTEM SHALL return keyboard focus to
+  the link and leave the current page unchanged.
+- **E11** WHEN an admin changes a player's project allowance THE SYSTEM SHALL
+  reflect it on the public board without waiting for that player to sync.
 - **W1** WHERE a project link is present THE SYSTEM SHALL render its hostname as
   the link text.
 - **W2** WHERE a project link is present THE SYSTEM SHALL emit `target="_blank"`
   and `rel="noopener noreferrer nofollow ugc"` on it.
 - **W3** WHERE a panel is rendered THE SYSTEM SHALL associate it with its project
   name as the panel's accessible label.
+- **W4** WHERE the interstitial dialog is open THE SYSTEM SHALL trap keyboard
+  focus within it and dismiss on `Escape`.
 
 N3's second clause matters: the text is server-rendered, so suppressing only the
 control would still publish a held player's words to the crawlers
@@ -374,8 +452,10 @@ Neither document may be signed off as shippable until all four hold.
 1. **0024 applied to the live database.** The migration and the matching
    `next.config.ts` change are written; running it in the SQL Editor is what
    closes the gate (§ Migration 0024).
-2. **Held-account blanking** — write-time, not read-time (§ Held accounts), plus
-   someone to manufacture the test state.
+2. **The held-account rule and its admin override** — the allowance table, the
+   read-side rule, the revoke of `anon`'s direct column SELECT, and the ranger
+   switch (§ Held accounts). Plus someone to manufacture the test state: no
+   account is currently both held and carrying a project.
 3. **A takedown action.** `app/ranger/actions.ts` exposes ban/unban/
    deleteOrphan/acknowledge/hold/release and nothing that clears these fields;
    `lib/ranger/data.ts:48`, `:170` do not even select them. Whether a server-side

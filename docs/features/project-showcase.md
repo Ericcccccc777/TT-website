@@ -58,9 +58,25 @@ and the picture's address is pinned so tightly that none of it can appear there.
 The link is the one thing that is not screened — so we only ever show the part of
 it that names the site.
 
-The link opens in a new tab, and search engines are told we do not vouch for it.
-The leaderboard is a page with real standing; without that signal it becomes a
-place people publish links to farm it.
+**Clicking it does not leave the site straight away.** A small box appears first,
+naming the destination and saying plainly that it is someone else's site, that we
+do not run it and cannot vouch for what is on it. From there the visitor can go
+anyway — which opens it in a new tab — or stay. Closing the box, pressing Escape
+or clicking outside it all mean "stay".
+
+We chose this over screening what a player may link to. Screening a web address
+is a losing game: anyone can register a new one, and a list of forbidden ones is
+always a day behind. Telling the visitor where they are about to go, and letting
+them decide, works regardless of what the address is.
+
+Search engines are still told we do not vouch for it — the leaderboard is a page
+with real standing, and without that signal it becomes a place people publish
+links to farm it.
+
+**What this does not cover:** the address itself is still printed on the page as
+readable text, and nobody screens it. A player can register a deliberately
+offensive-looking address and it will appear on the board. The remedy for that is
+the takedown action listed below, not the warning box.
 
 ## The picture
 
@@ -88,10 +104,21 @@ desktop app and is one of the launch gates below.
 - **Players hidden for cheating.** They are already absent from the board
   entirely — everything they wrote goes with them. This needs no separate rule.
 - **Players whose gains are being held by the anti-cheat rules.** These players
-  _stay_ on the board with a reduced score, and they must not get a panel. We
+  _stay_ on the board with a reduced score, and by default they get no panel. We
   have judged their numbers untrustworthy; handing the same account a promotional
   space with a live outward link says the opposite. Their row shows no marker,
   exactly as if they had filled in nothing.
+
+  **An admin can grant one anyway.** Beside a held player on the admin page there
+  is a switch. Turning it on publishes that player's project while their gains
+  stay held; turning it off hides it again. The board reflects the change
+  immediately — it does not wait for that player to sync.
+
+  This exists because the two judgements are separate. Holding a gain says "we do
+  not believe this number." It does not say "this person may not describe what
+  they built." Releasing every held token merely to let someone show a project
+  would mean paying for one decision with another. The switch is a deliberate,
+  recorded human act, the same way releasing a held gain already is.
 
 ## Where it appears
 
