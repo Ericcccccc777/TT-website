@@ -332,7 +332,30 @@
     "projectLeaveTitle": "你正在离开 Token Forest",
     "projectLeaveBody": "这个网站不是我们运营的,我们无法为它的内容负责。",
     "projectLeaveConfirm": "仍要前往",
-    "projectLeaveCancel": "留在这里"
+    "projectLeaveCancel": "留在这里",
+    "periodRecent": "近 30 天",
+    "periodLifetime": "总榜",
+    "periodHint": "总榜按历史累计排名,先开始的人会一直在前面。近 30 天只看这个月的收成,每月重新开始。",
+    "recentTitle": "近 30 天",
+    "recentSubtitle": "这个月收到最多 token 的人,和他们正在做的东西。名次越高,作品被看到的机会越多。",
+    "recentPlayers": "本期上榜 {n} 人",
+    "recentTokenLabel": "近 30 天",
+    "totalTokenLabel": "累计",
+    "recentEmptyHeading": "本期还没有人收成",
+    "recentEmptyBody": "开着 App 收气泡,下次同步就会出现在这里",
+    "projectEmptyPrompt": "这个位置可以放你的作品 —— 名字、一句话介绍和一个链接,在 App 里填。",
+    "showcaseHeading": "把你的作品放上来",
+    "showcaseIntro": "上了榜就能在名字旁边挂一个自己的项目。网页端只负责展示,改动全部在 App 里进行 —— 我们不会替你改任何一个字。",
+    "showcase01Title": "先上榜",
+    "showcase01Body": "在 App 里开启排行榜并设置用户名。没有上榜,就没有可以挂东西的位置。",
+    "showcase02Title": "填写项目",
+    "showcase02Body": "右键树 → 设置… → 排行榜 → 项目展示,打开开关。填名字(最多 24 字)、一句话介绍(最多 80 字)和一个链接,还可以配一张图。",
+    "showcase03Title": "下次同步就出现",
+    "showcase03Body": "填完等下一次同步,你的作品就会出现在这一页你的名字旁边。想改随时回 App 改,改完再同步一次。",
+    "showcaseNote": "链接可以是 GitHub、应用商店、你自己的网站,任何能打开的地址都行。图片不是必需的。",
+    "showcaseCta": "下载 App",
+    "howToCta": "下载 App",
+    "howToShowcaseLink": "看近 30 天榜和大家在做的项目 →"
   },
   "DownloadPage": {
     "heroTreeAlt": "Token Forest 成熟苹果树",
@@ -376,5 +399,29 @@
   },
   "ScrollHud": {
     "backToTop": "回到顶部"
+  },
+  "PlayerPage": {
+    "back": "回到排行榜",
+    "joined": "{date} 加入",
+    "rankLifetime": "总榜",
+    "rankRecent": "近 30 天",
+    "rankRecentNone": "本期没有收成",
+    "forestHeading": "这片森林",
+    "treeStage": "第 {n} / {total} 阶段",
+    "projectHeading": "正在做的东西",
+    "noProject": "{username} 还没有填写项目。",
+    "ctaBody": "这些树是用 Token Forest 种出来的 —— 你在 AI 编程工具上花掉的 token 会变成桌面上的气泡，收集起来就能让树长大。",
+    "cta": "下载 Token Forest",
+    "metaTitle": "{username} 的森林",
+    "metaDesc": "{username} 在 Token Forest 排行榜上的森林与排名。",
+    "shareAria": "分享 {username} 的主页",
+    "shareText": "{username} 在 Token Forest 的树林"
+  },
+  "Share": {
+    "share": "分享",
+    "copied": "已复制",
+    "copyManual": "手动复制这个网址",
+    "shareDownload": "发给朋友",
+    "downloadText": "Token Forest —— 你在 Claude Code 和 Codex 上花掉的 token，会在桌面长成一棵像素树。免费，支持 Windows 和 macOS。"
   }
 }

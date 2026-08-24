@@ -8,6 +8,14 @@ import { routing, type Locale } from "@/i18n/routing";
  * hreflang, sitemap, JSON-LD, OG image). Driven by NEXT_PUBLIC_SITE_URL so
  * preview deploys can point at their own host; falls back to the production
  * domain. Trailing slash stripped so concatenation is always safe.
+ *
+ * **Whatever this resolves to must be the host that answers directly, not one
+ * that redirects to it.** The apex 301s to www, so an apex value here would put
+ * every canonical tag on a URL that immediately bounces, and hand link-preview
+ * fetchers an og:image behind a redirect — several of them do not follow one
+ * for images, which shows up as a share card with no picture. Production and
+ * the fallback are both `www`; only ever set this to a host you have checked
+ * responds 200 on its own.
  */
 export function siteUrl(): string {
   return (

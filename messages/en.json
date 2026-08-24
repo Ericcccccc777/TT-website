@@ -332,7 +332,30 @@
     "projectLeaveTitle": "You are leaving Token Forest",
     "projectLeaveBody": "This site is not run by us, and we cannot vouch for what is on it.",
     "projectLeaveConfirm": "Go anyway",
-    "projectLeaveCancel": "Stay here"
+    "projectLeaveCancel": "Stay here",
+    "periodRecent": "Last 30 days",
+    "periodLifetime": "All time",
+    "periodHint": "All time ranks on everything ever collected, so whoever started first stays ahead. Last 30 days counts only this month's harvest, and starts over every month.",
+    "recentTitle": "Last 30 Days",
+    "recentSubtitle": "Who collected the most tokens this month, and what they are building. The higher you rank, the more people see your project.",
+    "recentPlayers": "{n} players this period",
+    "recentTokenLabel": "last 30 days",
+    "totalTokenLabel": "all time",
+    "recentEmptyHeading": "Nothing collected this period",
+    "recentEmptyBody": "Keep the app running to collect bubbles — you will show up here on the next sync",
+    "projectEmptyPrompt": "This space can hold your project — a name, one line, and a link. You fill it in inside the app.",
+    "showcaseHeading": "Put your project on the board",
+    "showcaseIntro": "Once you are on the board you can hang a project beside your name. The website only displays it; every edit happens in the app — we never change a word of it for you.",
+    "showcase01Title": "Get on the board",
+    "showcase01Body": "Turn the leaderboard on in the app and set a username. Without a place on the board there is nowhere to hang anything.",
+    "showcase02Title": "Fill in your project",
+    "showcase02Body": "Right-click the tree → Settings… → Leaderboard → Project showcase, and turn it on. Add a name (up to 24 characters), one line about it (up to 80), and a link. You can add a picture too.",
+    "showcase03Title": "It appears on the next sync",
+    "showcase03Body": "Once filled in, your project shows up beside your name on this page after the next sync. Change it any time in the app, then sync again.",
+    "showcaseNote": "The link can be GitHub, an app store, your own site — anything that opens. The picture is optional.",
+    "showcaseCta": "Download the app",
+    "howToCta": "Download the app",
+    "howToShowcaseLink": "See the last-30-days board and what people are building →"
   },
   "DownloadPage": {
     "heroTreeAlt": "Fully grown Token Forest apple tree",
@@ -376,5 +399,29 @@
   },
   "ScrollHud": {
     "backToTop": "Back to top"
+  },
+  "PlayerPage": {
+    "back": "Back to the leaderboard",
+    "joined": "Joined {date}",
+    "rankLifetime": "All time",
+    "rankRecent": "Last 30 days",
+    "rankRecentNone": "Nothing this period",
+    "forestHeading": "This forest",
+    "treeStage": "Stage {n} of {total}",
+    "projectHeading": "What they are building",
+    "noProject": "{username} has not added a project yet.",
+    "ctaBody": "These trees were grown with Token Forest — the tokens you spend on AI coding tools turn into bubbles on your desktop, and collecting them makes a tree grow.",
+    "cta": "Download Token Forest",
+    "metaTitle": "{username}'s forest",
+    "metaDesc": "{username}'s trees and standing on the Token Forest leaderboard.",
+    "shareAria": "Share {username}'s page",
+    "shareText": "{username}'s forest on Token Forest"
+  },
+  "Share": {
+    "share": "Share",
+    "copied": "Copied",
+    "copyManual": "Copy this address",
+    "shareDownload": "Send this to someone",
+    "downloadText": "Token Forest — the tokens you spend in Claude Code and Codex grow a pixel tree on your desktop. Free, Windows and macOS."
   }
 }

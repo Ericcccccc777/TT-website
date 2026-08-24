@@ -1,39 +1,24 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import {
-  getLeaderboard,
-  getGlobalStats,
-  hasProject,
-  LEADERBOARD_PAGE_SIZE,
-} from "@/lib/leaderboard";
+import { getLeaderboard, getGlobalStats, LEADERBOARD_PAGE_SIZE } from "@/lib/leaderboard";
 import { TreeModalButton } from "@/components/tree-modal";
 import { PixelCrown } from "@/components/pixel-crown";
 import type { Locale } from "@/i18n/routing";
 import { localizedMetadata, localizedUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/json-ld";
 import { BoardTabs } from "@/components/leaderboard/board-tabs";
-import {
-  ProjectShowcaseProvider,
-  ProjectTrigger,
-  ProjectPanelRow,
-} from "@/components/leaderboard/project-showcase";
-import { ExternalLinkDialog } from "@/components/leaderboard/external-link-dialog";
+import { PeriodTabs } from "@/components/leaderboard/period-tabs";
 import {
   MEDAL,
-  regionInfo,
-  formatTokens,
   compactTokens,
-  projectHostname,
-  bustedImageSrc,
-  panelLabelId,
+  formatTokens,
+  regionInfo,
+  spriteStage,
+  treePrefix,
 } from "@/lib/leaderboard-format";
 import { redirect } from "next/navigation";
-
-/** Thumbnail box. Fixed, so no uploaded aspect ratio can reflow the board. */
-const PROJECT_THUMB = 88;
 
 export async function generateMetadata({
   params,
@@ -73,22 +58,6 @@ function relativeTime(iso: string, t: TFunc): string {
   if (hours < 24) return t("relativeHours", { n: hours });
   const days = Math.floor(hours / 24);
   return t("relativeDays", { n: days });
-}
-
-function spriteStage(stageIndex: number): number {
-  return Math.min(8, Math.max(1, stageIndex + 1));
-}
-
-/** Sprite filename prefix for a tree species; unknown species fall back to apple. */
-const TREE_PREFIX: Record<string, string> = {
-  apple: "AppleTree",
-  cherry: "CherryTree",
-  cactus: "Cactus",
-  christmas: "ChristmasTree",
-};
-
-function treeSpritePrefix(tree: string): string {
-  return TREE_PREFIX[tree] ?? "AppleTree";
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -216,6 +185,12 @@ export default async function LeaderboardPage({
           </p>
         </div>
 
+        <PeriodTabs
+          active="lifetime"
+          labels={{ recent: t("periodRecent"), lifetime: t("periodLifetime") }}
+          hint={t("periodHint")}
+        />
+
         {/* Error state */}
         {error && (
           <div
@@ -290,203 +265,121 @@ export default async function LeaderboardPage({
                     </th>
                   </tr>
                 </thead>
-                {/*
-                  The provider renders no DOM of its own — it only holds which
-                  row is open, which has to live above the rows because only one
-                  panel may be open at a time.
-                */}
-                <ProjectShowcaseProvider>
-                  <tbody>
-                    {entries.map((entry, i) => {
-                      const rank = offset + i + 1;
-                      const medalColor = MEDAL[rank];
-                      // The user's trees for the popup — main (current) tree first.
-                      const treeViews = entry.trees.map((tv) => {
-                        const sStage = spriteStage(tv.stage_index);
-                        return {
-                          prefix: treeSpritePrefix(tv.kind),
-                          stage: sStage,
-                          speciesLabel: speciesLabel(tv.kind),
-                          tokensLabel: compactTokens(tv.tokens, locale),
-                          stageLabel: t("treeModalStage", { n: sStage }),
-                          alt: t("treeModalAlt", { username: entry.username }),
-                        };
-                      });
-                      const region = regionInfo(entry.region, locale);
-                      // cap the entrance stagger so deep rows don't wait seconds
-                      const animDelay = `${Math.min(i, 12) * 60}ms`;
-                      // 0025's view has already decided this: a held account with
-                      // no admin allowance reports all four fields as null, so
-                      // there is nothing here to suppress a second time.
-                      const showProject = hasProject(entry);
-                      const projectHost = entry.project_url
-                        ? projectHostname(entry.project_url)
-                        : null;
-                      return (
-                        <Fragment key={entry.id}>
-                          <tr
-                            className="lb-row-light border-t border-leaf-deep/20 bg-surface-card/60"
-                            style={{
-                              animation: `row-slide-in 320ms ease both`,
-                              animationDelay: animDelay,
-                              fontFamily: "var(--font-body)",
-                              fontSize: "var(--text-body)",
-                            }}
-                          >
-                            <td
-                              className="whitespace-nowrap px-4 py-3 font-bold leading-none"
-                              style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "var(--text-caption)",
-                                color: medalColor ?? "var(--color-text-muted-light)",
-                                boxShadow: medalColor ? `inset 3px 0 0 ${medalColor}` : undefined,
-                              }}
+                <tbody>
+                  {entries.map((entry, i) => {
+                    const rank = offset + i + 1;
+                    const medalColor = MEDAL[rank];
+                    // The user's trees for the popup — main (current) tree first.
+                    const treeViews = entry.trees.map((tv) => {
+                      const sStage = spriteStage(tv.stage_index);
+                      return {
+                        prefix: treePrefix(tv.kind),
+                        stage: sStage,
+                        speciesLabel: speciesLabel(tv.kind),
+                        tokensLabel: compactTokens(tv.tokens, locale),
+                        stageLabel: t("treeModalStage", { n: sStage }),
+                        alt: t("treeModalAlt", { username: entry.username }),
+                      };
+                    });
+                    const region = regionInfo(entry.region, locale);
+                    // cap the entrance stagger so deep rows don't wait seconds
+                    const animDelay = `${Math.min(i, 12) * 60}ms`;
+                    return (
+                      <tr
+                        key={entry.id}
+                        className="lb-row-light border-t border-leaf-deep/20 bg-surface-card/60"
+                        style={{
+                          animation: `row-slide-in 320ms ease both`,
+                          animationDelay: animDelay,
+                          fontFamily: "var(--font-body)",
+                          fontSize: "var(--text-body)",
+                        }}
+                      >
+                        <td
+                          className="whitespace-nowrap px-4 py-3 font-bold leading-none"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                            color: medalColor ?? "var(--color-text-muted-light)",
+                            boxShadow: medalColor ? `inset 3px 0 0 ${medalColor}` : undefined,
+                          }}
+                        >
+                          {rank <= 3 ? `0${rank}` : rank}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <TreeModalButton
+                              username={entry.username}
+                              trees={treeViews}
+                              triggerLabel={t("treeViewAria", { username: entry.username })}
+                              closeLabel={t("treeModalClose")}
+                              tokensUnit={t("tokenUnit")}
+                              mainLabel={t("treeModalMain")}
+                              totalLabel={t("treeModalTotal")}
+                              totalTokensLabel={formatTokens(entry.score, locale)}
+                              prevLabel={t("treeModalPrev")}
+                              nextLabel={t("treeModalNext")}
+                            />
+                            {/*
+                                  The name is the link to that player's own page;
+                                  the sprite beside it still opens the tree pop-up.
+                                  Two controls because they go two places, and the
+                                  pop-up is the faster way to glance at one row
+                                  without leaving the board.
+                                */}
+                            <Link
+                              href={`/p/${entry.id}`}
+                              className="truncate text-text-forest underline decoration-transparent underline-offset-4 transition-colors hover:decoration-leaf-deep"
                             >
-                              {rank <= 3 ? `0${rank}` : rank}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex min-w-0 items-center gap-2">
-                                <TreeModalButton
-                                  username={entry.username}
-                                  trees={treeViews}
-                                  triggerLabel={t("treeViewAria", { username: entry.username })}
-                                  closeLabel={t("treeModalClose")}
-                                  tokensUnit={t("tokenUnit")}
-                                  mainLabel={t("treeModalMain")}
-                                  totalLabel={t("treeModalTotal")}
-                                  totalTokensLabel={formatTokens(entry.score, locale)}
-                                  prevLabel={t("treeModalPrev")}
-                                  nextLabel={t("treeModalNext")}
-                                />
-                                <span className="truncate text-text-forest">{entry.username}</span>
-                                {rank === 1 && (
-                                  <span className="relative inline-flex shrink-0" aria-hidden>
-                                    <PixelCrown />
-                                    <span
-                                      className="absolute -right-2 -top-1 text-accent-gold"
-                                      style={{
-                                        fontSize: 7,
-                                        lineHeight: 1,
-                                        animation: "star-twinkle 3.6s ease-in-out infinite",
-                                      }}
-                                    >
-                                      ✦
-                                    </span>
-                                  </span>
-                                )}
-                                {region && (
-                                  <span
-                                    role="img"
-                                    aria-label={region.name}
-                                    title={region.name}
-                                    className="shrink-0 leading-none"
-                                    style={{ fontSize: "1rem" }}
-                                  >
-                                    {region.flag}
-                                  </span>
-                                )}
-                                {/* Only rows that actually have something get a marker;
-                                on a board where most players have nothing, one on
-                                every row would promise what is not there. */}
-                                {showProject && (
-                                  <ProjectTrigger
-                                    id={entry.id}
-                                    labelOpen={t("projectExpand", { username: entry.username })}
-                                    labelClose={t("projectCollapse", { username: entry.username })}
-                                  />
-                                )}
-                              </div>
-                            </td>
-                            <td
-                              className="hidden px-4 py-3 text-right text-accent-gold sm:table-cell"
-                              style={{
-                                fontFamily: "var(--font-pixel)",
-                                fontSize: "var(--text-caption)",
-                              }}
-                            >
-                              {formatTokens(entry.score, locale)}
-                            </td>
-                            <td
-                              className="whitespace-nowrap px-4 py-3 text-right text-text-muted-light"
-                              style={{ fontSize: "var(--text-small)" }}
-                            >
-                              {relativeTime(entry.updated_at, t)}
-                            </td>
-                          </tr>
-                          {/*
-                        Rendered on the server even while collapsed, so the words
-                        are in the HTML from first paint (a settled decision: they
-                        are for search engines too) and so aria-controls has a
-                        target that exists. Only the picture waits for a click.
-                        colSpan is 4 on every viewport — the colgroup fixes the
-                        table at four columns; the third is merely hidden on small
-                        screens, which does not change the count.
-                      */}
-                          {showProject && (
-                            <ProjectPanelRow
-                              id={entry.id}
-                              colSpan={4}
-                              image={
-                                entry.project_image
-                                  ? {
-                                      src: bustedImageSrc(entry.project_image, entry.updated_at),
-                                      width: PROJECT_THUMB,
-                                      height: PROJECT_THUMB,
-                                    }
-                                  : null
-                              }
-                            >
-                              {/* The panel's accessible name — the region inside
-                              ProjectPanelRow points its aria-labelledby here, so
-                              a screen reader announces whose project it just
-                              opened instead of an unnamed region. */}
-                              <p
-                                id={panelLabelId(entry.id)}
-                                className="text-leaf-deep"
-                                style={{
-                                  fontFamily: "var(--font-pixel)",
-                                  fontSize: "var(--text-caption)",
-                                }}
+                              {entry.username}
+                            </Link>
+                            {rank === 1 && (
+                              <span className="relative inline-flex shrink-0" aria-hidden>
+                                <PixelCrown />
+                                <span
+                                  className="absolute -right-2 -top-1 text-accent-gold"
+                                  style={{
+                                    fontSize: 7,
+                                    lineHeight: 1,
+                                    animation: "star-twinkle 3.6s ease-in-out infinite",
+                                  }}
+                                >
+                                  ✦
+                                </span>
+                              </span>
+                            )}
+                            {region && (
+                              <span
+                                role="img"
+                                aria-label={region.name}
+                                title={region.name}
+                                className="shrink-0 leading-none"
+                                style={{ fontSize: "1rem" }}
                               >
-                                {entry.project_name}
-                              </p>
-                              {entry.project_desc && (
-                                <p
-                                  className="mt-2 text-text-forest"
-                                  style={{
-                                    fontFamily: "var(--font-body)",
-                                    fontSize: "var(--text-small)",
-                                  }}
-                                >
-                                  {entry.project_desc}
-                                </p>
-                              )}
-                              {entry.project_url && projectHost && (
-                                <p
-                                  className="mt-2 text-text-muted-light"
-                                  style={{
-                                    fontFamily: "var(--font-body)",
-                                    fontSize: "var(--text-small)",
-                                  }}
-                                >
-                                  <span className="mr-1">{t("projectLinkLabel")}</span>
-                                  <ExternalLinkDialog
-                                    href={entry.project_url}
-                                    hostname={projectHost}
-                                    title={t("projectLeaveTitle")}
-                                    body={t("projectLeaveBody")}
-                                    confirmLabel={t("projectLeaveConfirm")}
-                                    cancelLabel={t("projectLeaveCancel")}
-                                  />
-                                </p>
-                              )}
-                            </ProjectPanelRow>
-                          )}
-                        </Fragment>
-                      );
-                    })}
-                  </tbody>
-                </ProjectShowcaseProvider>
+                                {region.flag}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td
+                          className="hidden px-4 py-3 text-right text-accent-gold sm:table-cell"
+                          style={{
+                            fontFamily: "var(--font-pixel)",
+                            fontSize: "var(--text-caption)",
+                          }}
+                        >
+                          {formatTokens(entry.score, locale)}
+                        </td>
+                        <td
+                          className="whitespace-nowrap px-4 py-3 text-right text-text-muted-light"
+                          style={{ fontSize: "var(--text-small)" }}
+                        >
+                          {relativeTime(entry.updated_at, t)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
               </table>
             </div>
           </div>
@@ -562,6 +455,33 @@ export default async function LeaderboardPage({
               </li>
             ))}
           </ol>
+          {/*
+            Step 01 tells the reader to get the build from the download page, and
+            until now that was a sentence rather than a link — the whole board
+            carried no way to act on its own instructions except the top bar.
+          */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link
+              href="/download"
+              className="inline-flex items-center gap-2 rounded-[2px] px-5 py-2.5 transition-[transform,box-shadow] duration-100 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-pixel-lg active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-caption)",
+                background: "var(--color-leaf-deep)",
+                boxShadow: "var(--shadow-pixel)",
+                color: "var(--color-text-cream)",
+              }}
+            >
+              {t("howToCta")}
+            </Link>
+            <Link
+              href="/leaderboard/recent"
+              className="text-text-muted-light underline decoration-dotted underline-offset-4 hover:text-leaf-deep"
+              style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
+            >
+              {t("howToShowcaseLink")}
+            </Link>
+          </div>
         </div>
 
         {/* ── Show your badge ── */}
