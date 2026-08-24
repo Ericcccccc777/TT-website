@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getSupabaseServerClient } from "@/lib/supabase/server-client";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -42,6 +43,19 @@ export type LeaderboardEntry = {
   project_desc?: string | null;
   project_url?: string | null;
   project_image?: string | null;
+  /**
+   * Tokens collected through the app in the last 30 days (0031). The rolling
+   * board ranks on this; the lifetime board ignores it.
+   *
+   * Not the same thing as a 30-day slice of `score`: it counts only `update`
+   * history rows, so a brand-new player's first sync — which reports every token
+   * their local logs ever recorded — does not land here. See 0031's header.
+   *
+   * OPTIONAL for the same reason the project fields are: `lib/leaderboard-boards.ts`
+   * builds this type from an explicit literal with no spread, and a required
+   * property would fail `tsc --noEmit` there.
+   */
+  recent_score?: number;
 };
 
 /** A row has a project iff it has a name to head the panel with. */
@@ -115,18 +129,83 @@ export async function getLeaderboard(page = 1): Promise<{
   total: number;
   error: string | null;
 }> {
+  return readBoard(page, "lifetime");
+}
+
+/**
+ * The rolling board: same players, ranked by tokens collected through the app in
+ * the last 30 days (0031's `recent_score`).
+ *
+ * Rows at zero are filtered out rather than listed at the bottom. A player who
+ * has not synced inside the window has no standing on a board that exists to
+ * show recent activity, and padding it with zeroes would make a live board look
+ * like the frozen one it is meant to replace.
+ */
+export async function getRecentLeaderboard(page = 1): Promise<{
+  entries: LeaderboardEntry[];
+  total: number;
+  error: string | null;
+}> {
+  return readBoard(page, "recent");
+}
+
+export type BoardWindow = "lifetime" | "recent";
+
+/** Column each window ranks on. Also the column the rolling board filters on. */
+const SORT_COLUMN: Record<BoardWindow, string> = {
+  lifetime: "score",
+  recent: "recent_score",
+};
+
+async function readBoard(
+  page: number,
+  window: BoardWindow,
+): Promise<{
+  entries: LeaderboardEntry[];
+  total: number;
+  error: string | null;
+}> {
   const p = Number.isInteger(page) && page > 0 ? page : 1;
   const from = (p - 1) * LEADERBOARD_PAGE_SIZE;
   const to = from + LEADERBOARD_PAGE_SIZE - 1;
+  const sortBy = SORT_COLUMN[window];
   try {
     const client = getSupabaseServerClient();
-    const { data, count, error } = await client
-      .from("leaderboard_public")
-      .select(
-        "id, username, score, stage_index, tree, region, trees, created_at, updated_at, project_name, project_desc, project_url, project_image",
-        { count: "exact" },
-      )
-      .order("score", { ascending: false })
+    const table = client.from("leaderboard_public");
+    /*
+     * Two literal select strings, not one built from a variable.
+     *
+     * supabase-js derives the row type from the select string as a *literal*;
+     * hand it a `string` and every field collapses to GenericStringError and the
+     * mapping below stops type-checking. So the branch is spelled out.
+     *
+     * The lifetime board deliberately does NOT ask for `recent_score`. It has no
+     * use for it, and asking for a column the view does not have yet makes
+     * PostgREST fail the entire request — so a shared list would blank the
+     * established board for the window between this code deploying and 0031
+     * being applied. That ordering hazard has taken this board down once already
+     * (0025 revoked columns a view still referenced). Kept apart, only the new
+     * page waits for the migration.
+     */
+    const rows =
+      window === "recent"
+        ? table
+            .select(
+              "id, username, score, stage_index, tree, region, trees, created_at, updated_at, project_name, project_desc, project_url, project_image, recent_score",
+              { count: "exact" },
+            )
+            .gt("recent_score", 0)
+        : table.select(
+            "id, username, score, stage_index, tree, region, trees, created_at, updated_at, project_name, project_desc, project_url, project_image",
+            { count: "exact" },
+          );
+    const { data, count, error } = await rows
+      .order(sortBy, { ascending: false })
+      // Ties on the rolling board are common early on (two players at 0 gain
+      // once the filter is off, or genuinely equal sums). Without a second key
+      // Postgres may return them in a different order per request, which makes
+      // pagination drop or repeat rows. `id` is unique, so this settles it.
+      .order("id", { ascending: true })
       .range(from, to);
 
     if (error) {
@@ -143,9 +222,12 @@ export async function getLeaderboard(page = 1): Promise<{
         // totalPages 1 and send every out-of-range page to page 1 — the exact
         // opposite of what the caller's redirect promises. Invisible while the
         // board fits on one page; wrong from the 51st player onwards.
-        const { count: realCount, error: countError } = await client
+        const headQuery = client
           .from("leaderboard_public")
           .select("id", { count: "exact", head: true });
+        const { count: realCount, error: countError } = await (window === "recent"
+          ? headQuery.gt("recent_score", 0)
+          : headQuery);
         if (countError) return { entries: [], total: 0, error: countError.message };
         return { entries: [], total: realCount ?? 0, error: null };
       }
@@ -173,6 +255,13 @@ export async function getLeaderboard(page = 1): Promise<{
         project_desc: (row.project_desc as string | null) ?? null,
         project_url: (row.project_url as string | null) ?? null,
         project_image: (row.project_image as string | null) ?? null,
+        // `in` rather than a plain read: the lifetime branch above does not
+        // request this column, so on that path it is genuinely absent from the
+        // row type. Defaulted to 0 rather than left undefined — a database that
+        // predates 0031 also answers without it, and the rolling board would
+        // then render "NaN" where every gain should be. 0 reads as "nothing in
+        // the window", which is the truth when we cannot tell.
+        recent_score: Number(("recent_score" in row ? row.recent_score : 0) ?? 0),
       };
     }) as LeaderboardEntry[];
 
@@ -180,6 +269,202 @@ export async function getLeaderboard(page = 1): Promise<{
   } catch (e) {
     return { entries: [], total: 0, error: e instanceof Error ? e.message : String(e) };
   }
+}
+
+// ── getPlayer ─────────────────────────────────────────────────────────────────
+
+export type PlayerProfile = {
+  entry: LeaderboardEntry;
+  /** Position on the lifetime board, 1-based. */
+  lifetimeRank: number;
+  /** Position on the rolling board, or null when they collected nothing in it. */
+  recentRank: number | null;
+};
+
+/**
+ * One player, addressed by the leaderboard row's public id.
+ *
+ * Keyed on `id` and not `user_id` deliberately. `leaderboard_public` exposes the
+ * row's surrogate key and withholds `user_id` (0026), so a profile URL built on
+ * `id` needs no migration, adds no new identifier to the page source, and cannot
+ * be turned back into the account id that names the storage object.
+ *
+ * Returns null when no visible row has that id — which covers a typo, a deleted
+ * player, and a banned one identically. The caller renders a 404 for all three;
+ * distinguishing them would tell a stranger that a specific banned player exists.
+ */
+/*
+ * Wrapped in `cache` so one request gets one answer.
+ *
+ * A player's page reads this twice — once building the page's title and share
+ * tags, once building the page itself — and they are two separate calls into
+ * the database. Two calls can disagree: a blip on the second one returns null,
+ * the body renders the ordinary not-found page, and the title still carries the
+ * player's name. That contradicts the whole point of the not-found page, which
+ * is that a hidden player, a banned one and a made-up one look identical.
+ *
+ * `cache` makes them one call and one answer per request, so the two halves of
+ * the page cannot disagree by construction rather than by luck. It is scoped to
+ * a single request, so the card route — a separate request a crawler makes on
+ * its own — still does its own read and its own eligibility check.
+ */
+export const getPlayer = cache(async (id: string): Promise<PlayerProfile | null> => {
+  try {
+    const client = getSupabaseServerClient();
+    const { data, error } = await client
+      .from("leaderboard_public")
+      .select(
+        "id, username, score, stage_index, tree, region, trees, created_at, updated_at, project_name, project_desc, project_url, project_image, recent_score",
+      )
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    const tree = (data.tree as string | null) ?? "apple";
+    const score = Number(data.score ?? 0);
+    const recentScore = Number(data.recent_score ?? 0);
+
+    // Rank by counting who is ahead rather than by paging the board: two
+    // head-only counts, no rows transferred, and correct past page one.
+    //
+    // Both errors are checked, and either one fails the whole profile.
+    //
+    // A failed count comes back as `count: null`, and `(null ?? 0) + 1` is 1 —
+    // so swallowing the error does not degrade the rank, it *fabricates* it,
+    // and it fabricates the most conspicuous value there is. Every player whose
+    // page loaded during a blip would read "#1", on their own page and on the
+    // card that travels into other people's chat threads. Returning null instead
+    // routes both surfaces to the fallback they already have for a database that
+    // cannot answer (the ordinary not-found page; the generic card), which is the
+    // behaviour `docs/features/share-card.md § 3.9` promises.
+    //
+    // The skipped-on-purpose branch carries an explicit `error: null` so the
+    // destructuring stays uniform and a future edit cannot mistake "we did not
+    // ask" for "the answer failed".
+    //
+    // "Ahead of me" has to mean the same thing here as it does on the board, and
+    // the board orders by <measure> DESC, id ASC and reads position off the row
+    // number. Counting only `score > mine` gets that wrong the moment two people
+    // tie: the board shows them as N and N+1, this would call them both N, and
+    // the second one's page and share card would disagree with the board they
+    // came from. So the tie-break is counted too — same measure, same direction,
+    // same second key.
+    const rowId = data.id as string;
+    const aheadOf = (column: string, value: number) =>
+      client
+        .from("leaderboard_public")
+        .select("id", { count: "exact", head: true })
+        .or(`${column}.gt.${value},and(${column}.eq.${value},id.lt.${rowId})`);
+
+    const [lifetimeCount, recentCount] = await Promise.all([
+      aheadOf("score", score),
+      recentScore > 0
+        ? aheadOf("recent_score", recentScore)
+        : Promise.resolve({ count: null, error: null }),
+    ]);
+
+    if (lifetimeCount.error || recentCount.error) return null;
+    const ahead = lifetimeCount.count;
+    const aheadRecent = recentCount.count;
+
+    const entry = {
+      ...data,
+      tree,
+      region: (data.region as string | null) ?? "",
+      trees: normalizeTrees(data.trees, tree, score, Number(data.stage_index ?? 0)),
+      project_name: (data.project_name as string | null) ?? null,
+      project_desc: (data.project_desc as string | null) ?? null,
+      project_url: (data.project_url as string | null) ?? null,
+      project_image: (data.project_image as string | null) ?? null,
+      recent_score: recentScore,
+    } as LeaderboardEntry;
+
+    return {
+      entry,
+      lifetimeRank: (ahead ?? 0) + 1,
+      recentRank: recentScore > 0 ? (aheadRecent ?? 0) + 1 : null,
+    };
+  } catch {
+    return null;
+  }
+});
+
+/**
+ * Row ids of every player whose project is published — the set of profile pages
+ * that are worth putting in front of a search engine. Used by the sitemap.
+ *
+ * Capped, and the cap is a real limit rather than a formality — say what it
+ * means. A sitemap ANNOUNCES pages; it does not authorise them. A
+ * project-bearing player past the cap is still indexable and still reachable
+ * from the board, they are simply not announced, and a crawler that follows the
+ * board finds them anyway. The alternative — an uncapped list that grows with
+ * the board — trades that small delay for a file whose tail Google discards
+ * regardless. `docs/features/player-page.md` states the cap.
+ */
+export async function getProfileIdsWithProjects(limit = 500): Promise<string[]> {
+  const client = getSupabaseServerClient();
+  const { data, error } = await client
+    .from("leaderboard_public")
+    .select("id")
+    .not("project_name", "is", null)
+    .order("score", { ascending: false })
+    // Tie-break on id, exactly as the boards do. Without it, two players on the
+    // same score sitting either side of the cap swap places between generations
+    // and the sitemap churns — one player dropping out and another appearing on
+    // every rebuild, for no reason a crawler can make sense of.
+    .order("id", { ascending: true })
+    .limit(limit);
+
+  /*
+   * Thrown, not swallowed into an empty list.
+   *
+   * The two are not the same fact. An empty list means "nobody has a project";
+   * an error means "we could not find out". Returning the first for the second
+   * would publish, for the whole revalidate window, a sitemap that quietly drops
+   * every player page — telling a crawler those pages are gone when they are
+   * fine. Throwing means the sitemap fails to build and the crawler keeps the
+   * copy it already has, which is the truthful outcome: nothing was learned, so
+   * nothing changed.
+   *
+   * This is the same lesson as the rank counts in `getPlayer` above: swallowing
+   * a database error does not degrade the answer, it fabricates one.
+   */
+  if (error) throw new ProfileListUnavailable(error.message);
+  return (data ?? []).map((r) => String(r.id));
+}
+
+/**
+ * The one failure a caller is allowed to shrug off: the database could not
+ * answer the question. Branded so that nothing ELSE gets shrugged off with it —
+ * a missing Supabase configuration, or a plain programming mistake inside the
+ * function, must still be loud, and a bare `catch` cannot tell those apart.
+ *
+ * `message` carries the database's own words and nothing of a player's: this is
+ * a listing query, so there is no row in hand to leak even by accident.
+ */
+export class ProfileListUnavailable extends Error {
+  constructor(detail: string) {
+    super(`could not list project profiles: ${detail}`);
+    this.name = "ProfileListUnavailable";
+  }
+}
+
+/**
+ * Matched on `name`, not `instanceof`.
+ *
+ * Same reasoning this repo already applied to `AbortError` in
+ * `components/share-button.tsx`: a bundler that ends up with two copies of this
+ * module gives `instanceof` two different classes, and the test silently starts
+ * failing — which here would mean rethrowing the one error we meant to tolerate
+ * and failing a deploy over a sitemap. The name is the stable part.
+ */
+export function isProfileListUnavailable(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    (err as { name?: unknown }).name === "ProfileListUnavailable"
+  );
 }
 
 // ── getGlobalStats ────────────────────────────────────────────────────────────

@@ -332,7 +332,30 @@
     "projectLeaveTitle": "Token Forest を離れます",
     "projectLeaveBody": "このサイトは当方が運営しているものではなく、内容について保証できません。",
     "projectLeaveConfirm": "それでも移動",
-    "projectLeaveCancel": "ここに留まる"
+    "projectLeaveCancel": "ここに留まる",
+    "periodRecent": "直近30日",
+    "periodLifetime": "総合",
+    "periodHint": "総合はこれまでの累計での順位なので、早く始めた人がずっと上にいます。直近30日は今月の収穫だけを見て、毎月リセットされます。",
+    "recentTitle": "直近30日",
+    "recentSubtitle": "今月いちばんトークンを集めた人と、その人がつくっているもの。順位が高いほど、作品を見てもらえます。",
+    "recentPlayers": "今期の参加者 {n} 人",
+    "recentTokenLabel": "直近30日",
+    "totalTokenLabel": "累計",
+    "recentEmptyHeading": "今期はまだ収穫がありません",
+    "recentEmptyBody": "アプリを起動してバブルを集めれば、次の同期でここに出ます",
+    "projectEmptyPrompt": "ここにあなたの作品を置けます —— 名前、ひとこと説明、リンク。入力はアプリ内で行います。",
+    "showcaseHeading": "作品をボードに載せる",
+    "showcaseIntro": "ランキングに載ると、名前のとなりに自分のプロジェクトを置けます。ウェブ側は表示するだけで、編集はすべてアプリ内 —— こちらが文字を書き換えることはありません。",
+    "showcase01Title": "まずランキングに載る",
+    "showcase01Body": "アプリでランキングをオンにして、ユーザー名を設定します。ボードに場所がなければ、何も置けません。",
+    "showcase02Title": "プロジェクトを入力する",
+    "showcase02Body": "木を右クリック → 設定… → ランキング → プロジェクト紹介 をオンにします。名前(24文字まで)、ひとこと説明(80文字まで)、リンクを入力します。画像を添えることもできます。",
+    "showcase03Title": "次の同期で表示される",
+    "showcase03Body": "入力したら、次の同期でこのページの名前のとなりに作品が出ます。変更はいつでもアプリから、そのあともう一度同期してください。",
+    "showcaseNote": "リンクは GitHub、アプリストア、自分のサイトなど、開ける URL なら何でも構いません。画像は必須ではありません。",
+    "showcaseCta": "アプリをダウンロード",
+    "howToCta": "アプリをダウンロード",
+    "howToShowcaseLink": "直近30日のランキングと、みんながつくっているものを見る →"
   },
   "DownloadPage": {
     "heroTreeAlt": "完全に成長した Token Forest アップルツリー",
@@ -376,5 +399,29 @@
   },
   "ScrollHud": {
     "backToTop": "トップへ戻る"
+  },
+  "PlayerPage": {
+    "back": "ランキングに戻る",
+    "joined": "{date} に参加",
+    "rankLifetime": "総合",
+    "rankRecent": "直近30日",
+    "rankRecentNone": "今期は収穫なし",
+    "forestHeading": "この森",
+    "treeStage": "ステージ {n} / {total}",
+    "projectHeading": "つくっているもの",
+    "noProject": "{username} はまだプロジェクトを登録していません。",
+    "ctaBody": "この木は Token Forest で育ったものです —— AI コーディングツールで使ったトークンがデスクトップのバブルになり、集めると木が育ちます。",
+    "cta": "Token Forest をダウンロード",
+    "metaTitle": "{username} の森",
+    "metaDesc": "Token Forest ランキングにおける {username} の木と順位。",
+    "shareAria": "{username} さんのページを共有",
+    "shareText": "Token Forest の {username} さんの森"
+  },
+  "Share": {
+    "share": "共有",
+    "copied": "コピーしました",
+    "copyManual": "このアドレスをコピー",
+    "shareDownload": "友だちに送る",
+    "downloadText": "Token Forest — Claude Code や Codex で使った token が、デスクトップでピクセルの木に育ちます。無料、Windows と macOS 対応。"
   }
 }

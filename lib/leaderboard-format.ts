@@ -63,18 +63,6 @@ export function formatUsd(n: number, locale: string): string {
 
 // ── Project showcase ──────────────────────────────────────────────────────────
 
-/**
- * The two element ids the project panel is wired together with, derived from the
- * row id: the panel cell that `aria-controls` points at, and the project name
- * that names the panel (`aria-labelledby`).
- *
- * They live here, not beside the components, because the two ends are rendered
- * on opposite sides of the server/client line — the panel and its trigger are in
- * a `"use client"` module, the project name is rendered by the page — and a
- * Server Component cannot call a function exported from a client module.
- */
-export const panelId = (id: string) => `project-panel-${id}`;
-export const panelLabelId = (id: string) => `project-panel-label-${id}`;
 
 /**
  * The part of a project link we are willing to print.
@@ -161,4 +149,60 @@ export function bustedImageSrc(src: string, updatedAt: string): string {
   const stamp = Date.parse(updatedAt);
   if (!Number.isFinite(stamp)) return src;
   return `${src}${src.includes("?") ? "&" : "?"}v=${stamp}`;
+}
+
+/**
+ * Tree sprite selection.
+ *
+ * Lived in the player page until the share card needed the same mapping. Two
+ * consumers picking sprite filenames from the same two fields is exactly the
+ * drift this file was extracted to prevent, so it moved down here rather than
+ * being copied.
+ */
+export const STAGES = 8;
+
+export const TREE_PREFIX: Record<string, string> = {
+  apple: "AppleTree",
+  cherry: "CherryTree",
+  cactus: "Cactus",
+  christmas: "ChristmasTree",
+};
+
+/**
+ * Sprite files are 1-indexed; the stored stage is 0-indexed.
+ *
+ * Truncated before the clamp, not after. The stage arrives inside a jsonb
+ * column the desktop app writes, so it is not guaranteed to be a whole number:
+ * clamping alone bounds the range but not the integrality, and `3.5` would
+ * survive to name `AppleTree_4.5.png` — a file that does not exist. On a board
+ * that is a broken thumbnail; on the share card it is a read of a missing path,
+ * which turns a fallback into a 500 on a crawler-facing address. `|| 0` absorbs
+ * NaN in the same step.
+ */
+export function spriteStage(stageIndex: number): number {
+  const i = Math.trunc(stageIndex) || 0;
+  return Math.min(STAGES, Math.max(1, i + 1));
+}
+
+/**
+ * The sprite filename prefix for a species, defaulting to the apple tree.
+ *
+ * `Object.hasOwn`, not `TREE_PREFIX[tree] ?? "AppleTree"`. `tree` is a plain
+ * string column with no check constraint, written by the desktop app, so the
+ * value `constructor` reaches this lookup and returns `Object` — which
+ * stringifies into `function Object() { [native code] }`. On a board that is a
+ * broken thumbnail; on the share card it is a `readFileSync` that throws, which
+ * turns the "never fail outright" fallback into a 500 on a crawler-facing
+ * address. `??` cannot catch it, because the prototype value is truthy.
+ *
+ * Exported so every caller gets the guard rather than re-deriving it — the
+ * board pages need the bare prefix, the card needs a whole filename.
+ */
+export function treePrefix(tree: string): string {
+  return Object.hasOwn(TREE_PREFIX, tree) ? TREE_PREFIX[tree] : "AppleTree";
+}
+
+/** `AppleTree_5.png` — the filename only, so each caller builds its own path. */
+export function spriteFile(tree: string, stageIndex: number): string {
+  return `${treePrefix(tree)}_${spriteStage(stageIndex)}.png`;
 }
