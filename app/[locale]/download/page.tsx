@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@/i18n/routing";
-import { localizedMetadata } from "@/lib/seo";
+import { localizedMetadata, localizedUrl } from "@/lib/seo";
+import { ShareButton } from "@/components/share-button";
 import { BreadcrumbJsonLd, SoftwareAppJsonLd } from "@/components/json-ld";
 
 // 每次发版只改这一处;platformLine 文案会显示它。
@@ -29,6 +30,7 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
   setRequestLocale(locale);
   const t = await getTranslations("DownloadPage");
   const tnav = await getTranslations("TopBar");
+  const tsh = await getTranslations("Share");
 
   return (
     <div className="min-h-screen bg-surface-parchment">
@@ -73,6 +75,20 @@ export default async function DownloadPage({ params }: { params: Promise<{ local
           >
             {t("heroBody")}
           </p>
+
+          {/* 把这一页发给别人 —— 桌面装机的主要来路是「有人推荐给你」,
+              而这一页在此之前没有任何地方说它可以被转发。 */}
+          <div className="mt-6 flex justify-center">
+            <ShareButton
+              url={localizedUrl("/download", locale as Locale)}
+              shareTitle={t("heroHeading")}
+              shareText={tsh("downloadText")}
+              label={tsh("shareDownload")}
+              copiedLabel={tsh("copied")}
+              manualLabel={tsh("copyManual")}
+              ariaLabel={tsh("shareDownload")}
+            />
+          </div>
 
           {/* Windows / macOS 安装包直链 + GitHub follow CTA */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
