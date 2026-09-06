@@ -21,9 +21,17 @@ import { useEffect, useState } from "react";
  */
 export function BatchBar({
   formId,
+  navKey,
   labels,
 }: {
   formId: string;
+  /** The navigation state that decides which tick-boxes exist: the open day, plus the
+   *  filter and sort, since either can drop the open day out of the table entirely. They
+   *  live inside the open day and ONLY there, so any of these changing replaces them
+   *  wholesale without firing a `change` event — the counts below would otherwise keep
+   *  describing check-boxes that no longer exist, and Release/Hold would submit an empty
+   *  form while the bar still said "2 selected". */
+  navKey?: string;
   labels: {
     selectAllHeld: string;
     selectAllOpen: string;
@@ -65,7 +73,9 @@ export function BatchBar({
       cancelAnimationFrame(id);
       document.removeEventListener("change", recount);
     };
-  }, []);
+    // navKey: a soft navigation swaps the check-boxes out from under us without any event
+    // we listen for, so re-run the count against the new DOM.
+  }, [navKey]);
 
   const setAll = (pick: (b: HTMLInputElement) => boolean) => {
     boxes().forEach((b) => {

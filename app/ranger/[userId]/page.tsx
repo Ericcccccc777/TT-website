@@ -3,14 +3,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminUser } from "@/lib/ranger/auth";
-import { getRangerUserDetail } from "@/lib/ranger/data";
+import { getRangerUserDetail, HISTORY_LIMIT } from "@/lib/ranger/data";
 import {
   analyzeHistory,
   detectThrottling,
   explainHold,
   fmtGap,
   fmtRate,
+  groupByDay,
+  monthsOf,
+  resolveMonthParam,
   THRESHOLDS,
+  utcMonthKey,
   type AnalyzedRow,
   type Severity,
 } from "@/lib/ranger/analysis";
@@ -49,9 +53,33 @@ function fmtSigned(n: number): string {
 function fmtWhen(iso: string | null): string {
   return iso ? iso.replace("T", " ").slice(0, 16) + " UTC" : "—";
 }
-function fmtPct(p: number | null): string {
+/** A share of the physical ceiling. Over 100 is not possible and is coloured, not
+ *  merely printed — the page already speaks that red everywhere else. */
+function fmtCeil(p: number | null): string {
   if (p === null) return "—";
-  return `${p > 0 ? "+" : ""}${p < 10 && p > -10 ? p.toFixed(1) : Math.round(p)}%`;
+  // Floor, not round: rounding printed 99.6% and 100.4% both as "100%", one of them in
+  // the ordinary colour. A cell reading "100%" must always mean at-or-over the ceiling.
+  return p < 10 ? `${p.toFixed(1)}%` : `${Math.floor(p)}%`;
+}
+
+/**
+ * One send's share of the ceiling that applied to it.
+ *
+ * The `?? recompute` half is not optional. `analyzeHistory` leaves `ceiling` null for
+ * the two verdicts that return early — a decrease, and the ×100 migration whitelist —
+ * and `groupByDay` deliberately recomputes it so neither can hide from the day line.
+ * If this column did not do the same, the day line would print "worst send 157%" in red
+ * and opening that day would show a dash in the very cell the alarm points at: the
+ * drill-down would contradict the summary that sent the admin looking.
+ */
+function eventCeilPct(r: AnalyzedRow): number | null {
+  const ceiling =
+    r.ceiling ??
+    (r.oldScore === null
+      ? null
+      : THRESHOLDS.SUS_BURST + THRESHOLDS.SUS_RATE * Math.max(0, r.gapSeconds ?? 0));
+  if (ceiling === null || ceiling <= 0) return null;
+  return (Math.max(0, r.trueDelta ?? r.delta) / ceiling) * 100;
 }
 
 const SEV_TINT: Record<Severity, string | undefined> = {
@@ -225,40 +253,86 @@ export default async function RangerUserPage({
   const sp = await searchParams;
   const view = sp.view === "flagged" ? "flagged" : "all";
   const sort = sp.sort === "jump" || sp.sort === "rate" ? sp.sort : "time";
-  const expand = typeof sp.expand === "string" ? Number(sp.expand) : null;
+  const openDay = typeof sp.day === "string" && /^\d{4}-\d{2}-\d{2}$/.test(sp.day) ? sp.day : null;
+  // Whitelisted like every other param. Without the digit test a junk value became NaN,
+  // and NaN was then written straight back into every link the page emits as
+  // `expand=NaN`, surviving each navigation that did not change the open day.
+  const expand = typeof sp.expand === "string" && /^\d+$/.test(sp.expand) ? Number(sp.expand) : null;
 
-  const { row, history, acknowledgedIds, error } = await getRangerUserDetail(userId);
+  const { row, history, acknowledgedIds, truncated, error } = await getRangerUserDetail(userId);
+  // Analysis runs over the WHOLE history, before any filtering. Every row's severity,
+  // interval and ceiling are computed against its immediate predecessor, so slicing
+  // first would sever the first row of each slice from it — and a row's severity would
+  // then depend on which month you happened to be looking at.
   const { rows, summary } = analyzeHistory(history, new Set(acknowledgedIds));
   // A throttled cheat trips no rule — every gain sits just under every ceiling —
   // so it produces no held rows at all. This looks at the shape across events
   // instead. It holds nothing; it only points a human at the account.
   const throttle = detectThrottling(rows);
 
-  // Filter + sort. Baseline rows are excluded from the jump/rate sorts because their
-  // "delta" is the whole accumulated pre-history total, not a single step — it would
-  // always win. Test on oldScore, NOT severity: a baseline row can now come back
-  // watch/suspicious (an implausible first-ever total is the off→on re-register hole),
-  // so severity no longer identifies it.
+  // ── Period scope. One control, and it governs the charts and the day list
+  //    together — never one without the other. An unrecognised month is coerced to
+  //    "all" here, the same posture view/sort already take; it is never an error. ──
+  const months = monthsOf(history);
+  const month = resolveMonthParam(sp.month, months);
+  const scoped = month === null ? rows : rows.filter((r) => utcMonthKey(r.at) === month);
+
+  // Baseline rows are excluded from the jump/rate sorts because their "delta" is the
+  // whole accumulated pre-history total, not a single step — it would always win. Test
+  // on oldScore, NOT severity: a baseline row can now come back watch/suspicious (an
+  // implausible first-ever total is the off→on re-register hole), so severity no longer
+  // identifies it.
   const isBaseline = (r: (typeof rows)[number]) => r.oldScore === null;
-  let display = rows;
-  if (view === "flagged") {
-    display = display.filter((r) => r.severity === "watch" || r.severity === "suspicious");
-  }
-  if (sort === "jump") {
-    display = [...display]
-      .filter((r) => !isBaseline(r))
-      .sort((a, b) => (b.trueDelta ?? b.delta) - (a.trueDelta ?? a.delta));
-  } else if (sort === "rate") {
-    display = [...display]
-      .filter((r) => !isBaseline(r))
-      .sort((a, b) => (b.rate ?? -1) - (a.rate ?? -1));
-  }
+
+  // ── The day list. Grouping happens AFTER analysis and AFTER the period filter, but
+  //    the day windows are anchored against the FULL history: taking the previous
+  //    event from the filtered slice would make the first day of every month measure
+  //    from its own 00:00 regardless of a sync at 23:50 the night before, and every
+  //    month's opening day would read faster and closer to the ceiling than it was. ──
+  const grouped = groupByDay(scoped, rows);
+  // A day earns the flagged view either because it still carries a flagged send, or
+  // because something in it went over its own physical ceiling. The second half is not
+  // redundant: acknowledgement rewrites severity, so a send that produced 250% of what
+  // was possible drops out of `flaggedCount` the moment an admin rules on it — and § 3.5b
+  // says the disclosure holds "regardless of the ordering or filter in effect".
+  const isFlaggedDay = (d: (typeof grouped)[number]) =>
+    d.flaggedCount > 0 || (d.worstEventPct ?? 0) > 100;
+  let days = grouped;
+  if (view === "flagged") days = days.filter(isFlaggedDay);
+  // Both sorts park the days that have no number to sort by at the bottom, rather than
+  // letting a rendered "—" land in the middle of two rows that both show real figures.
+  if (sort === "jump")
+    days = [...days].sort(
+      (a, b) => Number(a.baselineOnly) - Number(b.baselineOnly) || b.gain - a.gain,
+    );
+  else if (sort === "rate")
+    days = [...days].sort(
+      (a, b) =>
+        Number(a.baselineOnly) - Number(b.baselineOnly) ||
+        (b.rate ?? -Infinity) - (a.rate ?? -Infinity),
+    );
 
   const base = `/ranger/${userId}`;
-  const href = (nextView: string, nextSort: string, nextExpand: number | null = null) => {
+  const href = (o: {
+    view?: string;
+    sort?: string;
+    month?: string | null;
+    day?: string | null;
+    expand?: number | null;
+  }) => {
+    const nextView = o.view ?? view;
+    const nextSort = o.sort ?? sort;
+    const nextMonth = o.month === undefined ? month : o.month;
+    // Changing the month drops the open day (it may not exist in the new month);
+    // changing the day drops the open event (it belongs to the day being closed).
+    const nextDay = o.month !== undefined ? null : o.day === undefined ? openDay : o.day;
+    const nextExpand =
+      o.month !== undefined || o.day !== undefined ? null : o.expand === undefined ? expand : o.expand;
     const p = new URLSearchParams();
     if (nextView !== "all") p.set("view", nextView);
     if (nextSort !== "time") p.set("sort", nextSort);
+    if (nextMonth) p.set("month", nextMonth);
+    if (nextDay) p.set("day", nextDay);
     if (nextExpand !== null) p.set("expand", String(nextExpand));
     const q = p.toString();
     return q ? `${base}?${q}` : base;
@@ -278,11 +352,18 @@ export default async function RangerUserPage({
         ? t(lang, "verdictWatch", { n: summary.watchCount })
         : t(lang, "verdictClean", { n: summary.changeCount });
 
-  const allCount = rows.filter((r) => !isBaseline(r)).length;
-  const flaggedCount = summary.watchCount + summary.suspiciousCount;
+  // Counts on the filter chips describe the CURRENT period, and are derived from the
+  // very array the table renders — the baseline exclusion applies ONLY to the "all days"
+  // count, which is where the EARS clause puts it. Deriving the flagged count from the
+  // baseline-excluded array instead made the chip read 0 above a table showing one day,
+  // whenever that day's only entry was a flagged starting snapshot.
+  const allCount = grouped.filter((d) => !d.baselineOnly).length;
+  const flaggedCount = grouped.filter(isFlaggedDay).length;
 
-  // ── Chart data. `rows` is newest-first; charts read left-to-right, so reverse. ──
-  const asc = [...rows].reverse();
+  // ── Chart data. Charts follow the period picker with the day list — this is the
+  //    one place the two must always agree. `scoped` is newest-first; charts read
+  //    left-to-right, so reverse. ──
+  const asc = [...scoped].reverse();
   const ms = (iso: string) => new Date(iso).getTime();
 
   // 1. The score as it actually stood over time (baseline included — it is where the
@@ -341,14 +422,12 @@ export default async function RangerUserPage({
 
   // Table columns — right-align the numeric metrics for a clean, scannable grid.
   const BATCH_FORM = "ranger-batch";
-  const cols: { label: string; align: "left" | "right" }[] = [
-    { label: "", align: "left" }, // 勾选框列
-    { label: t(lang, "thWhen"), align: "left" },
-    { label: t(lang, "thInterval"), align: "left" },
-    { label: t(lang, "thChange"), align: "left" },
+  const dayCols: { label: string; align: "left" | "right" }[] = [
+    { label: t(lang, "thDay"), align: "left" },
+    { label: t(lang, "thSyncs"), align: "right" },
     { label: t(lang, "thDelta"), align: "right" },
     { label: t(lang, "thRate"), align: "right" },
-    { label: t(lang, "thJump"), align: "right" },
+    { label: t(lang, "thCeilPct"), align: "right" },
     { label: t(lang, "thSignal"), align: "left" },
   ];
 
@@ -665,12 +744,48 @@ export default async function RangerUserPage({
             table view the palette's relief rule asks for, so nothing here is gated
             behind colour. Every scale is derived from the data at render time. */}
         <section className="mt-8">
-          <h2
-            className="text-leaf-deep"
-            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-h2)", lineHeight: 1.3 }}
-          >
-            {t(lang, "sectCharts")}
-          </h2>
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <h2
+              className="text-leaf-deep"
+              style={{
+                fontFamily: "var(--font-pixel)",
+                fontSize: "var(--text-h2)",
+                lineHeight: 1.3,
+              }}
+            >
+              {t(lang, "sectCharts")}
+            </h2>
+
+            {/* The period picker. It sits here because the charts are what an admin is
+                looking at when they decide to narrow — but it governs the day list
+                below just as much. One control, one meaning, the two always in step. */}
+            {months.length > 1 && (
+              <SegGroup
+                label={t(lang, "monthLabel")}
+                items={[
+                  {
+                    key: "all",
+                    label: t(lang, "monthAll"),
+                    href: href({ month: null }),
+                    active: month === null,
+                  },
+                  ...months.map((m) => ({
+                    key: m,
+                    label: m,
+                    href: href({ month: m }),
+                    active: month === m,
+                  })),
+                ]}
+              />
+            )}
+          </div>
+
+          {month && (
+            <p className="mt-2 font-body text-[11px] text-[var(--color-text-muted-light)]">
+              {t(lang, "chScoped", { m: month })}
+            </p>
+          )}
+
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <ChartCard title={t(lang, "chCumulative")} note={t(lang, "chCumulativeNote")}>
               <CumulativeChart points={cumulative} empty={t(lang, "chEmpty")} />
@@ -717,7 +832,7 @@ export default async function RangerUserPage({
               {t(lang, "sectHistory")}
             </h2>
 
-            {/* Filter + sort controls — two segmented groups */}
+            {/* Filter + sort — both now describe DAYS, not individual sends. */}
             <div className="flex flex-wrap items-center gap-x-10 gap-y-3">
               <SegGroup
                 label={t(lang, "cView")}
@@ -725,13 +840,13 @@ export default async function RangerUserPage({
                   {
                     key: "all",
                     label: `${t(lang, "cAll")} (${allCount})`,
-                    href: href("all", sort),
+                    href: href({ view: "all" }),
                     active: view === "all",
                   },
                   {
                     key: "flagged",
                     label: `${t(lang, "cFlagged")} (${flaggedCount})`,
-                    href: href("flagged", sort),
+                    href: href({ view: "flagged" }),
                     active: view === "flagged",
                   },
                 ]}
@@ -742,25 +857,41 @@ export default async function RangerUserPage({
                   {
                     key: "time",
                     label: t(lang, "cNewest"),
-                    href: href(view, "time"),
+                    href: href({ sort: "time" }),
                     active: sort === "time",
                   },
                   {
                     key: "jump",
-                    label: t(lang, "cBiggestJump"),
-                    href: href(view, "jump"),
+                    label: t(lang, "cBiggestDay"),
+                    href: href({ sort: "jump" }),
                     active: sort === "jump",
                   },
                   {
                     key: "rate",
-                    label: t(lang, "cFastestRate"),
-                    href: href(view, "rate"),
+                    label: t(lang, "cFastestDay"),
+                    href: href({ sort: "rate" }),
                     active: sort === "rate",
                   },
                 ]}
               />
             </div>
           </div>
+
+          {/* A page that stops reading has to say so. The period picker is built from
+              whatever came back, so silence here would let it pass off a truncated
+              record as a complete one. */}
+          {truncated && (
+            <p
+              className="mt-3 rounded-[2px] px-3 py-2 font-body text-[11px]"
+              style={{
+                border: "1px solid var(--color-soil)",
+                background: "var(--color-surface-parchment)",
+                color: "var(--color-text-muted-light)",
+              }}
+            >
+              {t(lang, "truncNotice", { n: HISTORY_LIMIT.toLocaleString("en") })}
+            </p>
+          )}
 
           <div className="mt-4 overflow-x-auto">
             <div
@@ -776,7 +907,7 @@ export default async function RangerUserPage({
                     className="bg-leaf-deep"
                     style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
                   >
-                    {cols.map((c, i) => (
+                    {dayCols.map((c, i) => (
                       <th
                         key={i}
                         scope="col"
@@ -788,182 +919,158 @@ export default async function RangerUserPage({
                   </tr>
                 </thead>
                 <tbody className="text-text-muted-light">
-                  {display.map((h) => {
-                    const showMarkOk =
-                      !h.acknowledged && (h.severity === "watch" || h.severity === "suspicious");
-                    const open = expand === h.id;
-                    const tint = h.acknowledged ? "rgba(21,128,61,0.06)" : SEV_TINT[h.severity];
+                  {days.map((d) => {
+                    const open = openDay === d.key;
+                    const tint = SEV_TINT[d.severity];
+                    const wd = t(lang, `wd${new Date(d.dayMs).getUTCDay()}` as Key);
+                    const over = d.ceilingPct !== null && d.ceilingPct > 100;
                     return (
-                      <Fragment key={h.id}>
+                      <Fragment key={d.key}>
                         <tr className="border-t border-leaf-deep/20" style={{ background: tint }}>
-                          {/* Belongs to the batch form outside the table via `form=`;
-                            nesting a form inside the per-row ones would be invalid. */}
-                          <td className="px-3 py-2.5 align-top">
-                            {isBaseline(h) ? null : (
-                              <input
-                                type="checkbox"
-                                name="eventIds"
-                                value={h.id}
-                                form={BATCH_FORM}
-                                data-held={h.quarantined ? "1" : "0"}
-                                aria-label={`${h.id}`}
-                              />
-                            )}
-                          </td>
                           <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
-                            {/* Clicking the timestamp opens the breakdown below it. URL state,
-                              server-rendered — same idiom as the segmented controls, no client JS. */}
+                            {/* Clicking the date opens the day's sends below it. URL state,
+                              server-rendered — same idiom as the segmented controls. */}
                             <Link
-                              href={href(view, sort, open ? null : h.id)}
+                              href={href({ day: open ? null : d.key })}
                               scroll={false}
                               className="ranger-btn inline-flex items-center gap-1 underline-offset-2 hover:underline"
                             >
                               <span aria-hidden className="opacity-50">
                                 {open ? "▾" : "▸"}
                               </span>
-                              {fmtWhen(h.at)}
+                              {d.key}
+                              <span className="opacity-55">{wd}</span>
                             </Link>
                           </td>
-                          <td className="px-3 py-2.5 align-top whitespace-nowrap">{h.gapLabel}</td>
-                          <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
-                            {fmtTokens(h.oldScore)} → {fmtTokens(h.newScore)}
+                          <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
+                            {d.baselineOnly ? "—" : d.count}
                           </td>
                           <td
                             className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
                             style={{
-                              color:
-                                (h.trueDelta ?? h.delta) < 0
-                                  ? "#b91c1c"
-                                  : "var(--color-text-forest)",
+                              color: d.gain < 0 ? "#b91c1c" : "var(--color-text-forest)",
                             }}
                           >
-                            {fmtSigned(h.trueDelta ?? h.delta)}
+                            {d.baselineOnly ? "—" : fmtSigned(d.gain)}
                           </td>
                           <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
-                            {h.rateLabel}
+                            {d.rateLabel}
+                            {/* The window is not decoration: neither the rate nor the
+                              ceiling share can be read without knowing what they were
+                              measured over. */}
+                            {d.windowSeconds > 0 && (
+                              <div className="text-[10px] opacity-55">
+                                {t(lang, "dayOver", { w: d.windowLabel })}
+                              </div>
+                            )}
                           </td>
-                          <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
-                            {fmtPct(h.jumpPct)}
+                          <td
+                            className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
+                            style={{ color: over ? "#b91c1c" : "var(--color-text-forest)" }}
+                          >
+                            {fmtCeil(d.ceilingPct)}
+                            {/* THE line that makes a day view safe. A send that produced
+                              240% of what was possible in its own eleven minutes lands
+                              near 38% once averaged across a busy day — so the day's own
+                              number is never the only one shown for a day that has
+                              something in it. */}
+                            {d.worstEventPct !== null && (
+                              <div
+                                className="text-[10px]"
+                                style={{
+                                  color: d.worstEventPct > 100 ? "#b91c1c" : undefined,
+                                  opacity: d.worstEventPct > 100 ? 1 : 0.55,
+                                }}
+                              >
+                                {t(lang, "dayWorst", { p: Math.floor(d.worstEventPct) })}
+                              </div>
+                            )}
                           </td>
                           <td className="px-3 py-2.5 align-top text-[11px]">
                             <div className="flex items-start gap-2">
-                              <SevBadge
-                                severity={h.severity}
-                                acknowledged={h.acknowledged}
-                                lang={lang}
-                              />
-                              <span className="opacity-80">
-                                {h.signals.map((sg) => t(lang, sg.key as never, sg.p)).join(" ")}
-                              </span>
+                              <SevBadge severity={d.severity} acknowledged={false} lang={lang} />
+                              {d.baselineOnly && (
+                                <span className="opacity-70">{t(lang, "dayBaseline")}</span>
+                              )}
                             </div>
-                            {showMarkOk && (
-                              <form action={acknowledgeAction} className="mt-1.5">
-                                <input type="hidden" name="historyId" value={h.id} />
-                                <input type="hidden" name="userId" value={userId} />
-                                <button
-                                  type="submit"
-                                  className="ranger-btn rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
-                                  style={{
-                                    border: "1px solid var(--color-soil)",
-                                    background: "var(--color-surface-parchment)",
-                                  }}
-                                >
-                                  {t(lang, "markOk")}
-                                </button>
-                              </form>
-                            )}
-                            {/* Quarantine (0016). Held increases are not in the
-                              player's public score; releasing one puts it back.
-                              Distinct from "mark ok" above, which only silences
-                              the severity badge and moves no tokens. */}
-                            {h.quarantined ? (
-                              <div className="mt-1.5">
-                                <div className="text-[10px] text-amber-800">
-                                  {t(lang, "qHeld")} −{(h.trueDelta ?? h.delta).toLocaleString()}
-                                  {h.decidedBy
-                                    ? ` · ${t(lang, "qDecidedBy", { who: h.decidedBy })}`
-                                    : ""}
-                                </div>
-                                {/* The machine's codes mean nothing to a human at
-                                  a glance; spell out what actually happened. */}
-                                {explainHold(h.holdReasons).map((r) => (
-                                  <div key={r.short} className="mt-0.5 text-[10px] leading-snug">
-                                    <span className="font-semibold text-amber-900">
-                                      {t(lang, r.short as never)}
-                                    </span>
-                                    <span className="text-text-muted-light">
-                                      {" "}
-                                      — {t(lang, r.why as never)}
-                                    </span>
-                                  </div>
-                                ))}
-                                <form action={releaseEventAction} className="mt-1">
-                                  <input type="hidden" name="eventId" value={h.id} />
-                                  <input type="hidden" name="userId" value={userId} />
-                                  <button
-                                    type="submit"
-                                    className="ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-2 py-0.5 text-[10px] text-text-cream"
-                                  >
-                                    {t(lang, "qRelease")}
-                                  </button>
-                                </form>
+                            {d.flaggedCount > 0 && (
+                              <div className="mt-1 opacity-80">
+                                {t(lang, "dayFlaggedOf", { k: d.flaggedCount, n: d.events.length })}
                               </div>
-                            ) : (
-                              <form action={holdEventAction} className="mt-1.5">
-                                <input type="hidden" name="eventId" value={h.id} />
-                                <input type="hidden" name="userId" value={userId} />
-                                <button
-                                  type="submit"
-                                  className="ranger-btn ranger-btn-lift rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
-                                  style={{
-                                    border: "1px solid var(--color-soil)",
-                                    background: "var(--color-surface-parchment)",
-                                  }}
-                                >
-                                  {t(lang, "qHold")}
-                                </button>
-                              </form>
                             )}
-                            {h.acknowledged && (
-                              <form action={unacknowledgeAction} className="mt-1.5">
-                                <input type="hidden" name="historyId" value={h.id} />
-                                <input type="hidden" name="userId" value={userId} />
-                                <button
-                                  type="submit"
-                                  className="ranger-btn text-[10px] underline underline-offset-2 opacity-70"
-                                >
-                                  {t(lang, "undo")}
-                                </button>
-                              </form>
+                            {d.acknowledgedCount > 0 && (
+                              <div className="mt-1 text-[10px] opacity-70">
+                                {t(lang, "dayAcked", { k: d.acknowledgedCount })}
+                              </div>
+                            )}
+                            {d.heldCount > 0 && (
+                              <div className="mt-0.5 text-[10px] text-amber-800">
+                                {t(lang, "dayHeld", {
+                                  k: d.heldCount,
+                                  v: Math.round(d.heldTokens).toLocaleString("en"),
+                                })}
+                              </div>
                             )}
                           </td>
                         </tr>
                         {open && (
                           <tr style={{ background: tint }}>
-                            <td colSpan={8} className="px-3 pb-4">
-                              <BucketPanel row={h} lang={lang} />
+                            <td colSpan={6} className="px-3 pb-4">
+                              <div className="mb-2 text-[11px] opacity-60">
+                                {t(lang, "dayEventsTitle", { n: d.events.length })}
+                              </div>
+                              <EventTable
+                                events={d.events}
+                                lang={lang}
+                                userId={userId}
+                                expand={expand}
+                                hrefFor={(id) => href({ expand: id })}
+                                formId={BATCH_FORM}
+                              />
                             </td>
                           </tr>
                         )}
                       </Fragment>
                     );
                   })}
-                  {display.length === 0 && (
+                  {days.length === 0 && (
                     <tr className="border-t border-leaf-deep/20">
-                      <td colSpan={8} className="px-3 py-8 text-center text-text-muted-light">
-                        {history.length === 0 ? t(lang, "noHistory") : t(lang, "noMatch")}
+                      <td colSpan={6} className="px-3 py-8 text-center text-text-muted-light">
+                        {/* Branch on the CAUSE, not on whether a month is set. A set
+                          month is only ever one the player HAS rows in, so "no records
+                          in this month" was false in every state it could render — the
+                          list was empty because the flagged filter emptied it. */}
+                        {history.length === 0
+                          ? t(lang, "noHistory")
+                          : view === "flagged"
+                            ? t(lang, "noDays")
+                            : t(lang, "monthEmpty")}
+                        {month && (
+                          <>
+                            {" "}
+                            <Link
+                              href={href({ month: null })}
+                              className="underline underline-offset-2"
+                            >
+                              {t(lang, "monthBack")}
+                            </Link>
+                          </>
+                        )}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
               {/* The form itself carries nothing but the target user; the checkboxes
-                  above and the buttons below attach to it by id. */}
+                  inside an OPEN day and the buttons below attach to it by id. A closed
+                  day emits no checkboxes at all, so "select all" can never reach a row
+                  the admin is not looking at. */}
               <form id={BATCH_FORM} action={batchEventAction}>
                 <input type="hidden" name="userId" value={userId} />
               </form>
               <BatchBar
                 formId={BATCH_FORM}
+                navKey={`${openDay ?? ""}|${view}|${sort}|${month ?? ""}`}
                 labels={{
                   selectAllHeld: t(lang, "qSelectAll"),
                   selectAllOpen: t(lang, "qSelectAllOpen"),
@@ -1064,6 +1171,231 @@ export default async function RangerUserPage({
         </p>
       </div>
     </main>
+  );
+}
+
+/**
+ * One day's sends, as they have always looked.
+ *
+ * This is the table the page used to show at the top level, moved inside the day it
+ * belongs to and unchanged in substance: the same columns, the same per-row hold /
+ * release / mark-ok controls, the same second level of expansion onto the bucket
+ * evidence. One column did change — "jump" (a gain as a percentage of the running
+ * total) is now "share of the ceiling", the same measure the day line above uses, so
+ * the two can be read against each other instead of against nothing.
+ *
+ * The tick-boxes live here and only here. A closed day renders none, so "select all"
+ * can never reach a send the admin is not looking at — which is how an admin would
+ * otherwise withhold a month of somebody's honest work by accident.
+ */
+function EventTable({
+  events,
+  lang,
+  userId,
+  expand,
+  hrefFor,
+  formId,
+}: {
+  events: AnalyzedRow[];
+  lang: Lang;
+  userId: string;
+  expand: number | null;
+  hrefFor: (eventId: number | null) => string;
+  formId: string;
+}) {
+  const cols: { label: string; align: "left" | "right" }[] = [
+    { label: "", align: "left" },
+    { label: t(lang, "thWhen"), align: "left" },
+    { label: t(lang, "thInterval"), align: "left" },
+    { label: t(lang, "thChange"), align: "left" },
+    { label: t(lang, "thDelta"), align: "right" },
+    { label: t(lang, "thRate"), align: "right" },
+    { label: t(lang, "thCeilPct"), align: "right" },
+    { label: t(lang, "thSignal"), align: "left" },
+  ];
+
+  return (
+    <div
+      className="overflow-x-auto rounded-[2px]"
+      style={{ border: "1px solid var(--color-soil)", background: "var(--color-surface-card)" }}
+    >
+      <table
+        className="w-full border-collapse text-left"
+        style={{ fontFamily: "var(--font-body)", fontSize: "var(--text-small)" }}
+      >
+        <thead>
+          <tr
+            className="border-b border-leaf-deep/25"
+            style={{ fontFamily: "var(--font-pixel)", fontSize: "var(--text-caption)" }}
+          >
+            {cols.map((c, i) => (
+              <th
+                key={i}
+                scope="col"
+                className={`px-3 py-2 text-text-forest opacity-70 ${c.align === "right" ? "text-right" : "text-left"}`}
+              >
+                {c.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="text-text-muted-light">
+          {events.map((h) => {
+            const showMarkOk =
+              !h.acknowledged && (h.severity === "watch" || h.severity === "suspicious");
+            const open = expand === h.id;
+            const tint = h.acknowledged ? "rgba(21,128,61,0.06)" : SEV_TINT[h.severity];
+            const pct = eventCeilPct(h);
+            return (
+              <Fragment key={h.id}>
+                <tr className="border-t border-leaf-deep/15" style={{ background: tint }}>
+                  {/* Belongs to the batch form outside the table via `form=`;
+                    nesting a form inside the per-row ones would be invalid. */}
+                  <td className="px-3 py-2.5 align-top">
+                    {h.oldScore === null ? null : (
+                      <input
+                        type="checkbox"
+                        name="eventIds"
+                        value={h.id}
+                        form={formId}
+                        data-held={h.quarantined ? "1" : "0"}
+                        aria-label={`${h.id}`}
+                      />
+                    )}
+                  </td>
+                  <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
+                    {/* Clicking the timestamp opens the evidence below it. */}
+                    <Link
+                      href={hrefFor(open ? null : h.id)}
+                      scroll={false}
+                      className="ranger-btn inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                    >
+                      <span aria-hidden className="opacity-50">
+                        {open ? "▾" : "▸"}
+                      </span>
+                      {fmtWhen(h.at)}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2.5 align-top whitespace-nowrap">{h.gapLabel}</td>
+                  <td className="px-3 py-2.5 align-top font-mono text-[11px] whitespace-nowrap">
+                    {fmtTokens(h.oldScore)} → {fmtTokens(h.newScore)}
+                  </td>
+                  <td
+                    className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
+                    style={{
+                      color: (h.trueDelta ?? h.delta) < 0 ? "#b91c1c" : "var(--color-text-forest)",
+                    }}
+                  >
+                    {fmtSigned(h.trueDelta ?? h.delta)}
+                  </td>
+                  <td className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap">
+                    {h.rateLabel}
+                  </td>
+                  <td
+                    className="px-3 py-2.5 align-top text-right font-mono whitespace-nowrap"
+                    style={{
+                      color: pct !== null && pct > 100 ? "#b91c1c" : "var(--color-text-forest)",
+                    }}
+                  >
+                    {fmtCeil(pct)}
+                  </td>
+                  <td className="px-3 py-2.5 align-top text-[11px]">
+                    <div className="flex items-start gap-2">
+                      <SevBadge severity={h.severity} acknowledged={h.acknowledged} lang={lang} />
+                      <span className="opacity-80">
+                        {h.signals.map((sg) => t(lang, sg.key as never, sg.p)).join(" ")}
+                      </span>
+                    </div>
+                    {showMarkOk && (
+                      <form action={acknowledgeAction} className="mt-1.5">
+                        <input type="hidden" name="historyId" value={h.id} />
+                        <input type="hidden" name="userId" value={userId} />
+                        <button
+                          type="submit"
+                          className="ranger-btn rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                          style={{
+                            border: "1px solid var(--color-soil)",
+                            background: "var(--color-surface-parchment)",
+                          }}
+                        >
+                          {t(lang, "markOk")}
+                        </button>
+                      </form>
+                    )}
+                    {/* Quarantine (0016). Held increases are not in the player's
+                      public score; releasing one puts it back. Distinct from
+                      "mark ok" above, which only silences the severity badge
+                      and moves no tokens. */}
+                    {h.quarantined ? (
+                      <div className="mt-1.5">
+                        <div className="text-[10px] text-amber-800">
+                          {t(lang, "qHeld")} −{(h.trueDelta ?? h.delta).toLocaleString()}
+                          {h.decidedBy ? ` · ${t(lang, "qDecidedBy", { who: h.decidedBy })}` : ""}
+                        </div>
+                        {/* The machine's codes mean nothing to a human at a
+                          glance; spell out what actually happened. */}
+                        {explainHold(h.holdReasons).map((r) => (
+                          <div key={r.short} className="mt-0.5 text-[10px] leading-snug">
+                            <span className="font-semibold text-amber-900">
+                              {t(lang, r.short as never)}
+                            </span>
+                            <span className="text-text-muted-light"> — {t(lang, r.why as never)}</span>
+                          </div>
+                        ))}
+                        <form action={releaseEventAction} className="mt-1">
+                          <input type="hidden" name="eventId" value={h.id} />
+                          <input type="hidden" name="userId" value={userId} />
+                          <button
+                            type="submit"
+                            className="ranger-btn ranger-btn-lift rounded-[2px] bg-leaf-deep px-2 py-0.5 text-[10px] text-text-cream"
+                          >
+                            {t(lang, "qRelease")}
+                          </button>
+                        </form>
+                      </div>
+                    ) : (
+                      <form action={holdEventAction} className="mt-1.5">
+                        <input type="hidden" name="eventId" value={h.id} />
+                        <input type="hidden" name="userId" value={userId} />
+                        <button
+                          type="submit"
+                          className="ranger-btn ranger-btn-lift rounded-[2px] px-2 py-0.5 text-[10px] text-text-forest"
+                          style={{
+                            border: "1px solid var(--color-soil)",
+                            background: "var(--color-surface-parchment)",
+                          }}
+                        >
+                          {t(lang, "qHold")}
+                        </button>
+                      </form>
+                    )}
+                    {h.acknowledged && (
+                      <form action={unacknowledgeAction} className="mt-1.5">
+                        <input type="hidden" name="historyId" value={h.id} />
+                        <input type="hidden" name="userId" value={userId} />
+                        <button
+                          type="submit"
+                          className="ranger-btn text-[10px] underline underline-offset-2 opacity-70"
+                        >
+                          {t(lang, "undo")}
+                        </button>
+                      </form>
+                    )}
+                  </td>
+                </tr>
+                {open && (
+                  <tr style={{ background: tint }}>
+                    <td colSpan={8} className="px-3 pb-4">
+                      <BucketPanel row={h} lang={lang} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

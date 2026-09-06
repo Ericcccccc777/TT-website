@@ -6,6 +6,15 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
  *  the gate. Single source of truth shared by the UI and deleteOrphanAction. */
 export const ORPHAN_STALE_DAYS = 14;
 
+/** How many history rows the per-user detail page reads.
+ *
+ *  Was 200. The busiest account already held 182 on 2026-09-06, and the month picker
+ *  added by `ranger-daily-history` is built from whatever this read returns — so at 200
+ *  it would shortly start offering a set of months that quietly excluded the oldest
+ *  ones. A picker that omits a month is worse than a page that admits where it stops,
+ *  so the number goes up AND the page says when it hit the cap (`truncated`). */
+export const HISTORY_LIMIT = 2000;
+
 /**
  * One leaderboard row as the admin sees it — includes fields hidden from the
  * public board (user_id) plus the ban status. SERVER-ONLY: uses the service
@@ -199,6 +208,9 @@ export type RangerUserDetail = {
   row: RangerRow | null;
   history: HistoryEntry[];
   acknowledgedIds: number[];
+  /** The read hit HISTORY_LIMIT, so anything older than the oldest row shown is missing.
+   *  The page says so rather than letting the month picker imply the record is complete. */
+  truncated: boolean;
   error: string | null;
 };
 
@@ -226,7 +238,7 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
         .eq("user_id", userId)
         .order("at", { ascending: false })
         .order("id", { ascending: false })
-        .limit(200);
+        .limit(HISTORY_LIMIT);
 
     const [lb, ban, histWide, allow, block] = await Promise.all([
       admin
@@ -256,10 +268,10 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
 
     const hist = histWide.error ? await histQuery(HIST_BASE) : histWide;
 
-    if (lb.error) return { row: null, history: [], acknowledgedIds: [], error: lb.error.message };
-    if (ban.error) return { row: null, history: [], acknowledgedIds: [], error: ban.error.message };
+    if (lb.error) return { row: null, history: [], acknowledgedIds: [], truncated: false, error: lb.error.message };
+    if (ban.error) return { row: null, history: [], acknowledgedIds: [], truncated: false, error: ban.error.message };
     if (hist.error)
-      return { row: null, history: [], acknowledgedIds: [], error: hist.error.message };
+      return { row: null, history: [], acknowledgedIds: [], truncated: false, error: hist.error.message };
 
     const r = lb.data;
     const b = ban.data as { reason: string | null; created_at: string } | null;
@@ -346,12 +358,13 @@ export async function getRangerUserDetail(userId: string): Promise<RangerUserDet
       if (!rev.error) acknowledgedIds = (rev.data ?? []).map((r) => Number(r.history_id));
     }
 
-    return { row, history, acknowledgedIds, error: null };
+    return { row, history, acknowledgedIds, truncated: history.length >= HISTORY_LIMIT, error: null };
   } catch (e) {
     return {
       row: null,
       history: [],
       acknowledgedIds: [],
+      truncated: false,
       error: e instanceof Error ? e.message : String(e),
     };
   }

@@ -497,3 +497,216 @@ export function detectThrottling(rows: AnalyzedRow[]): ThrottleVerdict {
   const suspicious = measured >= 4 && ratio > 0.5;
   return { hugging, measured, ratio, suspicious };
 }
+
+// ── Day grouping (ranger-daily-history) ──────────────────────────────────────
+// The per-event list is unreadable for an active account: 182 rows arriving in
+// half-hour bursts, each a number that means nothing alone. The question an admin
+// actually arrives with is "what kind of day was this". So the analysed rows get
+// regrouped into UTC calendar days — AFTER analysis, never before, because every
+// event's severity, interval and ceiling are computed against its immediate
+// predecessor and grouping first would sever the first event of each group from it.
+
+const SEV_RANK: Record<Severity, number> = {
+  normal: 0,
+  baseline: 1,
+  watch: 2,
+  suspicious: 3,
+};
+
+/** UTC calendar day of an ISO timestamp: "2026-09-05". The whole page thinks in UTC. */
+export function utcDayKey(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
+/** UTC calendar month: "2026-09". */
+export function utcMonthKey(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 7);
+}
+
+/** Distinct months present in these rows, newest first. Drives the month picker. */
+export function monthsOf(rows: HistoryEntry[]): string[] {
+  return [...new Set(rows.map((r) => utcMonthKey(r.at)))].sort((a, b) => b.localeCompare(a));
+}
+
+/**
+ * Coerce a `?month=` query param to a month this player actually has, or null (= all
+ * months). Membership in `available` — which is `monthsOf(history)` — is the whole
+ * test: there is no format validation and no error channel, so a malformed month and a
+ * well-formed month the player has no records in necessarily collapse into the same
+ * "show the full record" outcome (spec § 3.1). Never throws.
+ */
+export function resolveMonthParam(
+  raw: string | string[] | undefined,
+  available: string[],
+): string | null {
+  return typeof raw === "string" && available.includes(raw) ? raw : null;
+}
+
+export type DayRow = {
+  key: string; // "2026-09-05"
+  dayMs: number; // UTC midnight
+  events: AnalyzedRow[]; // newest-first, as displayed
+  count: number; // non-baseline events
+  gain: number; // Σ (trueDelta ?? delta), withheld events included
+  windowSeconds: number; // 0 when unmeasurable
+  windowLabel: string;
+  rate: number | null;
+  rateLabel: string;
+  ceilingPct: number | null; // the day's gain as a share of the day's own ceiling
+  /**
+   * The worst SINGLE event's share of ITS OWN ceiling. This is the whole reason a
+   * day view is safe to ship: a send that produced 240% of what was possible in its
+   * own eleven minutes lands near 38% once averaged across a busy day. Carried
+   * whenever the day holds anything flagged or over-ceiling, so the rolled-up number
+   * is never the only thing on screen for a day that has something in it.
+   */
+  worstEventPct: number | null;
+  severity: Severity; // highest in the day
+  flaggedCount: number; // events left at watch|suspicious after acknowledgement
+  /** Events an admin ruled reviewed-OK. Their severity was rewritten to normal, so
+   *  without this count a day holding one is byte-identical to a day holding nothing —
+   *  and the acknowledgement, which used to be visible in the top-level list, would be
+   *  buried inside a collapsed day with no hint on the outside. */
+  acknowledgedCount: number;
+  heldCount: number;
+  heldTokens: number;
+  baselineOnly: boolean; // holds nothing but the starting snapshot
+};
+
+/**
+ * Group analysed rows into days.
+ *
+ * `display` is the (possibly month-filtered) slice to render. `full` is the WHOLE
+ * analysed history and is used for one thing only: finding the last event before a
+ * day started, which anchors that day's measurement window. Taking it from `display`
+ * would make the first day of every month measure from its own 00:00 regardless of
+ * whether the player synced at 23:50 the night before — every month's opening day
+ * would read systematically faster and closer to the ceiling than it was.
+ */
+export function groupByDay(display: AnalyzedRow[], full: AnalyzedRow[]): DayRow[] {
+  const fullAsc = [...full].sort((a, b) => toMs(a.at) - toMs(b.at) || a.id - b.id);
+
+  const buckets = new Map<string, AnalyzedRow[]>();
+  for (const r of display) {
+    const k = utcDayKey(r.at);
+    const arr = buckets.get(k);
+    if (arr) arr.push(r);
+    else buckets.set(k, [r]);
+  }
+
+  // Ascending so the scan below can walk `fullAsc` once instead of re-filtering it per
+  // day. At the sizing HISTORY_LIMIT now permits (2000 rows over ~400 days) the filter
+  // form cost 112ms of blocking server CPU per render; this costs one pass.
+  const keysAsc = [...buckets.keys()].sort();
+  const days: DayRow[] = [];
+  let fi = 0; // first index in fullAsc at or after the current day's start
+  for (const key of keysAsc) {
+    const unsorted = buckets.get(key) as AnalyzedRow[];
+    // Newest-first inside the day, matching how the page has always listed events.
+    const events = [...unsorted].sort((a, b) => toMs(b.at) - toMs(a.at) || b.id - a.id);
+    const dayMs = Date.parse(`${key}T00:00:00.000Z`);
+    const dayEnd = dayMs + 864e5;
+    const real = events.filter((r) => r.oldScore !== null);
+    const baselineOnly = real.length === 0;
+
+    const gain = real.reduce((s, r) => s + (r.trueDelta ?? r.delta), 0);
+
+    // The window: from the previous event — or the day's own start, whichever is
+    // later — to the last event of the day. Everything else on the line is scoped
+    // to the day, so a window reaching back across days would make the rate answer
+    // a different question from the gain sitting beside it.
+    const lastAt = Math.max(...events.map((r) => toMs(r.at)));
+    // `keysAsc` only moves forward, so `fi` only moves forward too.
+    while (fi < fullAsc.length && toMs(fullAsc[fi].at) < dayMs) fi += 1;
+    const prevAt = fi > 0 ? toMs(fullAsc[fi - 1].at) : null;
+    // Only the OLDEST day has no predecessor, and "no predecessor" means one of two very
+    // different things. If the oldest row we hold is the player's baseline snapshot we
+    // are genuinely looking at their first day, and it opens at its own first event. If
+    // it is not — a read truncated at HISTORY_LIMIT, or an account whose history predates
+    // the capture trigger — there IS an earlier event we cannot see, and opening at the
+    // day's first event would shorten the window to the part we happen to hold: the day
+    // then reads several times too fast and can cross a severity threshold on nothing but
+    // where the read stopped. Unmeasurable is the honest answer, and it is the posture the
+    // rest of this file already takes (absent evidence is never evidence).
+    const startsAtBaseline = fullAsc.length > 0 && fullAsc[0].oldScore === null;
+    const start =
+      prevAt !== null
+        ? Math.max(dayMs, prevAt)
+        : startsAtBaseline
+          ? Math.min(...events.map((r) => toMs(r.at)))
+          : null;
+    const windowSeconds =
+      baselineOnly || start === null ? 0 : Math.max(0, (Math.min(lastAt, dayEnd) - start) / 1000);
+
+    // Floored at one second, mirroring the per-event path (`effGap`). A day whose only
+    // send lands in the first moments after midnight otherwise divides by a fraction and
+    // reports a rate inflated by orders of magnitude — beside a window label reading
+    // "instant" — which then wins the "fastest day" sort outright.
+    const measurable = windowSeconds >= 1;
+    const rate = measurable ? gain / windowSeconds : null;
+    const dayCeiling = THRESHOLDS.SUS_BURST + THRESHOLDS.SUS_RATE * windowSeconds;
+    // A ceiling bounds production; a loss produced nothing, so it gets no share.
+    const ceilingPct = !baselineOnly && gain > 0 && measurable ? (gain / dayCeiling) * 100 : null;
+
+    let severity: Severity = "normal";
+    let flaggedCount = 0;
+    let acknowledgedCount = 0;
+    let heldCount = 0;
+    let heldTokens = 0;
+    let worst: number | null = null;
+    for (const r of events) {
+      if (SEV_RANK[r.severity] > SEV_RANK[severity]) severity = r.severity;
+      if (r.severity === "watch" || r.severity === "suspicious") flaggedCount += 1;
+      if (r.acknowledged) acknowledgedCount += 1;
+      if (r.quarantined) {
+        heldCount += 1;
+        heldTokens += r.trueDelta ?? r.delta;
+      }
+      // `r.ceiling` is left null by analyzeHistory for the two verdicts that return
+      // early — a decrease, and the ×100 metric-migration whitelist. Skipping those
+      // rows here would mean a send shaped like the whitelist could carry billions of
+      // tokens and leave NO day-level trace at all, which is precisely the hiding place
+      // this figure exists to close. The elapsed time is known either way, so the
+      // ceiling is computable either way; recompute it rather than skip the row.
+      const evCeiling =
+        r.ceiling ??
+        (r.oldScore === null
+          ? null
+          : THRESHOLDS.SUS_BURST + THRESHOLDS.SUS_RATE * Math.max(0, r.gapSeconds ?? 0));
+      if (evCeiling !== null && evCeiling > 0) {
+        const pct = (Math.max(0, r.trueDelta ?? r.delta) / evCeiling) * 100;
+        if (worst === null || pct > worst) worst = pct;
+      }
+    }
+
+    days.push({
+      key,
+      dayMs,
+      events,
+      count: real.length,
+      gain,
+      windowSeconds,
+      windowLabel: windowSeconds > 0 ? fmtGap(windowSeconds) : "—",
+      rate,
+      rateLabel: rate === null ? "—" : fmtRate(rate),
+      ceilingPct,
+      // Shown only when the day actually holds something — otherwise every quiet day
+      // would carry a second number that says nothing. `acknowledgedCount` is in the
+      // test on purpose: acknowledgement rewrites severity to normal, so without it a
+      // day whose flagged send an admin has already ruled on goes completely silent and
+      // becomes indistinguishable from a day that never had one.
+      worstEventPct:
+        worst !== null && (flaggedCount > 0 || acknowledgedCount > 0 || worst > 100)
+          ? worst
+          : null,
+      severity,
+      flaggedCount,
+      acknowledgedCount,
+      heldCount,
+      heldTokens,
+      baselineOnly,
+    });
+  }
+
+  return days.sort((a, b) => b.dayMs - a.dayMs);
+}

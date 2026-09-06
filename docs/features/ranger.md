@@ -38,7 +38,10 @@ Nothing downstream changed: everything still reads `score`, which is now the
 public figure. Held tokens are not destroyed — they stay in `raw_score`, so the
 player's own progress is untouched and releasing a gain restores it in full.
 
-On a player's page each increase carries two buttons:
+A player's page groups their record by day; `ranger-daily-history.md` covers that
+view, the period picker above the charts, and the "share of the ceiling" reading
+that replaced percentage growth. Opening a day shows that day's increases, and
+each increase carries two buttons:
 
 - **Release** — count it after all; the score goes up immediately.
 - **Hold** — stop counting one the rules let through.
