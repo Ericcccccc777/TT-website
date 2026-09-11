@@ -1,8 +1,8 @@
 {
   "_schema": 1,
   "_unit": "USD per 1,000,000 tokens",
-  "_updated": "2026-08-02",
-  "_source": "Each provider's official international USD-native pricing page. Claude: Anthropic (cache_write_5m=1.25x input, cache_write_1h=2x input, cache_read=0.1x input). Codex/OpenAI: developers.openai.com. Gemini/Google: ai.google.dev/gemini-api/docs/pricing. Grok/xAI: docs.x.ai. Mistral: mistral.ai/pricing. Cohere: cohere.com/pricing. DeepSeek: api-docs.deepseek.com. Kimi/Moonshot: platform.kimi.ai. GLM/Zhipu: docs.z.ai (international). Qwen/Alibaba: alibabacloud.com Model Studio (international). MiniMax: platform.minimax.io. MiMo/Xiaomi: mimo.mi.com (overseas). Grouped by model name (analytics.provider_for); lookup is case-insensitive, so mixed-case IDs like MiniMax-M3 still match the lowercase keys here.",
+  "_updated": "2026-09-11",
+  "_source": "Each provider's official international USD-native pricing page. Claude: claude.com/pricing (cache_write_5m=1.25x input, cache_write_1h=2x input, cache_read=0.1x input — EXCEPT claude-fable-5-1, whose cache read is a flat $0.25/MTok on the official page, not 0.1x; claude-fable-5 is still 1.0). Codex/OpenAI: developers.openai.com/api/docs/pricing (cache_write_5m = that page's 'short context cache writes' row; cache_read = its 'cached input' row). Gemini/Google: ai.google.dev/gemini-api/docs/pricing. Grok/xAI: docs.x.ai. Mistral: mistral.ai/pricing. Cohere: cohere.com/pricing. DeepSeek: api-docs.deepseek.com. Kimi/Moonshot: platform.kimi.ai. GLM/Zhipu: docs.z.ai (international). Qwen/Alibaba: alibabacloud.com Model Studio (international). MiniMax: platform.minimax.io. MiMo/Xiaomi: mimo.mi.com (overseas). Grouped by model name (analytics.provider_for); lookup is case-insensitive, so mixed-case IDs like MiniMax-M3 still match the lowercase keys here.",
   "_note": "Published from Token-Forest/src/dashboard/pricing.json by tools/publish_pricing.py - do not hand-edit; edit the bundled table and re-run. Two consumers read this file: (1) Token Forest >= 0.1.4 downloads it for in-app price updates (download-only), and (2) Supabase syncs it into public.model_prices once a day (migration 0018) to price the forest-value board. Both follow automatically once this file is deployed.",
   "claude": {
     "claude-3-5-haiku": {
@@ -18,6 +18,13 @@
       "cache_write_5m": 12.5,
       "cache_write_1h": 20.0,
       "cache_read": 1.0
+    },
+    "claude-fable-5-1": {
+      "input": 10.0,
+      "output": 50.0,
+      "cache_write_5m": 12.5,
+      "cache_write_1h": 20.0,
+      "cache_read": 0.25
     },
     "claude-haiku-4-5": {
       "input": 1.0,
@@ -97,19 +104,31 @@
       "cache_read": 0.3
     },
     "claude-sonnet-5": {
-      "input": 3.0,
-      "output": 15.0,
-      "cache_write_5m": 3.75,
-      "cache_write_1h": 6.0,
-      "cache_read": 0.3
+      "input": 2.0,
+      "output": 10.0,
+      "cache_write_5m": 2.5,
+      "cache_write_1h": 4.0,
+      "cache_read": 0.2
     }
   },
   "codex": {
+    "gpt-6-astra": {
+      "input": 10.0,
+      "output": 50.0,
+      "cache_read": 1.0,
+      "cache_write_5m": 12.5
+    },
+    "gpt-5.6-cyber": {
+      "input": 12.5,
+      "output": 75.0,
+      "cache_read": 1.25,
+      "cache_write_5m": 15.625
+    },
     "gpt-5.6-sol": {
-      "input": 5.0,
-      "output": 30.0,
-      "cache_read": 0.5,
-      "cache_write_5m": 6.25
+      "input": 4.0,
+      "output": 20.0,
+      "cache_read": 0.4,
+      "cache_write_5m": 5.0
     },
     "gpt-5.6-terra": {
       "input": 2.0,
