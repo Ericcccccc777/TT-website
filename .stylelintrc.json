@@ -22,5 +22,5 @@
       }
     ]
   },
-  "ignoreFiles": ["**/node_modules/**", ".next/**", "out/**"]
+  "ignoreFiles": ["**/node_modules/**", ".next/**", "out/**", "public/tmi/**"]
 }

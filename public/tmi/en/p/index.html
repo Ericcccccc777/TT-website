@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Player · TMI</title>
+<meta name="description" content="While you code, they live on the tokens you spend: cLAudE keeps the books, CodeX works the forge, BlueGiantFish eats. They watch Claude Code and Codex for you, chat with you, and remember what you talked about.">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://www.tokenforest.com.au/tmi/en/p/">
+<link rel="alternate" hreflang="zh-CN" href="https://www.tokenforest.com.au/tmi/zh/p/"><link rel="alternate" hreflang="en" href="https://www.tokenforest.com.au/tmi/en/p/"><link rel="alternate" hreflang="x-default" href="https://www.tokenforest.com.au/tmi/zh/p/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TMI">
+<meta property="og:title" content="Player · TMI">
+<meta property="og:description" content="While you code, they live on the tokens you spend: cLAudE keeps the books, CodeX works the forge, BlueGiantFish eats. They watch Claude Code and Codex for you, chat with you, and remember what you talked about.">
+<meta property="og:image" content="https://www.tokenforest.com.au/tmi/img/og-en.png">
+<meta property="og:url" content="https://www.tokenforest.com.au/tmi/en/p/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#F4EFE6">
+<link rel="icon" href="/tmi/img/avatars/claude.webp" type="image/webp">
+<link rel="preload" href="/tmi/fonts/JetBrainsMono-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/tmi/css/site.css?v=mwzasa4y">
+
+<script type="module" src="/tmi/js/site.js?v=mwzasa4y"></script>
+<script type="module" src="/tmi/js/pet.js?v=mwzasa4y"></script>
+<script type="module" src="/tmi/js/data.js?v=mwzasa4y"></script><script type="module" src="/tmi/js/player.js?v=mwzasa4y"></script>
+</head>
+<body class="page-player" data-lang="en">
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="/tmi/en/" aria-label="TMI"><span class="ava  " style="--c:#D97757"><img
+    src="/tmi/img/avatars/claude.webp" width="36" height="36" alt="" loading="lazy" decoding="async"></span><span class="logo-word">TMI</span></a>
+    <nav class="nav" aria-label="Menu"><a href="/tmi/en/characters/" >Characters</a><a href="/tmi/en/features/" >What they do</a><a href="/tmi/en/house/" >Her place</a><a href="/tmi/en/comics/" >Comics</a><a href="/tmi/en/leaderboard/" aria-current="page">Leaderboard</a></nav>
+    <div class="topbar-end">
+      <details class="lang">
+        <summary>English</summary>
+        <div class="lang-list"><a href="/tmi/zh/p/" hreflang="zh-CN" lang="zh-CN"  data-lang="zh">中文</a><a href="/tmi/en/p/" hreflang="en" lang="en" aria-current="true" data-lang="en">English</a></div>
+      </details>
+      <a class="btn btn-ink btn-sm" href="/tmi/en/download/">Download</a>
+      <details class="menu">
+        <summary>Menu</summary>
+        <nav class="menu-list" aria-label="Menu"><a href="/tmi/en/characters/" >Characters</a><a href="/tmi/en/features/" >What they do</a><a href="/tmi/en/house/" >Her place</a><a href="/tmi/en/comics/" >Comics</a><a href="/tmi/en/leaderboard/" aria-current="page">Leaderboard</a><a href="/tmi/en/download/">Download</a></nav>
+      </details>
+    </div>
+  </div>
+</header>
+<main id="main">
+<section class="wrap page-head" data-player-page data-strings="{&quot;title&quot;:&quot;Player&quot;,&quot;back&quot;:&quot;Back to the leaderboard&quot;,&quot;loadFailed&quot;:&quot;The player profile couldn’t be loaded. Check your connection and try again.&quot;,&quot;modelsFailed&quot;:&quot;Model usage couldn’t be loaded.&quot;,&quot;missing&quot;:&quot;Couldn&#39;t find this player. The link may be incomplete, or they&#39;ve turned the leaderboard off.&quot;,&quot;total&quot;:&quot;Total tokens&quot;,&quot;recent&quot;:&quot;Last 30 days&quot;,&quot;rankLifetime&quot;:&quot;#{n} all time&quot;,&quot;rankRecent&quot;:&quot;#{n} last 30 days&quot;,&quot;joined&quot;:&quot;Joined {date}&quot;,&quot;updated&quot;:&quot;Last sync&quot;,&quot;partner&quot;:&quot;On their desk&quot;,&quot;partnerBy&quot;:&quot;Assigned by the AI used most: {ai}&quot;,&quot;partnerLot&quot;:&quot;No model detail uploaded yet, so she was drawn by lot&quot;,&quot;models&quot;:&quot;Where the tokens went&quot;,&quot;noModels&quot;:&quot;No per-model detail uploaded yet.&quot;,&quot;project&quot;:&quot;Working on&quot;,&quot;share&quot;:&quot;Copy link to this page&quot;,&quot;copied&quot;:&quot;Copied&quot;,&quot;mem&quot;:{&quot;title&quot;:&quot;Her memory palace&quot;,&quot;note&quot;:&quot;You can tell roughly how much she remembers, not a single thing she remembers.&quot;,&quot;pending&quot;:&quot;This player&#39;s app hasn&#39;t uploaded the size of her memory palace yet. That needs a newer version and their consent.&quot;,&quot;levels&quot;:[&quot;Still empty&quot;,&quot;A few things&quot;,&quot;A dozen or so&quot;,&quot;Dozens of things&quot;,&quot;Over a hundred&quot;,&quot;Hundreds of things&quot;,&quot;Over a thousand&quot;]},&quot;say&quot;:{&quot;claude&quot;:&quot;This account is with me: {total} in all, {recent} in the last 30 days. Noted.&quot;,&quot;codex&quot;:&quot;{total}. {recent} in 30 days. Not bad.&quot;,&quot;deepseek&quot;:&quot;{total} tokens! {recent} in 30 days. That&#39;s a lot of bowls.&quot;},&quot;board&quot;:{&quot;title&quot;:&quot;Leaderboard&quot;,&quot;lead&quot;:&quot;Everyone here turned on the leaderboard in the app. Scores are the token totals the app recorded; the server holds back any part it can&#39;t yet account for.&quot;,&quot;tabs&quot;:{&quot;lifetime&quot;:&quot;All time&quot;,&quot;recent&quot;:&quot;Last 30 days&quot;,&quot;usage&quot;:&quot;By provider &amp; model&quot;,&quot;value&quot;:&quot;By list price&quot;},&quot;stats&quot;:{&quot;players&quot;:&quot;players&quot;,&quot;tokens&quot;:&quot;tokens&quot;,&quot;attributed&quot;:&quot;with model detail&quot;},&quot;col&quot;:{&quot;rank&quot;:&quot;Rank&quot;,&quot;who&quot;:&quot;Player&quot;,&quot;region&quot;:&quot;Region&quot;,&quot;tokens&quot;:&quot;Tokens&quot;,&quot;recent&quot;:&quot;30 days&quot;,&quot;updated&quot;:&quot;Updated&quot;,&quot;value&quot;:&quot;Value&quot;,&quot;models&quot;:&quot;Models&quot;,&quot;provider&quot;:&quot;Provider&quot;,&quot;model&quot;:&quot;Model&quot;,&quot;playersCol&quot;:&quot;Players&quot;},&quot;avatarTitle&quot;:&quot;Who&#39;s beside you&quot;,&quot;avatarBody&quot;:&quot;Solid frame: the AI you use most. Dashed frame: no per-model detail uploaded yet (older versions don&#39;t send it), so one was drawn by lot from your name.&quot;,&quot;usageNote&quot;:&quot;Providers are matched by model name against the price table, not taken from the client. Only players who upload model detail count.&quot;,&quot;valueNote&quot;:&quot;Estimates use published API prices for models with a known rate. Your bill may differ.&quot;,&quot;prev&quot;:&quot;Previous&quot;,&quot;next&quot;:&quot;Next&quot;,&quot;page&quot;:&quot;Page {n}&quot;,&quot;boardFailed&quot;:&quot;The leaderboard couldn’t be loaded.&quot;,&quot;usageFailed&quot;:&quot;This usage breakdown couldn’t be loaded.&quot;,&quot;noUsage&quot;:&quot;No usage has been reported here yet.&quot;,&quot;joinTitle&quot;:&quot;How to get on the board&quot;,&quot;join&quot;:[&quot;Download the app and pick someone to sit on your desk.&quot;,&quot;Settings → Leaderboard: turn it on and choose a nickname.&quot;,&quot;She syncs every half hour.&quot;],&quot;trees&quot;:&quot;Everyone used to get a tree here. The trees are gone; now you get an AI character.&quot;,&quot;anon&quot;:&quot;Anonymous&quot;,&quot;unknown&quot;:&quot;Unrecognised&quot;},&quot;common&quot;:{&quot;more&quot;:&quot;See more&quot;,&quot;all&quot;:&quot;All&quot;,&quot;back&quot;:&quot;Back&quot;,&quot;mock&quot;:&quot;Mock-up, numbers made up&quot;,&quot;loading&quot;:&quot;Loading…&quot;,&quot;retry&quot;:&quot;Try again&quot;,&quot;failed&quot;:&quot;Couldn&#39;t load this. Try refreshing in a bit.&quot;,&quot;empty&quot;:&quot;Nobody here yet.&quot;,&quot;tokens&quot;:&quot;tokens&quot;,&quot;players&quot;:&quot;players&quot;,&quot;updated&quot;:&quot;Updated&quot;,&quot;poke&quot;:&quot;Poke her&quot;,&quot;openLarge&quot;:&quot;Open full size&quot;},&quot;latin&quot;:{&quot;claude&quot;:&quot;cLAudE&quot;,&quot;codex&quot;:&quot;CodeX&quot;,&quot;deepseek&quot;:&quot;BlueGiantFish&quot;,&quot;kimi&quot;:&quot;KiMi&quot;,&quot;glm&quot;:&quot;ZeeFox&quot;,&quot;gemini&quot;:&quot;GemiNyan&quot;},&quot;names&quot;:{&quot;claude&quot;:&quot;cLAudE&quot;,&quot;codex&quot;:&quot;CodeX&quot;,&quot;deepseek&quot;:&quot;BlueGiantFish&quot;,&quot;kimi&quot;:&quot;KiMi&quot;,&quot;glm&quot;:&quot;ZeeFox&quot;,&quot;gemini&quot;:&quot;GemiNyan&quot;},&quot;ai&quot;:{&quot;claude&quot;:&quot;Claude Code&quot;,&quot;codex&quot;:&quot;Codex&quot;,&quot;deepseek&quot;:&quot;DeepSeek&quot;,&quot;kimi&quot;:&quot;Kimi&quot;,&quot;glm&quot;:&quot;GLM&quot;,&quot;gemini&quot;:&quot;Gemini&quot;},&quot;boxes&quot;:{&quot;claude&quot;:{&quot;w&quot;:300,&quot;h&quot;:390,&quot;width&quot;:300,&quot;height&quot;:390,&quot;below&quot;:24,&quot;axis&quot;:150,&quot;shift&quot;:0},&quot;codex&quot;:{&quot;w&quot;:300,&quot;h&quot;:390,&quot;width&quot;:313.5,&quot;height&quot;:407.54999999999995,&quot;below&quot;:33.44,&quot;axis&quot;:156.2275,&quot;shift&quot;:0.5225},&quot;deepseek&quot;:{&quot;w&quot;:296,&quot;h&quot;:390,&quot;width&quot;:296,&quot;height&quot;:390,&quot;below&quot;:21,&quot;axis&quot;:148.5,&quot;shift&quot;:-0.5}},&quot;memLive&quot;:false,&quot;memColumn&quot;:&quot;memory_level&quot;}">
+  <p><a class="textlink" href="/tmi/en/leaderboard/">Back to the leaderboard</a></p>
+  <div class="player" data-player hidden>
+    <div class="player-side"><p class="bubble bubble-left player-say" data-say hidden></p><div class="panel player-fig" data-fig></div></div>
+    <div>
+      <h1 class="player-name" data-name></h1>
+      <div class="player-meta" data-meta></div>
+      <div class="player-stats">
+        <div class="panel stat"><span class="num" data-total>—</span><span>Total tokens</span></div>
+        <div class="panel stat"><span class="num" data-recent>—</span><span>Last 30 days</span></div>
+      </div>
+      <div class="panel partner" data-partner></div>
+      <div class="panel palace-mini" data-palace>
+        <canvas data-ring="stars" aria-hidden="true"></canvas>
+        <div><small class="muted">Her memory palace</small><b data-mem-level>—</b><p class="fine" data-mem-note>You can tell roughly how much she remembers, not a single thing she remembers.</p></div>
+      </div>
+      <div class="panel pad"><h2 style="font-size:22px;margin-bottom:12px">Where the tokens went</h2><div data-models aria-live="polite"><p class="muted">Loading…</p></div></div>
+      <div data-project></div>
+      <p style="margin-top:24px"><button class="btn btn-sm" type="button" data-share>Copy link to this page</button></p>
+    </div>
+  </div>
+  <div class="panel pad" data-failed hidden><p role="status">The player profile couldn’t be loaded. Check your connection and try again.</p><button class="btn btn-sm" type="button" data-retry>Try again</button></div>
+  <div class="panel pad" data-missing role="status" hidden><p style="margin:0">Couldn&#39;t find this player. The link may be incomplete, or they&#39;ve turned the leaderboard off.</p></div>
+  <p class="board-state" data-loading role="status">Loading…</p>
+</section>
+</main>
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div class="footer-brand">
+      <a class="logo" href="/tmi/en/"><span class="ava  " style="--c:#D97757"><img
+    src="/tmi/img/avatars/claude.webp" width="36" height="36" alt="" loading="lazy" decoding="async"></span><span class="logo-word">TMI</span></a>
+      <p>Tiny AI characters who live in the corner of your screen.</p>
+    </div>
+    <nav class="footer-col" aria-label="Meet them"><h3>Meet them</h3>
+      <a href="/tmi/en/characters/">Characters</a><a href="/tmi/en/features/">What they do</a><a href="/tmi/en/house/">Her place</a><a href="/tmi/en/comics/">Comics</a><a href="/tmi/en/leaderboard/">Leaderboard</a>
+      <a href="/tmi/en/download/">Download</a></nav>
+    <nav class="footer-col" aria-label="Help"><h3>Help</h3>
+      <a href="/tmi/en/faq/">FAQ</a>
+      <a href="/tmi/en/about/">About &amp; credits</a>
+      <a href="https://github.com/Ericcccccc777/Poietic-TokenForest" rel="noopener" target="_blank">Releases (GitHub)</a>
+      <a href="https://www.tokenforest.com.au" rel="noopener" target="_blank">Old site</a></nav>
+    <nav class="footer-col" aria-label="Legal"><h3>Legal</h3>
+      <a href="/tmi/en/privacy/">Privacy</a>
+      <a href="/tmi/en/security/">Security</a>
+      <a href="/tmi/en/terms/">Terms</a></nav>
+  </div>
+  <div class="wrap footer-fine"><p>The characters are fan creations. Claude, Codex, DeepSeek and the other names are trademarks of their owners; TMI is not affiliated with or endorsed by them.</p><p>© 2026 TMI · Token-Made Intelligence</p></div>
+</footer>
+<script type="application/json" id="pet-data">{"who":"claude","frames":{"claude":{"stand":[300,390,24,138],"summon":[300,390,24,150.5],"walk_a":[300,390,24,140],"walk_b":[300,390,24,144],"walk_c":[300,390,24,140],"lift":[300,300,18,133.5],"fly":[300,300,35,134.5],"tuck":[322.49986800000005,415.09884000000005,25.544544000000002,163.91082400000002],"brace":[299.999997,386.13860999999997,23.762376,149.0098995],"sleep":[300,300,24,111],"slide_b":[300,390,24,150.5]},"codex":{"stand":[313.5,407.54999999999995,33.44,176.08249999999998],"summon":[313.5,407.54999999999995,33.44,157.27249999999998],"walk_a":[313.5,407.54999999999995,33.44,165.6325],"walk_b":[313.5,407.54999999999995,33.44,175.0375],"walk_c":[313.5,407.54999999999995,33.44,171.38],"lift":[307.5,307.5,26.65,162.46249999999998],"fly":[310.5,310.5,38.294999999999995,153.6975],"tuck":[304.49998,383.08062,31.432256,153.723377],"brace":[316.50008,398.17752,32.670976,161.31294400000002],"sleep":[316.5,316.5,33.76,162.73375],"slide_b":[313.5,407.54999999999995,33.44,156.2275]},"deepseek":{"stand":[296,390,21,183.5],"summon":[296,390,21,147.5],"walk_a":[296,390,21,173.5],"walk_b":[296,390,21,176.5],"walk_c":[296,390,21,172.5],"lift":[290.08,294,10.78,148.96],"fly":[296,300,29,146],"tuck":[300.000135,383.60673,20.655747,145.32793425],"brace":[310.500065,397.03287,21.378693,157.2860985],"sleep":[307.84000000000003,312,21.84,161.72],"slide_b":[296,390,21,148.5]}},"names":{"claude":"cLAudE","codex":"CodeX","deepseek":"BlueGiantFish"},"colors":{"claude":"#D97757","codex":"#8A7BD0","deepseek":"#4D6BFE"},"hrefs":{"claude":"/tmi/en/characters/claude/","codex":"/tmi/en/characters/codex/","deepseek":"/tmi/en/characters/deepseek/"},"words":{"claude":["Cooking","Stirring","Whisking","Kneading","Fold it in","On the hob","Low simmer","Pinch more","Tossing","Little stir","Rolling","Warming up","Steaming","Sprinkling","Mixing","Bubbling"],"codex":["Forging","Tinkering","Strike true","At the vise","Hammering","Bellows up","Sparks fly","Riveting","Shaping","Slow grind","File it","Buffing","Steady taps","Polishing","Hot iron","Honing"],"deepseek":["冒个泡","游个来回","尾鳍开工","慢慢潜","水花一朵","穿过海草","翻个浪花","甩甩尾巴","探出鱼头","鳍尖一动","钻进贝壳","趁着潮汐","再游一圈","鼓起腮帮","绕过珊瑚","吐个泡圈"]},"lines":{"claude":["I've come to audit the books.","This cake goes on the token tab.","Today's tokens… I'm rather full.","I shall take my leave."],"codex":["Here to work.","Refill.","Enough for today.","Back to the code."],"deepseek":["Here for free food~","One more bowl!","Full… sleepy.","Full! Nap time~"]},"say":{"claude":{"hello":"I'm here to inspect.","grab":"Put me down this instant!","dizzy":"…I am not dizzy.","wake":"I wasn't asleep!","back":"You're back? I kept the books for you.","download":"That one. Click it.","select":"Copying that into the ledger?","rival":"Hmph. Her again.","mad":"One more poke and it goes on your tab.","scroll":"Slow down, the books won't balance."},"codex":{"hello":"Mm.","grab":"…Let go.","dizzy":"Try that again.","wake":"Awake.","back":"You're back.","download":"Click this.","select":"Copied?","rival":"The bookkeeper's here.","mad":"Enough.","scroll":"Slower."},"deepseek":{"hello":"I'm here! Got any snacks?","grab":"I'm flying!","dizzy":"Spinny… spinny…","wake":"Is it dinner?","back":"You're back!","download":"Click it, click it!","select":"Is that bit tasty?","rival":"Does she have snacks?","mad":"Hmph, no more pats.","scroll":"Whoa, I'm getting dizzy"}},"ui":{"label":"{name}: click her, drag and fling her, right-click to swap","touchLabel":"{name}. Tap her, or touch and hold to switch characters or put her away.","call":"Call {name} back","switch":"Swap to {name}","page":"Go to her page","sleep":"Let her nap","hide":"Put her away","stats":"{players} people on the leaderboard, {tokens} tokens fed in total."}}</script>
+</body>
+</html>

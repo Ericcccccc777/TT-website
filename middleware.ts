@@ -11,7 +11,11 @@ export const config = {
   // them to /en/… and the OG image + touch icon would break.
   // `ranger` is a locale-free admin route (app/ranger) — exclude it so the
   // locale middleware does not 307-redirect /ranger to /en/ranger.
+  // `tmi` is TMI's own static site under public/tmi (see next.config.ts rewrites);
+  // it has its own /tmi/zh and /tmi/en pages, so the locale middleware stays off it.
+  // Netlify serves page paths in lowercase and 301s /TMI/… to /tmi/…; both spellings
+  // are listed because the matcher is case-sensitive.
   matcher: [
-    "/((?!api|ranger|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
+    "/((?!api|ranger|tmi|TMI|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
   ],
 };
