@@ -1,0 +1,53 @@
+/* A stamp stays in its frame on every card; the card itself lifts when picked. */
+.sticker-album { scroll-margin-top: 5.5rem; }
+.sticker-tools { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .4rem 1rem; margin: -.5rem 0 1rem; }
+.sticker-tools[hidden], .album-browse[hidden] { display: none; }
+.sticker-tools p { margin: 0; color: var(--ink-2); font-size: .94rem; }
+.album-browse { display: inline-flex; align-items: center; gap: .55rem; padding: .3rem .2rem; min-height: 44px; font: 750 .95rem/1.25 var(--sans); background: none; border: 0; color: var(--ink); text-decoration: underline; text-underline-offset: .22em; cursor: pointer; }
+.album-browse span { font-size: 1.15rem; }
+.sticker-pick { display: flex; min-width: 0; color: var(--ink); text-decoration: none; }
+.sticker-pick .sticker { width: 100%; display: flex; flex-direction: column; position: relative; }
+.sticker-pick:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; z-index: 1; }
+.sticker-pick .sticker::after {
+  content: ""; position: absolute; top: -1px; right: -1px; width: 1rem; height: 1rem; pointer-events: none;
+  background: linear-gradient(45deg, transparent 44%, var(--ink) 46% 50%, var(--c) 52%);
+  transform: scale(0); transform-origin: 100% 0; transition: transform .18s ease-out;
+}
+.sticker-pick:focus-visible .sticker::after, .sticker-pick .is-picked::after { transform: scale(1); }
+@media (hover: hover) and (pointer: fine) { .sticker-pick:hover .sticker::after { transform: scale(1); } }
+.sticker-reader {
+  width: min(calc(100% - 1.5rem), 27rem);
+  height: min(calc(100vh - 2rem), 34rem); height: min(calc(100dvh - 2rem), 34rem);
+  box-shadow: 4px 5px 0 var(--ink); overflow: auto;
+}
+.sticker-reader::backdrop { background: rgb(45 35 28 / .72); }
+.sticker-reader .comic-toolbar { min-width: 0; border-bottom: 1px solid var(--ink); gap: .6rem; padding: .5rem .8rem; background: var(--paper); }
+.sticker-reader .comic-toolbar strong { overflow-wrap: anywhere; font: 750 clamp(1.1rem, 3.5vw, 1.45rem)/1.32 var(--serif); }
+.sticker-reader .comic-toolbar .btn { min-width: auto; min-height: 44px; }
+.sticker-reader .sticker-page {
+  display: grid; grid-template: minmax(0,1fr) / minmax(0,1fr); min-height: 0; min-width: 0;
+  padding: clamp(.65rem, 4vmin, 1.5rem);
+  background: radial-gradient(#cabfae 1px, transparent 1.1px) 50% 50% / .58rem .58rem, #fffaf1;
+}
+.sticker-page img { position: relative; width: 100%; height: 100%; min-width: 0; max-height: 100%; object-fit: contain; }
+.sticker-reader .sticker-strip { flex-wrap: wrap; gap: .5rem; padding: .48rem .8rem; background: var(--paper); }
+.sticker-turn { display: flex; align-items: center; gap: .25rem; }
+.sticker-turn span { min-inline-size: 7ch; text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sticker-reader .sticker-turn button { min-width: 44px; min-height: 44px; padding: 0; font: 1.6rem/1 var(--serif); }
+.sticker-reader .album-give { min-height: 44px; font-weight: 750; }
+.pet-mark.received-sticker { top: 28%; right: -1.3rem; width: 48px; height: 48px; object-fit: contain; background: #fffbf3; border: 1px solid #4a392d; box-shadow: 2px 2px 0 #8a7160; rotate: 5deg; }
+.pet-mark.received-sticker.sticker-left { right: auto; left: -1.3rem; rotate: -5deg; }
+@media (max-width: 440px) { .pet-mark.received-sticker { width: 40px; height: 40px; } }
+@media (max-width: 360px) { .sticker-reader .sticker-strip { padding-inline: .45rem; } }
+@media (max-height: 410px) and (min-width: 480px) {
+  .sticker-reader[open] { grid-template: 1fr auto / minmax(0,1.4fr) minmax(0,1fr); width: min(calc(100% - 2rem), 37rem); }
+  .sticker-reader .sticker-page { grid-column: 1; grid-row: 1 / -1; border-right: 1px solid var(--ink); }
+  .sticker-reader .comic-toolbar, .sticker-reader .sticker-strip { grid-column: 2; }
+  .sticker-reader .comic-toolbar { display: grid; align-content: space-between; justify-items: start; border-bottom: 0; }
+  .sticker-reader .comic-toolbar strong { align-self: end; }
+  .sticker-reader .comic-toolbar .btn { order: -1; justify-self: end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sticker-pick .sticker, .sticker-pick .sticker::after { transition: none; }
+  .sticker-pick .sticker:hover { translate: none; rotate: none; }
+}

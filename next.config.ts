@@ -65,6 +65,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // TMI (Token-Made Intelligence) has its own site: plain static files under
+  // public/TMI, built from the tOkeN-Website folder with `node build.mjs --base /TMI`.
+  // An array of rewrites runs after public files are checked, so its images,
+  // scripts and styles are served as-is; only page paths land here and are
+  // mapped to that page's index.html.
+  async rewrites() {
+    return [
+      { source: "/TMI", destination: "/TMI/index.html" },
+      { source: "/TMI/:path*", destination: "/TMI/:path*/index.html" },
+    ];
+  },
   // Baseline security headers.
   async headers() {
     return [

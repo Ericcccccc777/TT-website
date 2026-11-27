@@ -1,0 +1,11 @@
+# TMI (Token-Made Intelligence)
+
+> A desktop companion app: little AI girls who live in the bottom-right corner of your screen. They track the tokens you spend with Claude Code, Codex and Kimi Code from local logs, remind you when your AI needs approval or your quota runs low, chat with you through your own Claude / ChatGPT subscription or DeepSeek key, keep memories, and live in a 3D house you buy with tokens.
+
+## Pages
+- [中文](https://www.tokenforest.com.au/TMI/zh/)
+- [English](https://www.tokenforest.com.au/TMI/en/)
+
+## Notes
+- Characters are fan creations; Claude, Codex, DeepSeek and other names are trademarks of their owners. Not affiliated with or endorsed by them.
+- The leaderboard is shared with the previous product (https://www.tokenforest.com.au).

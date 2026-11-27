@@ -1,0 +1,108 @@
+#wardrobe, #game-wardrobe, .wardrobe-board[id] { scroll-margin-top: 6rem; }
+.wardrobe-spread, .wardrobe-lineup { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--gap-row); }
+.wardrobe-board, .wardrobe-sample { min-width: 0; border: var(--line) solid var(--ink); background: #fffaf1; color: var(--ink); }
+.wardrobe-board { --mat: #f0dece; }
+.wardrobe-board[data-game="pool"], .wardrobe-look[data-game="pool"] { --mat: #dfe7db; }
+.wardrobe-heading, .wardrobe-credit { display: flex; align-items: baseline; justify-content: space-between; gap: .25rem .8rem; flex-wrap: wrap; padding: .85rem 1rem; }
+.wardrobe-heading h3 { font: 800 clamp(1.18rem,2vw,1.6rem)/1.2 var(--serif); }
+.wardrobe-heading p, .wardrobe-credit span { margin: 0; color: var(--ink-2); font: 640 .92rem/1.35 var(--sans); }
+.wardrobe-stage {
+  --table-edge: 89.5%;
+  position: relative; container-type: size; overflow: hidden; isolation: isolate;
+  height: clamp(14.6rem, 26vw, 20rem); border-block: var(--thin) solid var(--ink);
+  background: var(--mat);
+}
+.wardrobe-scene {
+  /* Place the wood rail at the same depth on both plates. The near edge and the
+     side with the cards / cue rack survive the tighter crop in a phone thumbnail. */
+  pointer-events: none; position: absolute; top: var(--table-edge); left: 28%; display: block;
+  width: max(100cqw,166cqh); height: auto; max-width: none; translate: -28% -81.7%;
+}
+[data-game="pool"] > .wardrobe-stage .wardrobe-scene {
+  width: max(100cqw,153cqh); left: 78%; translate: -78% -88.5%;
+}
+.wardrobe-gate {
+  position: absolute; left: 50%; top: var(--table-edge); width: min(100cqw,91cqh);
+  aspect-ratio: 1; translate: -50% -96.6796875%; pointer-events: none; /* the registered hem is at 495 of 512 */
+}
+.wardrobe-gate img { position: absolute; display: block; width: var(--cw); max-width: none; height: auto; left: var(--cx); top: var(--cy); }
+.wardrobe-original {
+  position: absolute; inset: .25rem .45rem auto auto; display: inline-grid; place-items: center;
+  min-width: 44px; min-height: 44px; color: var(--ink); text-decoration: none;
+}
+.wardrobe-original span {
+  display: inline-flex; align-items: center; gap: .28rem; padding: .23rem .5rem;
+  border: 1px solid #786e5d; background: #fff9eae8; box-shadow: 1.5px 1.5px #786e5d;
+  font: 700 .86rem/1.1 var(--sans);
+}
+.wardrobe-original i { font: 1.02rem/1 var(--sans); }
+.wardrobe-original:is(:hover,:focus-visible) span { background: var(--ink); color: var(--paper); }
+.wardrobe-controls { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto 46px; align-items: stretch; min-height: 48px; }
+.wardrobe-controls[hidden], .wardrobe-fallback[hidden] { display: none; }
+.wardrobe-controls button { border: 0; padding: 0; color: inherit; background: transparent; cursor: pointer; font: 1.25rem var(--sans); }
+.wardrobe-controls button:first-child { border-right: 1px solid var(--rule); }
+.wardrobe-controls button:last-of-type { border-left: 1px solid var(--rule); }
+.wardrobe-controls button:is(:hover,:focus-visible) { background: var(--ink); color: var(--paper); }
+.wardrobe-controls label { display: flex; min-width: 0; }
+.wardrobe-controls select { min-width: 0; max-width: 100%; padding-inline: .65rem .25rem; border: none; color: var(--ink); background-color: transparent; font: 700 1rem/1.2 var(--sans); cursor: pointer; }
+.wardrobe-count { align-self: center; padding: .2rem .65rem; color: var(--ink-2); font: 700 .76rem/1 var(--mono); white-space: nowrap; }
+.wardrobe-fallback { padding: 0 1rem; }
+.wardrobe-fallback summary { min-height: 44px; padding-block: .65rem; cursor: pointer; }
+.wardrobe-fallback ul { display: flex; flex-wrap: wrap; gap: 0 .95rem; padding: .25rem 0; margin: 0; list-style: none; }
+.wardrobe-fallback li a { display: inline-flex; min-height: 44px; align-items: center; }
+.wardrobe-board .visually-hidden, .wardrobe-index .visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); margin: -1px; padding: 0; border: 0; white-space: nowrap;
+}
+.wardrobe-index { --mat: #f0dece; }
+.wardrobe-switch { display: inline-flex; margin: 0 0 1rem; padding: 0; border: 1.5px solid var(--ink); }
+.wardrobe-switch label { position: relative; display: grid; }
+.wardrobe-switch input { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; }
+.wardrobe-switch label span { display: grid; place-items: center; min-height: 44px; padding: .45rem 1.05rem; font-weight: 700; cursor: pointer; }
+.wardrobe-switch input:checked + span { color: var(--paper); background: var(--ink); }
+.wardrobe-switch input:focus-visible + span { outline: 2px solid var(--clay-text); outline-offset: 3px; }
+.wardrobe-lineup { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.wardrobe-sample { display: block; text-decoration: none; }
+.wardrobe-sample .wardrobe-stage { border-top: 0; height: clamp(11.4rem,17vw,15.2rem); }
+.wardrobe-index .wardrobe-look[data-game="pool"], .wardrobe-index:has(input[value="pool"]:checked) .wardrobe-look[data-game="ddz"] { display: none; }
+.wardrobe-index:has(input[value="pool"]:checked) .wardrobe-look[data-game="pool"] { display: block; }
+.wardrobe-credit { align-items: start; flex-direction: column; padding: .7rem .85rem; }
+.wardrobe-credit b { font: 800 clamp(1.12rem,2.5vw,1.5rem)/1.2 var(--serif); overflow-wrap: anywhere; }
+.wardrobe-sample:is(:hover,:focus-visible) b { text-decoration: underline; text-underline-offset: .15em; }
+@media (max-width: 43rem) {
+  .wardrobe-spread, .wardrobe-lineup { grid-template-columns: minmax(0,1fr); }
+  .wardrobe-board .wardrobe-stage { height: clamp(14.8rem,65vw,20rem); }
+  .wardrobe-look, .wardrobe-index:has(input[value="pool"]:checked) .wardrobe-look[data-game="pool"] { display: grid; grid-template-columns: minmax(0,.94fr) minmax(0,1.06fr); align-items: center; }
+  .wardrobe-look .wardrobe-stage { border-bottom: 0; border-right: var(--thin) solid var(--ink); height: clamp(8.5rem,34vw,13rem); }
+}
+
+.wardrobe-reader {
+  width: min(calc(100% - 1.5rem), 36rem); height: min(calc(100vh - 2rem), 42rem);
+  height: min(calc(100dvh - 2rem), 42rem); color: var(--ink); background: var(--paper);
+  box-shadow: 4px 5px var(--ink);
+}
+.wardrobe-reader::backdrop { background: rgb(41 32 27 / .74); }
+.wardrobe-reader .comic-toolbar {
+  align-items: center; padding: .45rem .8rem; gap: .6rem; border-bottom: var(--thin) solid var(--ink);
+}
+.wardrobe-reader .comic-toolbar strong { min-width: 0; font: 750 1.08rem/1.32 var(--serif); }
+.wardrobe-reader .comic-toolbar [data-close] { flex: none; min-width: 44px; min-height: 44px; }
+.wardrobe-reader .wardrobe-print {
+  position: relative; min-width: 0; min-height: 0; overflow: hidden; padding: clamp(.7rem,3vmin,1.4rem);
+  background: #f8f3e7;
+}
+.wardrobe-print img { display: block; min-width: 0; min-height: 0; width: 100%; height: 100%; object-fit: contain; }
+.wardrobe-reader .wardrobe-turn {
+  display: grid; grid-template-columns: 48px minmax(0,1fr) 48px; align-items: stretch;
+  gap: .4rem; padding: .35rem .6rem; border-top: var(--thin) solid var(--ink);
+}
+.wardrobe-turn > div { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .1rem .65rem; }
+.wardrobe-turn strong { font: 700 .98rem/1.25 var(--sans); }
+.wardrobe-turn span { white-space: nowrap; color: var(--ink-2); font: 600 .81rem/1 var(--mono); }
+.wardrobe-turn button { min-width: 44px; min-height: 44px; font-size: 1.45rem; }
+@media (max-height: 28rem) and (min-width: 30rem) {
+  .wardrobe-reader[open] { width: min(calc(100% - 1.25rem),42rem); grid-template: 1fr auto / minmax(0,1.35fr) minmax(0,1fr); }
+  .wardrobe-reader .wardrobe-print { grid-column: 1; grid-row: 1 / -1; border-right: var(--thin) solid var(--ink); }
+  .wardrobe-reader .comic-toolbar { grid-column: 2; align-items: flex-start; flex-direction: column-reverse; justify-content: space-between; border-bottom: 0; }
+  .wardrobe-reader .comic-toolbar button { align-self: flex-end; }
+  .wardrobe-reader .wardrobe-turn { grid-column: 2; grid-template-columns: 44px minmax(0,1fr) 44px; padding: .25rem; gap: .12rem; }
+}

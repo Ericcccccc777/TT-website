@@ -11,7 +11,9 @@ export const config = {
   // them to /en/… and the OG image + touch icon would break.
   // `ranger` is a locale-free admin route (app/ranger) — exclude it so the
   // locale middleware does not 307-redirect /ranger to /en/ranger.
+  // `TMI` is TMI's own static site under public/TMI (see next.config.ts rewrites);
+  // it has its own /TMI/zh and /TMI/en pages, so the locale middleware stays off it.
   matcher: [
-    "/((?!api|ranger|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
+    "/((?!api|ranger|TMI|_next|_vercel|opengraph-image|twitter-image|apple-icon|icon|.*\\..*).*)",
   ],
 };
