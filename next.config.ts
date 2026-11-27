@@ -66,14 +66,16 @@ const nextConfig: NextConfig = {
     ],
   },
   // TMI (Token-Made Intelligence) has its own site: plain static files under
-  // public/TMI, built from the tOkeN-Website folder with `node build.mjs --base /TMI`.
+  // public/tmi, built from the tOkeN-Website folder with `node build.mjs --base /tmi`.
+  // (Lowercase on purpose: Netlify stores file paths in lowercase and 301s /TMI/… to
+  // /tmi/…, so the site links to the lowercase paths directly.)
   // An array of rewrites runs after public files are checked, so its images,
   // scripts and styles are served as-is; only page paths land here and are
   // mapped to that page's index.html.
   async rewrites() {
     return [
-      { source: "/TMI", destination: "/TMI/index.html" },
-      { source: "/TMI/:path*", destination: "/TMI/:path*/index.html" },
+      { source: "/tmi", destination: "/tmi/index.html" },
+      { source: "/tmi/:path*", destination: "/tmi/:path*/index.html" },
     ];
   },
   // Baseline security headers.

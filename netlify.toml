@@ -33,20 +33,20 @@
   [headers.values]
     Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
 
-# TMI's static site (public/TMI). Its art, comics and fonts only change when a
+# TMI's static site (public/tmi). Its art, comics and fonts only change when a
 # new build is copied in; image names carry no hash, so give them the same week
 # of freshness as the sprites. Its pages and scripts keep the default revalidation.
 [[headers]]
-  for = "/TMI/img/*"
+  for = "/tmi/img/*"
   [headers.values]
     Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
 
 [[headers]]
-  for = "/TMI/comics/*"
+  for = "/tmi/comics/*"
   [headers.values]
     Cache-Control = "public, max-age=604800, stale-while-revalidate=2592000"
 
 [[headers]]
-  for = "/TMI/fonts/*"
+  for = "/tmi/fonts/*"
   [headers.values]
     Cache-Control = "public, max-age=2592000, immutable"

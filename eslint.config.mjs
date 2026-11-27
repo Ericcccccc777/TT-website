@@ -4,8 +4,8 @@ const config = [
   ...nextCoreWebVitals,
   {
     // Design handoff artifacts (interactive mockups), not site source.
-    // public/TMI: TMI's static site, built in its own repo and copied in as-is.
-    ignores: ["dashboard-claudedesign/**", "public/TMI/**"],
+    // public/tmi: TMI's static site, built in its own repo and copied in as-is.
+    ignores: ["dashboard-claudedesign/**", "public/tmi/**"],
   },
   {
     rules: {
